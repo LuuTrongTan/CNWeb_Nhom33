@@ -2,22 +2,17 @@ const httpStatus = require('http-status');
 const { Category } = require('../models');
 const ApiError = require('../utils/ApiError');
 
-const createProduct = async (productBody) => {
-  return await Product.create(productBody);
+const createCategory = async (categoryBody) => {
+  return await Category.create(categoryBody);
 };
 
-// const queryProduct = async (filter, options) => {
-//   const products = await Product.paginate(filter, options);
-//   return products;
-// };
+const getAllCategory = async () => {
+  return Category.find();
+};
 
-// const getAllProduct = async () => {
-//   return Product.find();
-// };
-
-// const getProductById = async (id) => {
-//   return Product.findById(id);
-// };
+const getCategoryById = async (id) => {
+  return Category.findById(id);
+};
 
 // const updateProductById = async (productId, updateBody) => {
 //   const product = await getProductById(productId);
@@ -41,8 +36,9 @@ const createProduct = async (productBody) => {
 // };
 
 module.exports = {
-  createProduct,
-  //   queryProduct,
+  createCategory,
+  getAllCategory,
+  getCategoryById,
   //   getAllProduct,
   //   getProductById,
   //   updateProductById,
