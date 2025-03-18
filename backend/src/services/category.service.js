@@ -14,33 +14,31 @@ const getCategoryById = async (id) => {
   return Category.findById(id);
 };
 
-// const updateProductById = async (productId, updateBody) => {
-//   const product = await getProductById(productId);
-//   if (!product) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
-//   }
+const updateCategoryById = async (categoryId, updateBody) => {
+  const category = await getCategoryById(categoryId);
+  if (!category) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
+  }
 
-//   Object.assign(product, updateBody);
-//   await product.save();
-//   return product;
-// };
+  Object.assign(category, updateBody);
+  await category.save();
+  return category;
+};
 
-// const deleteProductById = async (productId) => {
-//   const product = await getProductById(productId);
-//   if (!product) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
-//   }
+const deleteCategoryById = async (categoryId) => {
+  const category = await getCategoryById(categoryId);
+  if (!category) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
+  }
 
-//   await product.remove();
-//   return product;
-// };
+  await category.remove();
+  return category;
+};
 
 module.exports = {
   createCategory,
   getAllCategory,
   getCategoryById,
-  //   getAllProduct,
-  //   getProductById,
-  //   updateProductById,
-  //   deleteProductById,
+  updateCategoryById,
+  deleteCategoryById,
 };

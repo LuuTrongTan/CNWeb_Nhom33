@@ -29,31 +29,28 @@ const getCategory = catchAsync(async (req, res) => {
   res.send(category);
 });
 
-// const updateProduct = catchAsync(async (req, res) => {
-//   const productId = req.query.productId;
-//   if (!productId) {
-//     throw new ApiError(httpStatus.BAD_REQUEST, 'Product ID is required');
-//   }
-//   const product = await productService.updateProductById(productId, req.body);
-//   res.send(product);
-// });
+const updateCategory = catchAsync(async (req, res) => {
+  const categoryId = req.query.categoryId;
+  if (!categoryId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category ID is required');
+  }
+  const category = await categoryService.updateCategoryById(categoryId, req.body);
+  res.send(category);
+});
 
-// const deleteProduct = catchAsync(async (req, res) => {
-//   const productId = req.query.productId;
-//   if (!productId) {
-//     throw new ApiError(httpStatus.BAD_REQUEST, 'Product ID is required');
-//   }
-//   await productService.deleteProductById(productId);
-//   res.status(httpStatus.NO_CONTENT).send();
-// });
+const deleteCategory = catchAsync(async (req, res) => {
+  const categoryId = req.query.categoryId;
+  if (!categoryId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category ID is required');
+  }
+  await categoryService.deleteCategoryById(categoryId);
+  res.status(httpStatus.NO_CONTENT).send();
+});
 
 module.exports = {
   createCategory,
   getAllCategory,
   getCategory,
-  //   getProducts,
-  //   getAllProduct,
-  //   getProduct,
-  //   updateProduct,
-  //   deleteProduct,
+  updateCategory,
+  deleteCategory,
 };
