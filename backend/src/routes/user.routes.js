@@ -34,6 +34,11 @@ router.get('/orders', verifyToken, userController.getOrderHistory);
 // Đổi mật khẩu
 router.post('/change-password', verifyToken, userController.changePassword);
 
+// Quên mật khẩu
+router.post('/forgot-password', userController.requestPasswordReset); // Gửi mã xác thực
+router.post('/verify-reset-code', userController.verifyResetCode); // Xác minh mã
+router.post('/reset-password', userController.resetPassword); // Đổi mật khẩu
+
 // Admin lấy danh sách user
 router.get('/admin/users', verifyToken, isAdmin, userController.getAllUsers); // Chỉ admin được gọi
 

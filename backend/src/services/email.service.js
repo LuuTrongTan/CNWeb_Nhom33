@@ -21,3 +21,14 @@ exports.sendVerificationEmail = async (email, code) => {
 
   await transporter.sendMail(mailOptions);
 };
+
+exports.sendResetPasswordEmail = async (email, code) => {
+  const mailOptions = {
+    from: process.env.SMTP_USER,
+    to: email,
+    subject: 'Đặt lại mật khẩu',
+    text: `Mã xác thực để đặt lại mật khẩu của bạn là: ${code}. Mã này có hiệu lực trong 10 phút.`,
+  };
+
+  await transporter.sendMail(mailOptions);
+};

@@ -2,42 +2,42 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const config = require('./config/config');
-const passport = require("passport");
+const passport = require('passport');
 require('./config/passport');
 
 // Import routes
 const userRoutes = require('./routes/user.routes');
 const authRoutes = require('./routes/auth.routes');
 const productRoutes = require('./routes/product.routes');
-// Các route khác sẽ được import ở đây
+// Các route khác sẽ được import ở đây nếu cần
 
 // Khởi tạo app
 const app = express();
 
 // Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(passport.initialize());
+app.use(cors()); // Cho phép CORS từ frontend
+app.use(express.json()); // Parse JSON body
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded body
+app.use(passport.initialize()); // Khởi tạo Passport cho authentication
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
+// Kết nối MongoDB
+mongoose
+  .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-    .then(() => console.log("✅ Kết nối MongoDB thành công"))
-    .catch(err => console.log("❌ Lỗi kết nối MongoDB:", err));
-  
+  .then(() => console.log('✅ Kết nối MongoDB thành công'))
+  .catch((err) => console.log('❌ Lỗi kết nối MongoDB:', err));
 
-// Routes
-app.use('/api/users', userRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-// Các route khác sẽ được thêm ở đây
-// Route mẫu để kiểm tra API
+// Routes với prefix /api
+app.use('/api/users', userRoutes); // Các route liên quan đến user: /api/users/profile, /api/users/wishlist, ...
+app.use('/api/auth', authRoutes); // Các route xác thực: /api/auth/login, /api/auth/register, ...
+app.use('/api/products', productRoutes); // Các route sản phẩm: /api/products, /api/products/:id, ...
+
+// Route mẫu để kiểm tra server
 app.get('/', (req, res) => {
-    res.send('Backend đang chạy!');
-  });
+  res.send('Backend đang chạy!');
+});
 
 // Error handler
 app.use((err, req, res, next) => {
