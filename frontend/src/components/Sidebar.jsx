@@ -1,4 +1,6 @@
+import { useState, useEffect, useContext } from "react";
 import styles from "./styles/Sidebar.module.scss";
+import { FilterContext } from "../context/FilterContext";
 
 const sizes = [
   "S",
@@ -39,44 +41,122 @@ const colors = [
 ];
 
 const Sidebar = () => {
+  const [showProducts, setShowProducts] = useState(true);
+  const [showSizes, setShowSizes] = useState(false);
+  const [showColors, setShowColors] = useState(false);
+  const { selectedFilter, setSelectedFilter } = useContext(FilterContext);
+
+  const handleSizeButton = (size) => {
+    setSelectedFilter((prev) => ({
+      ...prev,
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter((s) => s !== size) // Bỏ nếu đã chọn
+        : [...prev.sizes, size], // Thêm nếu chưa chọn
+    }));
+  };
+
+  const handleColor = (nameColor) => {
+    setSelectedFilter((prev) => ({
+      ...prev,
+      color: prev.color === nameColor ? "" : nameColor,
+    }));
+  };
+
+  const handleProduct = (productName) => {
+    setSelectedFilter((prev) => ({
+      ...prev,
+      product: prev.product === productName ? "" : productName,
+    }));
+  };
+
+  // useEffect(() => {
+  //   // console.log("Sizes selected:", chooseSize);
+  //   // console.log("Color selected:", chooseColor);
+  //   console.log("Product selected:", chooseProduct);
+  // }, [chooseSize, chooseColor, chooseProduct]);
+
   return (
     <aside className={styles.sidebar}>
-      <h3>Nhóm sản phẩm</h3>
-      <ul>
-        <li>
-          <input type="checkbox" /> Quần Jean
-        </li>
-        <li>
-          <input type="checkbox" /> Áo Thun
-        </li>
-        <li>
-          <input type="checkbox" /> Quần Jogger
-        </li>
-        <li>
-          <input type="checkbox" /> Áo Polo
-        </li>
-        <li>
-          <input type="checkbox" /> Áo khoác
-        </li>
-      </ul>
-      <div className={styles.filterSection}>
-        <h3>Kích cỡ</h3>
+      {/* Nhóm sản phẩm */}
+      <h3 onClick={() => setShowProducts(!showProducts)}>
+        Nhóm sản phẩm
+        <span className={`${styles.arrow} ${showProducts ? styles.open : ""}`}>
+          ▲
+        </span>
+      </h3>
+      <div className={`${styles.dropdown} ${showProducts ? styles.open : ""}`}>
+        <ul>
+          {[
+            "Jeans",
+            "Tshirt",
+            "Jogger",
+            "Kaki",
+            "Pants",
+            "Shorts",
+            "Longsleeve",
+            "Polo",
+            "Underwear",
+            "Jacket",
+            "Longpants",
+            "Shirt",
+            "Tanktop",
+            "Sportswear",
+          ].map((item) => (
+            <li key={item}>
+              <label>
+                <input
+                  type="radio"
+                  name="clothing"
+                  value={item}
+                  onClick={() => handleProduct(item)}
+                  checked={selectedFilter.product === item}
+                  onChange={() => {}}
+                />
+                {item}
+              </label>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Kích cỡ */}
+      <h3 onClick={() => setShowSizes(!showSizes)}>
+        Kích cỡ
+        <span className={`${styles.arrow} ${showSizes ? styles.open : ""}`}>
+          ▲
+        </span>
+      </h3>
+      <div className={`${styles.dropdown} ${showSizes ? styles.open : ""}`}>
         <div className={styles.sizeGrid}>
           {sizes.map((size) => (
-            <button key={size} className={styles.sizeBtn}>
+            <button
+              key={size}
+              className={`${styles.sizeBtn} ${selectedFilter.sizes.includes(size) ? styles.activeSize : ""}`}
+              onClick={() => handleSizeButton(size)}
+            >
               {size}
             </button>
           ))}
         </div>
       </div>
 
-      <div className={styles.filterSection}>
-        <h3>Màu sắc</h3>
+      {/* Màu sắc */}
+      <h3 onClick={() => setShowColors(!showColors)}>
+        Màu sắc
+        <span className={`${styles.arrow} ${showColors ? styles.open : ""}`}>
+          ▲
+        </span>
+      </h3>
+      <div className={`${styles.dropdown} ${showColors ? styles.open : ""}`}>
         <div className={styles.colorGrid}>
           {colors.map(({ name, color, border }) => (
-            <div key={name} className={styles.colorItem}>
+            <div
+              key={name}
+              className={styles.colorItem}
+              onClick={() => handleColor(name)}
+            >
               <span
-                className={styles.colorCircle}
+                className={`${styles.colorCircle} ${selectedFilter.color == name ? styles.activeColor : ""}`}
                 style={{ background: color, border }}
               ></span>
               <p>{name}</p>

@@ -1,13 +1,16 @@
 import Sidebar from "../components/Sidebar";
 import ProductList from "../components/ProductList";
 import styles from "./styles/Home.module.scss";
+import { FilterProvider } from "../context/FilterContext";
 
 const Home = () => {
   return (
     <div>
       <div className={styles.container}>
-        <Sidebar />
-        <ProductList />
+        <FilterProvider>
+          <Sidebar />
+          <ProductList />
+        </FilterProvider>
       </div>
     </div>
   );
