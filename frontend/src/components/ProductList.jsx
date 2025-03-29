@@ -1,62 +1,9 @@
 import ProductCard from "./ProductCard";
 import styles from "./styles/ProductList.module.scss";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { FilterContext } from "../context/FilterContext";
-
-const products = [
-  {
-    id: 1,
-    name: "Quần dài nam thể thao",
-    price: "289.000",
-    image: "link_image_1.jpg",
-  },
-  {
-    id: 2,
-    name: "Combo 3 quần đùi nam",
-    price: "357.000",
-    image: "link_image_2.jpg",
-  },
-  { id: 3, name: "Áo nỉ", price: "379.000", image: "link_image_3.jpg" },
-  {
-    id: 4,
-    name: "Quần dài nam thể thao",
-    price: "289.000",
-    image: "link_image_1.jpg",
-  },
-  {
-    id: 5,
-    name: "Combo 3 quần đùi nam",
-    price: "357.000",
-    image: "link_image_2.jpg",
-  },
-  { id: 6, name: "Áo nỉ", price: "379.000", image: "link_image_3.jpg" },
-  {
-    id: 7,
-    name: "Quần dài nam thể thao",
-    price: "289.000",
-    image: "link_image_1.jpg",
-  },
-  {
-    id: 8,
-    name: "Combo 3 quần đùi nam",
-    price: "357.000",
-    image: "link_image_2.jpg",
-  },
-  { id: 9, name: "Áo nỉ", price: "379.000", image: "link_image_3.jpg" },
-  {
-    id: 10,
-    name: "Quần dài nam thể thao",
-    price: "289.000",
-    image: "link_image_1.jpg",
-  },
-  {
-    id: 11,
-    name: "Combo 3 quần đùi nam",
-    price: "357.000",
-    image: "link_image_2.jpg",
-  },
-  { id: 12, name: "Áo nỉ", price: "379.000", image: "link_image_3.jpg" },
-];
+import { fetchProducts, getProductFilter } from "../service/productAPI";
+import Loader from "./Loader";
 
 const options = [
   "Mới nhất",
@@ -70,32 +17,101 @@ const ProductList = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState("Mặc định");
   const { selectedFilter, setSelectedFilter } = useContext(FilterContext);
+  const [isLoading, setIsLoading] = useState(false); // State để quản lý loading
 
   const handleDeleteFilter = () => {
     setSelectedFilter({
       sizes: [],
       color: "",
-      product: "",
+      category: {},
     });
   };
 
+  const [products, setProducts] = useState([]);
+  const [totalProduct, setTotalProduct] = useState({});
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  let usedPage = useRef(2);
+
   useEffect(() => {
-    console.log("Filter selected:", selectedFilter);
-  }, [selectedFilter]);
+    const getProducts = async () => {
+      setIsLoading(true); // Bắt đầu loading
+
+      try {
+        const data = await getProductFilter(
+          selectedFilter.color,
+          selectedFilter.category._id,
+          selectedFilter.sizes,
+          page
+        );
+        setProducts(data.docs);
+        setTotalProduct(data);
+        // console.log(data);
+        setTotalPages(data.totalPages);
+      } catch (error) {
+        console.error("Không thể lấy sản phẩm:", error);
+      }
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+    };
+
+    getProducts();
+    usedPage.current = 2;
+  }, [page, selectedFilter]);
+
+  // useEffect(() => {
+  //   console.log(selectedFilter);
+  // }, [selectedFilter]);
+
+  const handleSeeMore = async () => {
+    if (usedPage.current <= totalPages) {
+      try {
+        const data = await getProductFilter(
+          selectedFilter.color,
+          selectedFilter.category,
+          selectedFilter.sizes,
+          usedPage.current
+        );
+        usedPage.current++;
+        setProducts((prev) => {
+          return [...prev, ...data.docs];
+        });
+      } catch (error) {
+        console.error("Không thể lấy sản phẩm:", error);
+      }
+    } else {
+      alert("Không còn sản phẩm");
+    }
+    console.log(totalPages);
+    console.log(usedPage.current);
+  };
+
+  const getTotalToShow = (totalPages) => {
+    if (totalPages === 1) return totalProduct.totalDocs;
+    if (totalPages > 1) {
+      if (usedPage.current - 1 === totalPages) {
+        return totalProduct.totalDocs;
+      } else {
+        return 12 * (usedPage.current - 1);
+      }
+    }
+  };
 
   return (
     <div className={styles.container}>
       <div className={styles.nav_home}>
-        <span>Trang chủ</span> / <span>100 kết quả</span>
+        <span>Trang chủ</span> / <span>{totalProduct.totalDocs} kết quả</span>
       </div>
       <div className={styles.category}>QUẦN ÁO</div>
       <div className={styles.line} />
       <div className={styles.filter}>
         <div className={styles.quantity}>
-          100 Kết quả
+          {totalProduct.totalDocs} Kết quả
           <div className={styles.filters_result}>
-            {selectedFilter.product.length > 0 ? (
-              <div>{selectedFilter.product} </div>
+            {Object.keys(selectedFilter.category).length > 0 ? (
+              <div>{selectedFilter.category.name} </div>
             ) : (
               " "
             )}
@@ -109,7 +125,7 @@ const ProductList = () => {
             )}
           </div>
           {(selectedFilter.color.length > 0 ||
-            selectedFilter.product.length > 0 ||
+            Object.keys(selectedFilter.category).length > 0 ||
             selectedFilter.sizes.length > 0) && (
             <div
               className={styles.delete_filter}
@@ -148,15 +164,28 @@ const ProductList = () => {
       </div>
 
       {/* Danh sách sản phẩm */}
-      <div className={styles.productList}>
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <div className={styles.productList}>
+          {products.map((product) => (
+            <ProductCard key={product._id} product={product} />
+          ))}
+        </div>
+      )}
       <div className={styles.line} />
       <div className={styles.container_more}>
-        <div className={styles.btn_more}>XEM THÊM</div>
-        <div>Hiển thị 1-12 trên 200 sản phẩm</div>
+        <div className={styles.btn_more} onClick={() => handleSeeMore()}>
+          XEM THÊM
+        </div>
+        {products.length > 0 ? (
+          <div>
+            Hiển thị 1-{getTotalToShow(totalProduct.totalPages)} trên{" "}
+            {totalProduct.totalDocs} sản phẩm
+          </div>
+        ) : (
+          <div>Không tìm thấy sản phẩm phù hợp</div>
+        )}
       </div>
     </div>
   );

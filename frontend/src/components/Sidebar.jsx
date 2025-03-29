@@ -1,6 +1,7 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import styles from "./styles/Sidebar.module.scss";
 import { FilterContext } from "../context/FilterContext";
+import { getAllCategory } from "../service/categoryAPI";
 
 const sizes = [
   "S",
@@ -44,6 +45,7 @@ const Sidebar = () => {
   const [showProducts, setShowProducts] = useState(true);
   const [showSizes, setShowSizes] = useState(false);
   const [showColors, setShowColors] = useState(false);
+  const [categoryList, setCategoryList] = useState([]);
   const { selectedFilter, setSelectedFilter } = useContext(FilterContext);
 
   const handleSizeButton = (size) => {
@@ -62,12 +64,31 @@ const Sidebar = () => {
     }));
   };
 
-  const handleProduct = (productName) => {
+  const handleCategory = (categoryName) => {
     setSelectedFilter((prev) => ({
       ...prev,
-      product: prev.product === productName ? "" : productName,
+      category: prev.category === categoryName ? "" : categoryName,
     }));
   };
+
+  const isFetched = useRef(false);
+
+  useEffect(() => {
+    if (!isFetched.current) {
+      isFetched.current = true; // Đánh dấu đã gọi API
+      const getCategory = async () => {
+        try {
+          const data = await getAllCategory();
+          setCategoryList(data);
+          console.log(data);
+        } catch (error) {
+          console.error("Không thể lấy sản phẩm:", error);
+        }
+      };
+
+      getCategory();
+    }
+  }, []);
 
   // useEffect(() => {
   //   // console.log("Sizes selected:", chooseSize);
@@ -86,33 +107,18 @@ const Sidebar = () => {
       </h3>
       <div className={`${styles.dropdown} ${showProducts ? styles.open : ""}`}>
         <ul>
-          {[
-            "Jeans",
-            "Tshirt",
-            "Jogger",
-            "Kaki",
-            "Pants",
-            "Shorts",
-            "Longsleeve",
-            "Polo",
-            "Underwear",
-            "Jacket",
-            "Longpants",
-            "Shirt",
-            "Tanktop",
-            "Sportswear",
-          ].map((item) => (
-            <li key={item}>
+          {categoryList.map((category) => (
+            <li key={category._id}>
               <label>
                 <input
                   type="radio"
                   name="clothing"
-                  value={item}
-                  onClick={() => handleProduct(item)}
-                  checked={selectedFilter.product === item}
+                  value={category}
+                  onClick={() => handleCategory(category)}
+                  checked={selectedFilter.category === category}
                   onChange={() => {}}
                 />
-                {item}
+                {category.name}
               </label>
             </li>
           ))}

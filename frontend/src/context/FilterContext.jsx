@@ -6,7 +6,7 @@ export const FilterProvider = ({ children }) => {
   const [selectedFilter, setSelectedFilter] = useState({
     sizes: [],
     color: "",
-    product: "",
+    category: {},
   });
 
   return (

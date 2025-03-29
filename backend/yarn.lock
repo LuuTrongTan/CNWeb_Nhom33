@@ -4787,12 +4787,26 @@ mongodb@3.7.4:
   optionalDependencies:
     saslprep "^1.0.0"
 
+mongoose-lean-virtuals@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/mongoose-lean-virtuals/-/mongoose-lean-virtuals-1.1.0.tgz"
+  integrity sha512-QCuAvPUTGzUMjbvWqhA+3hXX7hP0PPJOW+hm50KN3gTPM89Uan/wrFyCfvsqW9giAGemtIFsBrZwiogmu2gxmA==
+  dependencies:
+    mpath "^0.8.4"
+
 mongoose-legacy-pluralize@1.0.2:
   version "1.0.2"
   resolved "https://registry.npmjs.org/mongoose-legacy-pluralize/-/mongoose-legacy-pluralize-1.0.2.tgz"
   integrity sha512-Yo/7qQU4/EyIS8YDFSeenIvXxZN+ld7YdV9LqFVQJzTLye8unujAWPZ4NWKfFA+RNjh+wvTWKY9Z3E5XM6ZZiQ==
 
-mongoose@*, mongoose@^5.7.7:
+mongoose-paginate-v2@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.npmjs.org/mongoose-paginate-v2/-/mongoose-paginate-v2-1.9.0.tgz"
+  integrity sha512-al4rsqadzg4TXcJVWI5WSaNUuSpzdtcPbabwXxbA7Euh6swuLkrrHrBmlGI6d3I4RMStdRAoD7k6wvB/x5zvaw==
+  dependencies:
+    mongoose-lean-virtuals "^1.1.0"
+
+mongoose@*, mongoose@^5.7.7, mongoose@>=5.11.10:
   version "5.13.20"
   resolved "https://registry.npmjs.org/mongoose/-/mongoose-5.13.20.tgz"
   integrity sha512-TjGFa/XnJYt+wLmn8y9ssjyO2OhBMeEBtOHb9iJM16EWu2Du6L1Q6zSiEK2ziyYQM8agb4tumNIQFzqbxId7MA==
@@ -4823,7 +4837,7 @@ morgan@^1.9.1:
     on-finished "~2.3.0"
     on-headers "~1.0.2"
 
-mpath@0.8.4:
+mpath@^0.8.4, mpath@0.8.4:
   version "0.8.4"
   resolved "https://registry.npmjs.org/mpath/-/mpath-0.8.4.tgz"
   integrity sha512-DTxNZomBcTWlrMW76jy1wvV37X/cNNxPW1y2Jzd4DZkAaC5ZGsm8bfGfNOthcDuRJujXLqiuS6o3Tpy0JEoh7g==
