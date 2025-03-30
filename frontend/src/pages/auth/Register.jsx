@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { register } from "../../api/auth";
+import { register } from "../../api/auth.api";
 
 const schema = yup.object().shape({
   username: yup.string().required("Tên không được để trống"),

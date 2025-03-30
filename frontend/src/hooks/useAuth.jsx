@@ -65,30 +65,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const handleFacebookLogin = async (accessToken) => {
-    try {
-      const API_URL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${API_URL}/api/auth/facebook`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ accessToken }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        login(data.user, data.token); // Sử dụng hàm login để đồng bộ
-      } else {
-        console.error("Facebook login failed:", data.message);
-        throw new Error(data.message);
-      }
-    } catch (error) {
-      console.error("Error during Facebook login:", error);
-      throw error;
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -97,7 +73,6 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateUser, // Thêm updateUser để ProfilePage sử dụng
         handleGoogleLogin,
-        handleFacebookLogin,
         loading,
         isAuthenticated: !!user,
       }}

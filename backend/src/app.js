@@ -2,8 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const config = require('./config/config');
-const passport = require('passport');
-require('./config/passport');
+
 
 // Import routes
 const userRoutes = require('./routes/user.routes');
@@ -18,7 +17,7 @@ const app = express();
 app.use(cors()); // Cho phép CORS từ frontend
 app.use(express.json()); // Parse JSON body
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded body
-app.use(passport.initialize()); // Khởi tạo Passport cho authentication
+// app.use(passport.initialize()); // Khởi tạo Passport cho authentication
 
 // Kết nối MongoDB
 mongoose

@@ -1,13 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import $ from 'jquery'; // Đảm bảo đã cài đặt jQuery qua npm
+import $ from 'jquery';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth'; // Thêm import useAuth
 
 const AdminDashboard = () => {
+  const { user, isAuthenticated } = useAuth(); // Lấy isAuthenticated và user từ useAuth
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Kiểm tra quyền truy cập ngay khi component mount
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login'); // Chuyển hướng nếu chưa đăng nhập
+      return;
+    }
+    if (user && user.role !== 'admin') {
+      navigate('/profile'); // Chuyển hướng nếu không phải admin
+      return;
+    }
+
     fetch('/api/users/admin/users', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     })
@@ -15,7 +29,7 @@ const AdminDashboard = () => {
       .then((data) => {
         if (Array.isArray(data)) {
           setUsers(data);
-          setFilteredUsers(data); // Khởi tạo danh sách lọc ban đầu
+          setFilteredUsers(data);
         } else {
           console.error('Lỗi dữ liệu:', data);
           setUsers([]);
@@ -29,14 +43,10 @@ const AdminDashboard = () => {
         setFilteredUsers([]);
         setLoading(false);
       });
-  }, []);
+  }, [isAuthenticated, user, navigate]);
 
   // Xử lý tìm kiếm bằng jQuery
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
     const filterUsers = () => {
       const term = searchTerm.toLowerCase();
       const filtered = users.filter(
@@ -47,13 +57,11 @@ const AdminDashboard = () => {
       setFilteredUsers(filtered);
     };
 
-    // Gắn sự kiện tìm kiếm bằng jQuery
     $('#searchInput').on('input', (e) => {
       setSearchTerm(e.target.value);
       filterUsers();
     });
 
-    // Cleanup để tránh memory leak
     return () => {
       $('#searchInput').off('input');
     };
@@ -148,7 +156,7 @@ const AdminDashboard = () => {
                             : 'bg-yellow-100 text-yellow-800'
                           }`}
                       >
-                        {user.isVerified ? 'Đã xác thực' : 'Chưa xác nhận'}
+                        {user.isVerified ? 'Đã xác thực' : 'Chưa xác thực'}
                       </span>
                     </td>
 

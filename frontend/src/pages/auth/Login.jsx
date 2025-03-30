@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { login } from "../../api/auth";
+import { login } from "../../api/auth.api";
 import AuthContext from "../../context/AuthContext";
 
 const Login = () => {

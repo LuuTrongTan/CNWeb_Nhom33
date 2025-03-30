@@ -9,6 +9,24 @@ const authApi = axios.create({
   },
 });
 
+export const register = async (userData) => {
+  try {
+    const response = await authApi.post('/register', userData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Lỗi khi đăng ký' };
+  }
+};
+
+export const login = async (userData) => {
+  try {
+    const response = await authApi.post('/login', userData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Lỗi khi đăng nhập' };
+  }
+};
+
 export const loginWithGoogle = async (googleToken) => {
   try {
     const response = await authApi.post('/google', { token: googleToken });
@@ -19,5 +37,7 @@ export const loginWithGoogle = async (googleToken) => {
 };
 
 export default {
+  register,
+  login,
   loginWithGoogle,
 };
