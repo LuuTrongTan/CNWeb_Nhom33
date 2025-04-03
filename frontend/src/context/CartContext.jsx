@@ -1,42 +1,32 @@
-// CartContext.js - Quản lý giỏ hàng
-import { createContext, useContext, useState } from "react";
+import { createContext, useState } from "react";
 
-const CartContext = createContext();
-export const useCart = () => useContext(CartContext);
+// 1️⃣ Tạo Context
+export const CartContext = createContext();
 
+// 2️⃣ Tạo Provider để bọc toàn bộ ứng dụng
 export const CartProvider = ({ children }) => {
-    const [cart, setCart] = useState([]);
-    const [discount, setDiscount] = useState(0);
-    const [shippingFee, setShippingFee] = useState(0);
+  // State giỏ hàng (mảng chứa các sản phẩm)
+  const [cart, setCart] = useState([]);
 
-    const addToCart = (product) => {
-        setCart(prev => {
-            const existing = prev.find(item => item.id === product.id);
-            return existing ? prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item) : [...prev, { ...product, quantity: 1 }];
-        });
-    };
-    
-    const removeFromCart = (id) => {
-        setCart(cart.filter(item => item.id !== id));
-    };
-    
-    const updateQuantity = (id, quantity) => {
-        setCart(cart.map(item => item.id === id ? { ...item, quantity } : item));
-    };
-    
-    const applyDiscount = (code) => {
-        if (code === "SALE10") setDiscount(10); // Giảm 10%
-        else setDiscount(0);
-    };
+  // 3️⃣ Hàm thêm sản phẩm vào giỏ
+  const addToCart = (product) => {
+    setCart([...cart, product]); 
+  };
 
-    const calculateTotal = () => {
-        const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        return subtotal - (subtotal * discount / 100) + shippingFee;
-    };
+  // 4️⃣ Hàm xóa một sản phẩm khỏi giỏ hàng
+  const removeFromCart = (productId) => {
+    setCart(cart.filter(item => item.id !== productId));
+  };
 
-    return (
-        <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, applyDiscount, calculateTotal, setShippingFee }}>
-            {children}
-        </CartContext.Provider>
-    );
+  // 5️⃣ Hàm xóa toàn bộ giỏ hàng
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  // 6️⃣ Cung cấp state và hàm cho component con
+  return (
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart }}>
+      {children}
+    </CartContext.Provider>
+  );
 };
