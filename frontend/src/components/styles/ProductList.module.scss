@@ -1,8 +1,28 @@
 .container {
   width: 80%;
 
-  .nav_home {
-    color: #727272;
+  .header_container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .nav_home {
+      color: #727272;
+    }
+
+    .header_container_left {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #007bff; /* Màu xanh */
+      color: white; /* Chữ trắng */
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
   }
 
   .productList {

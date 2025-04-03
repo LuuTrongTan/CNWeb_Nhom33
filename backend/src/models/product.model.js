@@ -5,7 +5,11 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String },
   price: { type: Number, required: true },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    // required: true
+  },
   images: [{ type: String }],
   brand: { type: String },
   colors: [{ type: String }],

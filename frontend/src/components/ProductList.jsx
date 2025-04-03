@@ -4,6 +4,7 @@ import { useState, useContext, useEffect, useRef } from "react";
 import { FilterContext } from "../context/FilterContext";
 import { fetchProducts, getProductFilter } from "../service/productAPI";
 import Loader from "./Loader";
+import { useNavigate } from "react-router-dom";
 
 const options = [
   "Mới nhất",
@@ -18,6 +19,8 @@ const ProductList = () => {
   const [selected, setSelected] = useState("Mặc định");
   const { selectedFilter, setSelectedFilter } = useContext(FilterContext);
   const [isLoading, setIsLoading] = useState(false); // State để quản lý loading
+
+  const navigate = useNavigate();
 
   const handleDeleteFilter = () => {
     setSelectedFilter({
@@ -58,6 +61,7 @@ const ProductList = () => {
     };
 
     getProducts();
+    setPage(1);
     usedPage.current = 2;
   }, [page, selectedFilter]);
 
@@ -101,10 +105,21 @@ const ProductList = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.nav_home}>
-        <span>Trang chủ</span> / <span>{totalProduct.totalDocs} kết quả</span>
+      <div className={styles.header_container}>
+        <div className={styles.header_container_right}>
+          <div className={styles.nav_home}>
+            <span>Trang chủ</span> /{" "}
+            <span>{totalProduct.totalDocs} kết quả</span>
+          </div>
+          <div className={styles.category}>QUẦN ÁO</div>
+        </div>
+        <div
+          className={styles.header_container_left}
+          onClick={() => navigate("/edit-products")}
+        >
+          Chỉnh sửa
+        </div>
       </div>
-      <div className={styles.category}>QUẦN ÁO</div>
       <div className={styles.line} />
       <div className={styles.filter}>
         <div className={styles.quantity}>
