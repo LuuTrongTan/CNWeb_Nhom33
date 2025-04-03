@@ -2,19 +2,28 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import ProductPage from "./pages/ProductPage";
 import CartPage from "./pages/CartPage";
+import "./styles/index.css"; // Import CSS vào toàn bộ ứng dụng
+import CheckoutPage from "./pages/CheckoutPage";
 
 function App() {
     return (
         <CartProvider>
             <Router>
                 <nav className="p-4 bg-gray-800 text-white flex justify-between">
-                    <Link to="/" className="mr-4">Trang chủ</Link>
-                    <Link to="/cart">Giỏ hàng</Link>
+                    <Link to="/" className="mr-4 thanhcc">Trang chủ</Link>
+                    <Link to="/cart" className="thanhcc">Giỏ hàng</Link>
+                    <Link to="/checkout" className="thanhcc">Thanh Toan</Link>
                 </nav>
+
                 <Routes>
                     <Route path="/" element={<ProductPage />} />
                     <Route path="/cart" element={<CartPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
                 </Routes>
+
+                <footer className="bg-gray-800 text-white p-4 text-center mt-8">
+                    <p>&copy; 2025 Cửa hàng thời trang. All rights reserved.</p>
+                </footer>
             </Router>
         </CartProvider>
     );

@@ -9,7 +9,7 @@ const ProductPage = () => {
             <h1 className="text-2xl font-bold mb-4">Danh sách sản phẩm</h1>
             <div className="flex flex-row gap-4 overflow-x-auto"> {/* Thay đổi ở đây */}
                 {products.map(product => (
-                    <div key={product.id} className="border p-4 rounded-lg shadow-lg w-64 min-w-64"> {/* Thêm kích thước cố định */}
+                    <div key={product.id} className="flex flex-row gap-4 overflow-x-auto"> {/* Thêm kích thước cố định */}
                         <img src={product.image} alt={product.name} className="w-full h-40 object-cover rounded" />
                         <h3 className="mt-2 font-semibold">{product.name}</h3>
                         <p className="text-gray-500">{product.price.toLocaleString()} VND</p>
