@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { getUserProfile } from '../api/user.api';
-import { loginWithGoogle } from '../api/auth.api';
+import { loginWithGoogle, loginWithGithub } from '../api/auth.api'; 
 
 const AuthContext = createContext();
 
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         try {
           const userData = await getUserProfile();
           setUser(userData);
-          localStorage.setItem("user", JSON.stringify(userData)); // Cập nhật dữ liệu đúng
+          localStorage.setItem("user", JSON.stringify(userData));
         } catch (error) {
           console.error("Không thể lấy thông tin user:", error);
           localStorage.removeItem("token");
@@ -40,8 +40,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData, token) => {
     localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData)); // Lưu user khi đăng nhập
-    setUser(userData); // Cập nhật trạng thái user
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
   };
 
   const updateUser = (userData) => {
@@ -52,16 +52,26 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setUser(null); // Cập nhật trạng thái user
+    setUser(null);
   };
 
   const handleGoogleLogin = async (googleToken) => {
     try {
       const data = await loginWithGoogle(googleToken);
-      login(data.user, data.token); // Sử dụng hàm login để đồng bộ
+      login(data.user, data.token);
     } catch (error) {
       console.error('Lỗi đăng nhập Google:', error.message);
-      throw error; // Ném lỗi để component gọi xử lý
+      throw error;
+    }
+  };
+
+  const handleGithubLogin = async (githubCode) => {
+    try {
+      const data = await loginWithGithub(githubCode);
+      login(data.user, data.token);
+    } catch (error) {
+      console.error('Lỗi đăng nhập GitHub:', error.message);
+      throw error;
     }
   };
 
@@ -71,8 +81,9 @@ export const AuthProvider = ({ children }) => {
         user,
         login,
         logout,
-        updateUser, // Thêm updateUser để ProfilePage sử dụng
+        updateUser,
         handleGoogleLogin,
+        handleGithubLogin, // Thêm vào context
         loading,
         isAuthenticated: !!user,
       }}

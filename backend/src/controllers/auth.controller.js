@@ -1,13 +1,12 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const User = require('../models/user.model'); // Đồng nhất với đường dẫn chuẩn
+const User = require('../models/user.model');
 const config = require('../config/config');
+const axios = require('axios'); // Thêm axios để gọi GitHub API
 
 const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
-    // Kiểm tra email đã tồn tại
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email đã được đăng ký' });
@@ -84,9 +83,67 @@ const googleLogin = async (req, res) => {
   }
 };
 
+const githubLogin = async (req, res) => {
+  try {
+    const { code } = req.body; // Nhận mã code từ frontend
+    if (!code) {
+      return res.status(400).json({ message: 'Không có mã code' });
+    }
+
+    // Trao đổi code để lấy access token từ GitHub
+    const tokenResponse = await axios.post(
+      'https://github.com/login/oauth/access_token',
+      {
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        code,
+      },
+      {
+        headers: { Accept: 'application/json' },
+      }
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+    if (!accessToken) {
+      return res.status(400).json({ message: 'Không thể lấy access token từ GitHub' });
+    }
+
+    // Lấy thông tin user từ GitHub
+    const userResponse = await axios.get('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const githubData = userResponse.data;
+
+    let user = await User.findOne({ githubId: githubData.id });
+    if (!user) {
+      const existingLocalUser = await User.findOne({ email: githubData.email, authType: 'local' });
+      if (existingLocalUser) {
+        return res.status(400).json({ message: 'Email này đã đăng ký với tài khoản local' });
+      }
+
+      user = new User({
+        githubId: githubData.id,
+        email: githubData.email || `${githubData.login}@github.com`, // Nếu không có email công khai
+        name: githubData.name || githubData.login,
+        avatar: { url: githubData.avatar_url || '' },
+        authType: 'github',
+        isVerified: true, // GitHub đã xác thực
+        role: 'user',
+      });
+      await user.save();
+    }
+
+    const authToken = jwt.sign({ id: user._id, role: user.role }, config.jwt.secret, { expiresIn: '7d' });
+    res.json({ user, token: authToken });
+  } catch (error) {
+    console.error('Lỗi đăng nhập GitHub:', error);
+    res.status(500).json({ message: 'Lỗi server', error });
+  }
+};
 
 module.exports = {
   register,
   login,
   googleLogin,
+  githubLogin,
 };

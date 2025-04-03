@@ -13,6 +13,7 @@ import RedirectIfAuthenticated from './components/RedirectIfAuthenticated';
 import AdminRoute from './components/AdminRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Navbar from './components/Navbar';
+import GithubCallback from './pages/GithubCallback';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route element={<RedirectIfAuthenticated />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/github-callback" element={<GithubCallback />} />
         </Route>
 
         <Route element={<AdminRoute />}>

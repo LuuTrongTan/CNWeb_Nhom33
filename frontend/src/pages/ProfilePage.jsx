@@ -260,7 +260,8 @@ const ProfilePage = () => {
                 />
               </div>
 
-              <div>
+              {user?.authType !== 'github' && (
+                <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email
                 </label>
@@ -274,7 +275,8 @@ const ProfilePage = () => {
                 />
                 <p className="mt-1 text-xs text-gray-500">Email không thể thay đổi</p>
               </div>
-
+              )}
+              
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                   Số điện thoại

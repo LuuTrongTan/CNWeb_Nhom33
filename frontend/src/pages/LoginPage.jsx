@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Thêm useEffect
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom'; // Thêm useLocation
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import GithubLoginButton from '../components/GithubLoginButton'; // Thêm GithubLoginButton
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const LoginPage = () => {
-  const { login, handleGoogleLogin } = useAuth();
+  const { login, handleGoogleLogin, handleGithubLogin } = useAuth(); 
   const navigate = useNavigate();
+  const location = useLocation(); 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [forgotPasswordStep, setForgotPasswordStep] = useState(0); // 0: đăng nhập, 1: nhập email, 2: nhập mã, 3: đổi mật khẩu
@@ -174,7 +176,8 @@ const LoginPage = () => {
               </button>
             </form>
             <div className="mt-4 text-center">
-              <GoogleLoginButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} className="w-12 h-12 mx-auto" />
+              <GoogleLoginButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+              <GithubLoginButton /> 
             </div>
             <div className="mt-4 text-center space-y-2">
               <p>

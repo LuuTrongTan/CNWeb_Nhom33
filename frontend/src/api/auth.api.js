@@ -36,8 +36,18 @@ export const loginWithGoogle = async (googleToken) => {
   }
 };
 
+export const loginWithGithub = async (code) => {
+  try {
+    const response = await authApi.post('/github', { code });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Lỗi khi đăng nhập bằng GitHub' };
+  }
+};
+
 export default {
   register,
   login,
   loginWithGoogle,
+  loginWithGithub,
 };
