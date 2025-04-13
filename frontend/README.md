@@ -56,3 +56,4 @@ The build artifacts will be stored in the `dist/` directory.
 - React Router
 - CSS3 with modern features
 - Vite as build tool
+
