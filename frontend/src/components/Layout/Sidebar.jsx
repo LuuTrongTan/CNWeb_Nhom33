@@ -1,114 +1,177 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './Sidebar.css';
+import { useState, useEffect, useContext, useRef } from "react";
+import "../../styles/css/Sidebar.css";
+import { FilterContext } from "../../context/FilterContext";
+import { getAllCategory } from "../../service/categoryAPI";
 
-const Sidebar = ({ isOpen, onClose }) => {
-  const categories = [
-    {
-      name: 'Men',
-      subcategories: ['T-shirts', 'Shirts', 'Jeans', 'Trousers', 'Jackets', 'Hoodies', 'Underwear', 'Activewear']
-    },
-    {
-      name: 'Women',
-      subcategories: ['Dresses', 'Tops', 'Jeans', 'Skirts', 'Jackets', 'Hoodies', 'Underwear', 'Activewear']
-    },
-    {
-      name: 'Kids',
-      subcategories: ['Boys', 'Girls', 'Toddlers', 'Babies', 'School Uniforms']
-    },
-    {
-      name: 'Accessories',
-      subcategories: ['Bags', 'Wallets', 'Belts', 'Hats', 'Scarves', 'Jewelry', 'Sunglasses']
-    },
-    {
-      name: 'Footwear',
-      subcategories: ['Sneakers', 'Casual Shoes', 'Formal Shoes', 'Sandals', 'Boots']
+const sizes = [
+  "S",
+  "M",
+  "L",
+  "XL",
+  "2XL",
+  "3XL",
+  "4XL",
+  "29",
+  "30",
+  "31",
+  "32",
+  "33",
+];
+const colors = [
+  {
+    name: "Phối màu",
+    color:
+      "linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)",
+  },
+  { name: "Đen", color: "#000" },
+  { name: "Xám", color: "#808080" },
+  { name: "Trắng", color: "#fff", border: "1px solid #ccc" },
+  { name: "Be", color: "#F5E1C8" },
+  { name: "Xanh lam", color: "#0047AB" },
+  { name: "Xanh lá", color: "#2E8B57" },
+  { name: "Xanh ngọc", color: "#20B2AA" },
+  { name: "Đỏ", color: "#D22B2B" },
+  { name: "Cam", color: "#FFA500" },
+  { name: "Vàng", color: "#FFD700" },
+  { name: "Tím", color: "#9370DB" },
+  { name: "Nâu", color: "#8B4513" },
+  { name: "Hồng", color: "#FF69B4" },
+  { name: "Xanh sáng", color: "#00BFFF" },
+  { name: "Xanh đậm", color: "#191970" },
+  { name: "Đen xám", color: "#4F4F4F" },
+];
+
+const Sidebar = () => {
+  const [showProducts, setShowProducts] = useState(true);
+  const [showSizes, setShowSizes] = useState(false);
+  const [showColors, setShowColors] = useState(false);
+  const [categoryList, setCategoryList] = useState([]);
+  const { selectedFilter, setSelectedFilter } = useContext(FilterContext);
+
+  const handleSizeButton = (size) => {
+    setSelectedFilter((prev) => ({
+      ...prev,
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter((s) => s !== size) // Bỏ nếu đã chọn
+        : [...prev.sizes, size], // Thêm nếu chưa chọn
+    }));
+  };
+
+  const handleColor = (nameColor) => {
+    setSelectedFilter((prev) => ({
+      ...prev,
+      color: prev.color === nameColor ? "" : nameColor,
+    }));
+  };
+
+  const handleCategory = (categoryName) => {
+    setSelectedFilter((prev) => ({
+      ...prev,
+      category: prev.category === categoryName ? "" : categoryName,
+    }));
+  };
+
+  const isFetched = useRef(false);
+
+  useEffect(() => {
+    if (!isFetched.current) {
+      isFetched.current = true; // Đánh dấu đã gọi API
+      const getCategory = async () => {
+        try {
+          const data = await getAllCategory();
+          setCategoryList(data);
+          console.log(data);
+        } catch (error) {
+          console.error("Không thể lấy sản phẩm:", error);
+        }
+      };
+
+      getCategory();
     }
-  ];
+  }, []);
+
+  // useEffect(() => {
+  //   // console.log("Sizes selected:", chooseSize);
+  //   // console.log("Color selected:", chooseColor);
+  //   console.log("Product selected:", chooseProduct);
+  // }, [chooseSize, chooseColor, chooseProduct]);
 
   return (
-    <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-      <div className="sidebar-header">
-        <button className="close-button" onClick={onClose}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-        <div className="sidebar-title">Categories</div>
+    <aside className="sidebar">
+      {/* Nhóm sản phẩm */}
+      <h3 onClick={() => setShowProducts(!showProducts)}>
+        Nhóm sản phẩm
+        <span className={`arrow ${showProducts ? "open" : ""}`}>
+          ▲
+        </span>
+      </h3>
+      <div className={`dropdown ${showProducts ? "open" : ""}`}>
+        <ul>
+          {categoryList.map((category) => (
+            <li key={category._id}>
+              <label>
+                <input
+                  type="radio"
+                  name="clothing"
+                  value={category}
+                  onClick={() => handleCategory(category)}
+                  checked={selectedFilter.category === category}
+                  onChange={() => {}}
+                />
+                {category.name}
+              </label>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div className="sidebar-content">
-        <nav className="sidebar-nav">
-          {categories.map((category, index) => (
-            <div key={index} className="category-item">
-              <div className="category-header">
-                <Link to={`/category/${category.name.toLowerCase()}`} className="category-name">
-                  {category.name}
-                </Link>
-                <span className="category-arrow">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </span>
-              </div>
-              <ul className="subcategory-list">
-                {category.subcategories.map((subcategory, subIndex) => (
-                  <li key={subIndex} className="subcategory-item">
-                    <Link to={`/category/${category.name.toLowerCase()}/${subcategory.toLowerCase().replace(' ', '-')}`}>
-                      {subcategory}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+      {/* Kích cỡ */}
+      <h3 onClick={() => setShowSizes(!showSizes)}>
+        Kích cỡ
+        <span className={`arrow ${showSizes ? "open" : ""}`}>
+          ▲
+        </span>
+      </h3>
+      <div className={`dropdown ${showSizes ? "open" : ""}`}>
+        <div className="size-grid">
+          {sizes.map((size) => (
+            <button
+              key={size}
+              className={`size-btn ${selectedFilter.sizes.includes(size) ? "active-size" : ""}`}
+              onClick={() => handleSizeButton(size)}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Màu sắc */}
+      <h3 onClick={() => setShowColors(!showColors)}>
+        Màu sắc
+        <span className={`arrow ${showColors ? "open" : ""}`}>
+          ▲
+        </span>
+      </h3>
+      <div className={`dropdown ${showColors ? "open" : ""}`}>
+        <div className="color-grid">
+          {colors.map(({ name, color, border }) => (
+            <div
+              key={name}
+              className="color-item"
+              onClick={() => handleColor(name)}
+            >
+              <span
+                className={`color-circle ${selectedFilter.color == name ? "active-color" : ""}`}
+                style={{ background: color, border }}
+              ></span>
+              <p>{name}</p>
             </div>
           ))}
-        </nav>
-
-        <div className="sidebar-divider"></div>
-
-        <div className="sidebar-links">
-          <Link to="/sale" className="sidebar-link highlight">Sale</Link>
-          <Link to="/new-arrivals" className="sidebar-link highlight">New Arrivals</Link>
-          <Link to="/trending" className="sidebar-link">Trending</Link>
-          <Link to="/bestsellers" className="sidebar-link">Bestsellers</Link>
-        </div>
-
-        <div className="sidebar-divider"></div>
-
-        <div className="sidebar-footer">
-          <div className="customer-service">
-            <h3>Customer Service</h3>
-            <p className="service-phone">+84 123 456 789</p>
-            <p className="service-email">support@styleshop.com</p>
-            <p className="service-hours">Mon-Fri: 9:00 - 18:00</p>
-          </div>
-
-          <div className="sidebar-social">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-              </svg>
-            </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-              </svg>
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="social-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-              </svg>
-            </a>
-          </div>
         </div>
       </div>
-
-      <div className="sidebar-overlay" onClick={onClose}></div>
-    </div>
+    </aside>
   );
 };
 
-export default Sidebar; 
+export default Sidebar;

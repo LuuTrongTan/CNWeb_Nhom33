@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProductFilter, deleteProduct } from "../../service/productAPI";
-import styles from "../styles/productListStyle/EditProducts.module.scss";
+import styles from "../../styles/scss/productListStyle/EditProducts.module.scss";
 
 const EditProducts = () => {
   const [products, setProducts] = useState([]);
