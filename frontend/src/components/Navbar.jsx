@@ -6,7 +6,11 @@ const Navbar = () => {
 
   return (
     <nav className={styles.navbar}>
-      <div className={styles.logo}>TÊN WEB</div>
+      <div className={styles.logo}>
+        <Link to="/" className="text-xl font-bold">
+          Shop
+        </Link>
+      </div>
       <ul className={styles.menu}>
         <li>QUẦN ÁO</li>
         <li>GIÀY DÉP</li>
@@ -28,6 +32,11 @@ const Navbar = () => {
         </div>
         <div className={styles.icon}>
           <i className="fa-solid fa-cart-shopping"></i>
+          <div>
+            <Link to="/cart" className="ml-4">
+              Giỏ hàng
+            </Link>
+          </div>
           <span className={styles.cartCount}>0</span>
         </div>
       </div>
