@@ -1,47 +1,99 @@
-import { Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ProfilePage from './pages/ProfilePage';
-import AddressesPage from './pages/AddressesPage';
-import ChangePasswordPage from './pages/ChangePasswordPage';
-import WishlistPage from './pages/WishlistPage';
-import OrderHistoryPage from './pages/OrderHistoryPage';
-import NotFoundPage from './pages/NotFoundPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import RedirectIfAuthenticated from './components/RedirectIfAuthenticated';
-import AdminRoute from './components/AdminRoute';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import Navbar from './components/Navbar';
-import GithubCallback from './pages/GithubCallback';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+
+// Layout components
+import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
+
+// Auth pages
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import OAuthCallback from './pages/auth/OAuthCallback';
+import TwoFactorAuth from './pages/auth/TwoFactorAuth';
+
+// User pages
+import Profile from './pages/user/Profile';
+import OrderHistory from './pages/user/OrderHistory';
+import OrderDetails from './pages/user/OrderDetails';
+import Wishlist from './pages/user/Wishlist';
+import SecuritySettings from './pages/user/SecuritySettings';
+
+// Protected route component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+  
+  return children;
+};
 
 function App() {
   return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route element={<RedirectIfAuthenticated />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/github-callback" element={<GithubCallback />} />
-        </Route>
-
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Route>
-
-        <Route element={<ProtectedRoute />}>
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/addresses" element={<AddressesPage />} />
-          <Route path="/profile/password" element={<ChangePasswordPage />} />
-          <Route path="/profile/wishlist" element={<WishlistPage />} />
-          <Route path="/profile/orders" element={<OrderHistoryPage />} />
-        </Route>
-
-        <Route path="/" element={<HomePage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </>
+    <div className="app">
+      <Header />
+      <main className="container mx-auto px-4 py-8 min-h-screen">
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
+          <Route path="/two-factor-auth" element={<TwoFactorAuth />} />
+          
+          {/* Protected routes */}
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/orders" 
+            element={
+              <ProtectedRoute>
+                <OrderHistory />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/orders/:orderId" 
+            element={
+              <ProtectedRoute>
+                <OrderDetails />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/wishlist" 
+            element={
+              <ProtectedRoute>
+                <Wishlist />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/security" 
+            element={
+              <ProtectedRoute>
+                <SecuritySettings />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Redirect root to login page for now */}
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
   );
 }
 

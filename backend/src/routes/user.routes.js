@@ -1,45 +1,64 @@
 const express = require('express');
-const router = express.Router();
+const { check } = require('express-validator');
 const userController = require('../controllers/user.controller');
-const { verifyToken, isAdmin } = require('../middlewares/auth.middleware'); 
-const { upload } = require('../config/cloudinary');
+const authMiddleware = require('../middleware/auth.middleware');
 
-// Đăng ký & Đăng nhập
-router.post('/register', userController.register);
-router.post('/verify-email', userController.verifyEmail);
-router.post('/request-verification', verifyToken, userController.requestVerification);
-router.post('/login', userController.login);
+const router = express.Router();
 
-// Routes yêu cầu xác thực
-router.get('/profile', verifyToken, userController.getUserProfile);
-router.put('/profile', verifyToken, userController.updateProfile);
+// All routes require authentication
+router.use(authMiddleware.authenticateJWT);
 
-// Upload ảnh đại diện
-router.post('/avatar', verifyToken, upload.single('avatar'), userController.uploadAvatar);
+// Get user profile
+router.get('/profile', userController.getProfile);
 
-// Quản lý địa chỉ
-router.post('/addresses', verifyToken, userController.addAddress);
-router.put('/addresses/:addressId', verifyToken, userController.updateAddress);
-router.delete('/addresses/:addressId', verifyToken, userController.deleteAddress);
+// Update user profile
+router.put(
+  '/profile',
+  [
+    check('name', 'Name cannot be empty if provided').optional().notEmpty(),
+    check('phone', 'Invalid phone number').optional().isMobilePhone(),
+    check('bio', 'Bio cannot be empty if provided').optional().notEmpty()
+  ],
+  userController.updateProfile
+);
 
-// Quản lý wishlist
-router.post('/wishlist', verifyToken, userController.addToWishlist);
-router.get('/wishlist', verifyToken, userController.getWishlist);
-router.delete('/wishlist/:productId', verifyToken, userController.removeFromWishlist);
+// Update password
+router.put(
+  '/password',
+  [
+    check('currentPassword', 'Current password is required').not().isEmpty(),
+    check('newPassword', 'New password must be at least 6 characters').isLength({ min: 6 })
+  ],
+  userController.updatePassword
+);
 
-// Lịch sử đơn hàng
-router.post('/orders', verifyToken, userController.createOrder);
-router.get('/orders', verifyToken, userController.getOrderHistory);
+// Address management
+router.post(
+  '/addresses',
+  [
+    check('street', 'Street address is required').not().isEmpty(),
+    check('city', 'City is required').not().isEmpty(),
+    check('state', 'State is required').not().isEmpty(),
+    check('zipCode', 'Zip code is required').not().isEmpty(),
+    check('country', 'Country is required').not().isEmpty(),
+    check('isDefault', 'isDefault must be a boolean').optional().isBoolean()
+  ],
+  userController.addAddress
+);
 
-// Đổi mật khẩu
-router.post('/change-password', verifyToken, userController.changePassword);
+router.put(
+  '/addresses/:addressId',
+  [
+    check('street', 'Street cannot be empty if provided').optional().notEmpty(),
+    check('city', 'City cannot be empty if provided').optional().notEmpty(),
+    check('state', 'State cannot be empty if provided').optional().notEmpty(),
+    check('zipCode', 'Zip code cannot be empty if provided').optional().notEmpty(),
+    check('country', 'Country cannot be empty if provided').optional().notEmpty(),
+    check('isDefault', 'isDefault must be a boolean').optional().isBoolean()
+  ],
+  userController.updateAddress
+);
 
-// Quên mật khẩu
-router.post('/forgot-password', userController.requestPasswordReset); // Gửi mã xác thực
-router.post('/verify-reset-code', userController.verifyResetCode); // Xác minh mã
-router.post('/reset-password', userController.resetPassword); // Đổi mật khẩu
+router.delete('/addresses/:addressId', userController.deleteAddress);
 
-// Admin lấy danh sách user
-router.get('/admin/users', verifyToken, isAdmin, userController.getAllUsers); // Chỉ admin được gọi
-
-module.exports = router;
+module.exports = router; 

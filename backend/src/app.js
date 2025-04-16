@@ -1,58 +1,60 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const config = require('./config/config');
+const passport = require('passport');
+const cookieParser = require('cookie-parser');
+const dotenv = require('dotenv');
 
+// Load environment variables
+dotenv.config();
 
 // Import routes
-const userRoutes = require('./routes/user.routes');
 const authRoutes = require('./routes/auth.routes');
-const productRoutes = require('./routes/product.routes');
-// Các route khác sẽ được import ở đây nếu cần
+const userRoutes = require('./routes/user.routes');
+const wishlistRoutes = require('./routes/wishlist.routes');
+const orderRoutes = require('./routes/order.routes');
 
-// Khởi tạo app
+// Initialize express app
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-// Middlewares
-app.use(cors()); // Cho phép CORS từ frontend
-app.use(express.json()); // Parse JSON body
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded body
-// app.use(passport.initialize()); // Khởi tạo Passport cho authentication
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-// Kết nối MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log('✅ Kết nối MongoDB thành công'))
-  .catch((err) => console.log('❌ Lỗi kết nối MongoDB:', err));
+// Middleware
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-// Routes với prefix /api
-app.use('/api/users', userRoutes); // Các route liên quan đến user: /api/users/profile, /api/users/wishlist, ...
-app.use('/api/auth', authRoutes); // Các route xác thực: /api/auth/login, /api/auth/register, ...
-app.use('/api/products', productRoutes); // Các route sản phẩm: /api/products, /api/products/:id, ...
+// Initialize Passport
+app.use(passport.initialize());
+require('./config/passport');
 
-// Route mẫu để kiểm tra server
-app.get('/', (req, res) => {
-  res.send('Backend đang chạy!');
-});
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/orders', orderRoutes);
 
-// Error handler
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  res.status(500).json({ 
+    success: false, 
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
 
-// 404 Not Found
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-// Khởi động server
-const PORT = process.env.PORT || 5000;
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server đang chạy trên cổng ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;
