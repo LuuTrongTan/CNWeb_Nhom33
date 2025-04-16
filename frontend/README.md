@@ -1,12 +1,58 @@
-# React + Vite
+# Clothing Store Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern SPA for a clothing store with a responsive design featuring a navbar and sidebar for easy navigation.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Modern UI with responsive design
+- Product showcase with featured products
+- Category navigation via sidebar
+- Shopping cart functionality
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+
+- Node.js (v14.0.0 or later)
+- npm or yarn
+
+### Installation
+
+1. Clone this repository
+2. Navigate to the frontend directory
+3. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+### Development
+
+To start the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+This will start the development server at http://localhost:3000.
+
+### Building for Production
+
+```bash
+npm run build
+# or
+yarn build
+```
+
+The build artifacts will be stored in the `dist/` directory.
+
+## Technologies Used
+
+- React.js
+- React Router
+- CSS3 with modern features
+- Vite as build tool

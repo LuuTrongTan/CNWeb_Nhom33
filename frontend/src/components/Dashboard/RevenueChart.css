@@ -1,0 +1,69 @@
+.revenue-chart-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.revenue-chart-container h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.revenue-chart {
+  height: 300px;
+  width: 100%;
+  position: relative;
+}
+
+.revenue-summary {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.total-revenue {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2a6470;
+  margin: 0;
+}
+
+.avg-revenue {
+  font-size: 1.1rem;
+  color: #555;
+  margin: 0;
+}
+
+.loading-indicator {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-style: italic;
+}
+
+.no-data-message {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .revenue-chart {
+    height: 250px;
+  }
+  
+  .revenue-summary {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+} 
