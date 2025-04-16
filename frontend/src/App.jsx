@@ -1,56 +1,56 @@
 // export default App
 import ProductListScreen from "./pages/productScreen/ProductListScreen";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import Navbar from "./components/Layout/Navbar";
+import Footer from "./components/Layout/Footer";
 import EditProducts from "./pages/productScreen/EditProductScreen";
 import AddProduct from "./pages/productScreen/AddProduct";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { CartProvider } from "./context/CartContext";
 import ProductPage from "./pages/ProductPage";
 import CartPage from "./pages/CartPage";
-import "./styles/index.css"; // Import CSS vào toàn bộ ứng dụng
 import CheckoutPage from "./pages/CheckoutPage";
 
 const App = () => {
   return (
-    <CartProvider>
-      <Router>
-        {/* <Navbar /> */}
-        <Routes>
-          <Route path="/product" element={<ProductListScreen />} />
-          <Route path="/edit-products" element={<EditProducts />} />
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/edit-product/:id?" element={<AddProduct />} />
-
-          {/* Sau này có trang chỉnh sửa sản phẩm chi tiết */}
-          {/* <Route path="/edit-product/:id" element={<EditProductDetail />} /> */}
-        </Routes>
-        {/* <Footer /> */}
-      </Router>
-      <Router>
-        <nav className="p-4 bg-gray-800 text-white flex justify-between">
+    <Router>
+      <nav className="p-4 bg-gray-800 text-white flex justify-between">
+        <div className="flex">
           <Link to="/" className="mr-4 thanhcc">
             Trang chủ
           </Link>
-          <Link to="/cart" className="thanhcc">
+          <Link to="/cart" className="mr-4 thanhcc">
             Giỏ hàng
           </Link>
-          <Link to="/checkout" className="thanhcc">
-            Thanh Toan
+          <Link to="/checkout" className="mr-4 thanhcc">
+            Thanh toán
           </Link>
-        </nav>
+        </div>
+        <div className="flex">
+          <Link to="/product" className="mr-4 thanhcc">
+            Quản lý sản phẩm
+          </Link>
+          <Link to="/add-product" className="thanhcc">
+            Thêm sản phẩm
+          </Link>
+        </div>
+      </nav>
 
-        <Routes>
-          <Route path="/" element={<ProductPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-        </Routes>
+      <Routes>
+        {/* Trang người dùng */}
+        <Route path="/" element={<ProductPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        
+        {/* Trang quản trị */}
+        <Route path="/product" element={<ProductListScreen />} />
+        <Route path="/edit-products" element={<EditProducts />} />
+        <Route path="/add-product" element={<AddProduct />} />
+        <Route path="/edit-product/:id" element={<AddProduct />} />
+      </Routes>
 
-        <footer className="bg-gray-800 text-white p-4 text-center mt-8">
-          <p>&copy; 2025 Cửa hàng thời trang. All rights reserved.</p>
-        </footer>
-      </Router>
-    </CartProvider>
+      <footer className="bg-gray-800 text-white p-4 text-center mt-8">
+        <p>&copy; 2025 Cửa hàng thời trang. All rights reserved.</p>
+      </footer>
+    </Router>
   );
 };
 export default App;

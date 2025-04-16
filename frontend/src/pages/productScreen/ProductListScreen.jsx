@@ -1,6 +1,6 @@
-import Sidebar from "../../components/Sidebar";
-import ProductList from "../../components/ProductList";
-import styles from "../styles/productListStyle/ProductListScreen.module.scss";
+import Sidebar from "../../components/Layout/Sidebar";
+import ProductList from "../../components/Product/ProductList";
+import styles from "../../styles/scss/productListStyle/ProductListScreen.module.scss";
 import { FilterProvider } from "../../context/FilterContext";
 
 const Home = () => {

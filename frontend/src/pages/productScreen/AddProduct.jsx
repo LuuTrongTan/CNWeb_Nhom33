@@ -5,7 +5,7 @@ import {
   getProductById,
   updateProduct,
 } from "../../service/productAPI";
-import styles from "../styles/productListStyle/AddProduct.module.scss";
+import styles from "../../styles/scss/productListStyle/AddProduct.module.scss";
 
 const AddProduct = () => {
   const { id } = useParams(); // Lấy ID sản phẩm từ URL
