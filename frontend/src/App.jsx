@@ -1,56 +1,62 @@
 // export default App
-import ProductListScreen from "./pages/productScreen/ProductListScreen";
-import Navbar from "./components/Layout/Navbar";
-import Footer from "./components/Layout/Footer";
-import EditProducts from "./pages/productScreen/EditProductScreen";
-import AddProduct from "./pages/productScreen/AddProduct";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import ProductPage from "./pages/ProductPage";
-import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Layouts
+import MainLayout from './components/Layout/MainLayout';
+
+// Pages
+import Home from './pages/HomePage';
+import ProductPage from './pages/ProductPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import CategoryPage from './pages/CategoryPage';
+import LoginPage from './pages/Auth/LoginPage';
+import RegisterPage from './pages/Auth/RegisterPage';
+import ProfilePage from './pages/Auth/ProfilePage';
+import SettingsPage from './pages/Auth/SettingsPage';
+import WishlistPage from './pages/WishlistPage';
+
+// Styles
+import './styles/css/App.css';
 
 const App = () => {
   return (
     <Router>
-      <nav className="p-4 bg-gray-800 text-white flex justify-between">
-        <div className="flex">
-          <Link to="/" className="mr-4 thanhcc">
-            Trang chủ
-          </Link>
-          <Link to="/cart" className="mr-4 thanhcc">
-            Giỏ hàng
-          </Link>
-          <Link to="/checkout" className="mr-4 thanhcc">
-            Thanh toán
-          </Link>
-        </div>
-        <div className="flex">
-          <Link to="/product" className="mr-4 thanhcc">
-            Quản lý sản phẩm
-          </Link>
-          <Link to="/add-product" className="thanhcc">
-            Thêm sản phẩm
-          </Link>
-        </div>
-      </nav>
-
-      <Routes>
-        {/* Trang người dùng */}
-        <Route path="/" element={<ProductPage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        
-        {/* Trang quản trị */}
-        <Route path="/product" element={<ProductListScreen />} />
-        <Route path="/edit-products" element={<EditProducts />} />
-        <Route path="/add-product" element={<AddProduct />} />
-        <Route path="/edit-product/:id" element={<AddProduct />} />
-      </Routes>
-
-      <footer className="bg-gray-800 text-white p-4 text-center mt-8">
-        <p>&copy; 2025 Cửa hàng thời trang. All rights reserved.</p>
-      </footer>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            {/* Trang chính */}
+            <Route index element={<Home />} />
+            
+            {/* Sản phẩm */}
+            <Route path="san-pham" element={<ProductPage />} />
+            <Route path="san-pham/:id" element={<ProductDetailPage />} />
+            
+            {/* Danh mục */}
+            <Route path="nu/*" element={<CategoryPage />} />
+            <Route path="nam/*" element={<CategoryPage />} />
+            <Route path="tre-em/*" element={<CategoryPage />} />
+            <Route path="phu-kien/*" element={<CategoryPage />} />
+            <Route path="sale/*" element={<CategoryPage />} />
+            <Route path="moi/*" element={<CategoryPage />} />
+            
+            {/* Giỏ hàng và Thanh toán */}
+            <Route path="gio-hang" element={<CartPage />} />
+            <Route path="thanh-toan" element={<CheckoutPage />} />
+            
+            {/* Tài khoản */}
+            <Route path="login" element={<LoginPage />} />
+            <Route path="register" element={<RegisterPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="yeu-thich" element={<WishlistPage />} />
+          </Route>
+        </Routes>
+      </div>
     </Router>
   );
 };
+
 export default App;

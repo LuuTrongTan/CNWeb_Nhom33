@@ -19,11 +19,39 @@ export const fetchProducts = async (page = 1, limit = 12) => {
 export const getProductById = async (productId) => {
   try {
     const response = await axios.get(
-      `${API_URL}/product?productId=${productId}`
+      `${API_URL}/product`, {
+        params: { productId }
+      }
     );
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
+    throw error;
+  }
+};
+
+// Hàm lấy sản phẩm theo danh mục
+export const getProductsByCategory = async (categoryId, page = 1, limit = 12) => {
+  try {
+    const response = await axios.get(`${API_URL}/product/getByCategory`, {
+      params: { categoryId, page, limit },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm theo danh mục:", error);
+    throw error;
+  }
+};
+
+// Hàm lấy sản phẩm liên quan
+export const getRelatedProducts = async (productId, limit = 4) => {
+  try {
+    const response = await axios.get(`${API_URL}/product/getRelated`, {
+      params: { productId, limit },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm liên quan:", error);
     throw error;
   }
 };
@@ -62,7 +90,9 @@ export const createProduct = async (productData) => {
 export const deleteProduct = async (productId) => {
   try {
     const response = await axios.delete(
-      `${API_URL}/product?productId=${productId}`
+      `${API_URL}/product`, {
+        params: { productId }
+      }
     );
     return response.data;
   } catch (error) {
@@ -74,8 +104,11 @@ export const deleteProduct = async (productId) => {
 export const updateProduct = async (id, bodyData) => {
   try {
     const response = await axios.patch(
-      `${API_URL}/product?productId=${id}`,
-      bodyData
+      `${API_URL}/product`, 
+      bodyData,
+      {
+        params: { productId: id }
+      }
     );
     return response.data;
   } catch (error) {

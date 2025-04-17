@@ -1,0 +1,158 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart, faShoppingCart, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useCart } from '../context/CartContext';
+import '../styles/css/WishlistPage.css';
+
+const WishlistPage = () => {
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    fetchWishlist();
+  }, []);
+
+  const fetchWishlist = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      
+      if (!token) {
+        setError('Vui lòng đăng nhập để xem danh sách yêu thích');
+        setLoading(false);
+        return;
+      }
+      
+      const response = await axios.get('/v1/wishlist', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      setWishlistItems(response.data.products || []);
+      setLoading(false);
+    } catch (err) {
+      console.error('Lỗi khi tải danh sách yêu thích:', err);
+      setError('Không thể tải danh sách yêu thích. Vui lòng thử lại sau.');
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveFromWishlist = async (productId) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      
+      await axios.delete(`/v1/wishlist/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      // Cập nhật danh sách yêu thích sau khi xóa
+      setWishlistItems(wishlistItems.filter(item => item._id !== productId));
+    } catch (err) {
+      console.error('Lỗi khi xóa sản phẩm khỏi danh sách yêu thích:', err);
+    }
+  };
+
+  const handleAddToCart = (product) => {
+    addToCart({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+      quantity: 1
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="wishlist-loading">
+        <div className="spinner"></div>
+        <p>Đang tải danh sách yêu thích...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="wishlist-error">
+        <p>{error}</p>
+        <Link to="/login" className="login-link">Đăng nhập ngay</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="wishlist-container">
+      <div className="wishlist-header">
+        <h1>Danh sách yêu thích</h1>
+        <p>Các sản phẩm bạn đã đánh dấu yêu thích</p>
+      </div>
+
+      {wishlistItems.length === 0 ? (
+        <div className="empty-wishlist">
+          <p>Danh sách yêu thích của bạn đang trống</p>
+          <Link to="/san-pham" className="shop-now-btn">Mua sắm ngay</Link>
+        </div>
+      ) : (
+        <>
+          <div className="wishlist-grid">
+            {wishlistItems.map((product) => (
+              <div className="wishlist-item" key={product._id}>
+                <div className="item-image">
+                  <Link to={`/san-pham/${product._id}`}>
+                    <img src={product.images[0]} alt={product.name} />
+                  </Link>
+                  <button 
+                    className="remove-btn"
+                    onClick={() => handleRemoveFromWishlist(product._id)}
+                    title="Xóa khỏi danh sách yêu thích"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
+                <div className="item-details">
+                  <h3 className="item-name">
+                    <Link to={`/san-pham/${product._id}`}>{product.name}</Link>
+                  </h3>
+                  <div className="item-price">
+                    {product.discount > 0 ? (
+                      <>
+                        <span className="discounted-price">
+                          {(product.price - (product.price * product.discount / 100)).toLocaleString()}đ
+                        </span>
+                        <span className="original-price">
+                          {product.price.toLocaleString()}đ
+                        </span>
+                      </>
+                    ) : (
+                      <span>{product.price.toLocaleString()}đ</span>
+                    )}
+                  </div>
+                  <button 
+                    className="add-to-cart-btn"
+                    onClick={() => handleAddToCart(product)}
+                  >
+                    <FontAwesomeIcon icon={faShoppingCart} /> Thêm vào giỏ hàng
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="wishlist-actions">
+            <Link to="/san-pham" className="continue-shopping-btn">
+              Tiếp tục mua sắm
+            </Link>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default WishlistPage; 

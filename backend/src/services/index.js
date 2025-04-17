@@ -6,3 +6,5 @@ module.exports.productService = require('./product.service');
 module.exports.categoryService = require('./category.service');
 module.exports.reviewService = require('./review.service');
 module.exports.pictureService = require('./picture.service');
+module.exports.wishlistService = require('./wishlist.service');
+module.exports.orderService = require('./order.service');

@@ -1,176 +1,200 @@
-import { useState, useEffect, useContext, useRef } from "react";
-import "../../styles/css/Sidebar.css";
-import { FilterContext } from "../../context/FilterContext";
-import { getAllCategory } from "../../service/categoryAPI";
-
-const sizes = [
-  "S",
-  "M",
-  "L",
-  "XL",
-  "2XL",
-  "3XL",
-  "4XL",
-  "29",
-  "30",
-  "31",
-  "32",
-  "33",
-];
-const colors = [
-  {
-    name: "Phối màu",
-    color:
-      "linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)",
-  },
-  { name: "Đen", color: "#000" },
-  { name: "Xám", color: "#808080" },
-  { name: "Trắng", color: "#fff", border: "1px solid #ccc" },
-  { name: "Be", color: "#F5E1C8" },
-  { name: "Xanh lam", color: "#0047AB" },
-  { name: "Xanh lá", color: "#2E8B57" },
-  { name: "Xanh ngọc", color: "#20B2AA" },
-  { name: "Đỏ", color: "#D22B2B" },
-  { name: "Cam", color: "#FFA500" },
-  { name: "Vàng", color: "#FFD700" },
-  { name: "Tím", color: "#9370DB" },
-  { name: "Nâu", color: "#8B4513" },
-  { name: "Hồng", color: "#FF69B4" },
-  { name: "Xanh sáng", color: "#00BFFF" },
-  { name: "Xanh đậm", color: "#191970" },
-  { name: "Đen xám", color: "#4F4F4F" },
-];
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import '../../styles/css/Sidebar.css';
 
 const Sidebar = () => {
-  const [showProducts, setShowProducts] = useState(true);
-  const [showSizes, setShowSizes] = useState(false);
-  const [showColors, setShowColors] = useState(false);
-  const [categoryList, setCategoryList] = useState([]);
-  const { selectedFilter, setSelectedFilter } = useContext(FilterContext);
+  const location = useLocation();
+  const [expandedFilters, setExpandedFilters] = useState({
+    'size': true,
+    'color': true,
+    'price': true,
+    'categories': true
+  });
 
-  const handleSizeButton = (size) => {
-    setSelectedFilter((prev) => ({
+  const categories = [
+    {
+      id: 'women',
+      label: 'Nữ',
+      icon: 'fa-solid fa-venus',
+      path: '/nu',
+      subcategories: [
+        { name: 'Áo thun', path: '/nu/ao-thun' },
+        { name: 'Áo sơ mi', path: '/nu/ao-so-mi' },
+        { name: 'Quần jeans', path: '/nu/quan-jeans' },
+        { name: 'Váy', path: '/nu/vay' },
+      ]
+    },
+    {
+      id: 'men',
+      label: 'Nam',
+      icon: 'fa-solid fa-mars',
+      path: '/nam',
+      subcategories: [
+        { name: 'Áo thun', path: '/nam/ao-thun' },
+        { name: 'Áo sơ mi', path: '/nam/ao-so-mi' },
+        { name: 'Quần jeans', path: '/nam/quan-jeans' },
+        { name: 'Quần short', path: '/nam/quan-short' },
+      ]
+    },
+    {
+      id: 'kids',
+      label: 'Trẻ em',
+      icon: 'fa-solid fa-child',
+      path: '/tre-em',
+      subcategories: [
+        { name: 'Bé trai', path: '/tre-em/be-trai' },
+        { name: 'Bé gái', path: '/tre-em/be-gai' },
+      ]
+    },
+    {
+      id: 'accessories',
+      label: 'Phụ kiện',
+      icon: 'fa-solid fa-gem',
+      path: '/phu-kien',
+      subcategories: [
+        { name: 'Túi xách', path: '/phu-kien/tui-xach' },
+        { name: 'Trang sức', path: '/phu-kien/trang-suc' },
+        { name: 'Mũ & Nón', path: '/phu-kien/mu-non' },
+        { name: 'Thắt lưng', path: '/phu-kien/that-lung' },
+      ]
+    },
+  ];
+
+  const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const colors = [
+    { name: 'Đen', code: '#000000' },
+    { name: 'Trắng', code: '#FFFFFF' },
+    { name: 'Đỏ', code: '#FF0000' },
+    { name: 'Xanh dương', code: '#0000FF' },
+    { name: 'Xanh lá', code: '#00FF00' },
+    { name: 'Vàng', code: '#FFFF00' },
+    { name: 'Hồng', code: '#FFC0CB' },
+    { name: 'Xám', code: '#808080' },
+  ];
+
+  const priceRanges = [
+    { label: 'Dưới 200.000đ', value: 'under-200k' },
+    { label: '200.000đ - 500.000đ', value: '200k-500k' },
+    { label: '500.000đ - 1.000.000đ', value: '500k-1m' },
+    { label: 'Trên 1.000.000đ', value: 'over-1m' },
+  ];
+
+  const toggleFilter = (filterId) => {
+    setExpandedFilters(prev => ({
       ...prev,
-      sizes: prev.sizes.includes(size)
-        ? prev.sizes.filter((s) => s !== size) // Bỏ nếu đã chọn
-        : [...prev.sizes, size], // Thêm nếu chưa chọn
+      [filterId]: !prev[filterId]
     }));
   };
-
-  const handleColor = (nameColor) => {
-    setSelectedFilter((prev) => ({
-      ...prev,
-      color: prev.color === nameColor ? "" : nameColor,
-    }));
-  };
-
-  const handleCategory = (categoryName) => {
-    setSelectedFilter((prev) => ({
-      ...prev,
-      category: prev.category === categoryName ? "" : categoryName,
-    }));
-  };
-
-  const isFetched = useRef(false);
-
-  useEffect(() => {
-    if (!isFetched.current) {
-      isFetched.current = true; // Đánh dấu đã gọi API
-      const getCategory = async () => {
-        try {
-          const data = await getAllCategory();
-          setCategoryList(data);
-          console.log(data);
-        } catch (error) {
-          console.error("Không thể lấy sản phẩm:", error);
-        }
-      };
-
-      getCategory();
-    }
-  }, []);
-
-  // useEffect(() => {
-  //   // console.log("Sizes selected:", chooseSize);
-  //   // console.log("Color selected:", chooseColor);
-  //   console.log("Product selected:", chooseProduct);
-  // }, [chooseSize, chooseColor, chooseProduct]);
 
   return (
-    <aside className="sidebar">
-      {/* Nhóm sản phẩm */}
-      <h3 onClick={() => setShowProducts(!showProducts)}>
-        Nhóm sản phẩm
-        <span className={`arrow ${showProducts ? "open" : ""}`}>
-          ▲
-        </span>
-      </h3>
-      <div className={`dropdown ${showProducts ? "open" : ""}`}>
-        <ul>
-          {categoryList.map((category) => (
-            <li key={category._id}>
-              <label>
-                <input
-                  type="radio"
-                  name="clothing"
-                  value={category}
-                  onClick={() => handleCategory(category)}
-                  checked={selectedFilter.category === category}
-                  onChange={() => {}}
-                />
-                {category.name}
+    <div className="sidebar">
+      {/* Danh mục sản phẩm */}
+      <div className="sidebar-section">
+        <h3 
+          className="sidebar-title"
+          onClick={() => toggleFilter('categories')}
+        >
+          Danh mục sản phẩm
+          <i className={`fa-solid fa-chevron-${expandedFilters['categories'] ? 'up' : 'down'}`}></i>
+        </h3>
+        <div className={`sidebar-content ${expandedFilters['categories'] ? 'expanded' : ''}`}>
+          <ul className="category-list">
+            {categories.map((category) => (
+              <li key={category.id} className={location.pathname.startsWith(category.path) ? 'active' : ''}>
+                <Link to={category.path} className="category-link">
+                  <i className={category.icon}></i>
+                  <span>{category.label}</span>
+                </Link>
+                <ul className="subcategory-list">
+                  {category.subcategories.map((subcategory, index) => (
+                    <li key={index} className={location.pathname === subcategory.path ? 'active' : ''}>
+                      <Link to={subcategory.path}>{subcategory.name}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Lọc theo kích thước */}
+      <div className="sidebar-section">
+        <h3 
+          className="sidebar-title"
+          onClick={() => toggleFilter('size')}
+        >
+          Kích thước
+          <i className={`fa-solid fa-chevron-${expandedFilters['size'] ? 'up' : 'down'}`}></i>
+        </h3>
+        <div className={`sidebar-content ${expandedFilters['size'] ? 'expanded' : ''}`}>
+          <div className="size-options">
+            {sizes.map((size, index) => (
+              <label key={index} className="size-option">
+                <input type="checkbox" name="size" value={size} />
+                <span className="size-checkbox">{size}</span>
               </label>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Kích cỡ */}
-      <h3 onClick={() => setShowSizes(!showSizes)}>
-        Kích cỡ
-        <span className={`arrow ${showSizes ? "open" : ""}`}>
-          ▲
-        </span>
-      </h3>
-      <div className={`dropdown ${showSizes ? "open" : ""}`}>
-        <div className="size-grid">
-          {sizes.map((size) => (
-            <button
-              key={size}
-              className={`size-btn ${selectedFilter.sizes.includes(size) ? "active-size" : ""}`}
-              onClick={() => handleSizeButton(size)}
-            >
-              {size}
-            </button>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Màu sắc */}
-      <h3 onClick={() => setShowColors(!showColors)}>
-        Màu sắc
-        <span className={`arrow ${showColors ? "open" : ""}`}>
-          ▲
-        </span>
-      </h3>
-      <div className={`dropdown ${showColors ? "open" : ""}`}>
-        <div className="color-grid">
-          {colors.map(({ name, color, border }) => (
-            <div
-              key={name}
-              className="color-item"
-              onClick={() => handleColor(name)}
-            >
-              <span
-                className={`color-circle ${selectedFilter.color == name ? "active-color" : ""}`}
-                style={{ background: color, border }}
-              ></span>
-              <p>{name}</p>
-            </div>
-          ))}
+      {/* Lọc theo màu sắc */}
+      <div className="sidebar-section">
+        <h3 
+          className="sidebar-title"
+          onClick={() => toggleFilter('color')}
+        >
+          Màu sắc
+          <i className={`fa-solid fa-chevron-${expandedFilters['color'] ? 'up' : 'down'}`}></i>
+        </h3>
+        <div className={`sidebar-content ${expandedFilters['color'] ? 'expanded' : ''}`}>
+          <div className="color-options">
+            {colors.map((color, index) => (
+              <label key={index} className="color-option">
+                <input type="checkbox" name="color" value={color.name} />
+                <span className="color-checkbox" style={{ backgroundColor: color.code }}>
+                  <i className="fa-solid fa-check"></i>
+                </span>
+                <span className="color-name">{color.name}</span>
+              </label>
+            ))}
+          </div>
         </div>
       </div>
-    </aside>
+
+      {/* Lọc theo giá */}
+      <div className="sidebar-section">
+        <h3 
+          className="sidebar-title"
+          onClick={() => toggleFilter('price')}
+        >
+          Giá
+          <i className={`fa-solid fa-chevron-${expandedFilters['price'] ? 'up' : 'down'}`}></i>
+        </h3>
+        <div className={`sidebar-content ${expandedFilters['price'] ? 'expanded' : ''}`}>
+          <div className="price-options">
+            {priceRanges.map((range, index) => (
+              <label key={index} className="filter-option">
+                <input type="checkbox" name="price" value={range.value} />
+                <span className="checkmark"></span>
+                <span className="option-label">{range.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Banner khuyến mãi */}
+      <div className="sidebar-banner">
+        <img src="https://picsum.photos/seed/sale/300/200" alt="Khuyến mãi" />
+        <div className="banner-content">
+          <h3>Giảm 30%</h3>
+          <p>Cho đơn hàng đầu tiên</p>
+          <Link to="/sale" className="banner-btn">Mua ngay</Link>
+        </div>
+      </div>
+    </div>
   );
 };
 

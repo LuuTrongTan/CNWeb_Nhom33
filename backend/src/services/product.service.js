@@ -37,8 +37,48 @@ const getAllProduct = async (page = 1, limit = 12) => {
   };
 };
 
+const getProductsByCategory = async (categoryId, page = 1, limit = 12) => {
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  if (page < 1) page = 1;
+
+  const products = await Product.find({ category: categoryId })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .populate('category', 'name');
+
+  const total = await Product.countDocuments({ category: categoryId });
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages: Math.ceil(total / limit),
+    data: products,
+  };
+};
+
+const getRelatedProducts = async (productId, limit = 4) => {
+  const product = await getProductById(productId);
+  
+  if (!product) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
+  }
+
+  // Lấy sản phẩm cùng danh mục, loại trừ sản phẩm hiện tại
+  const relatedProducts = await Product.find({ 
+    category: product.category,
+    _id: { $ne: productId }
+  })
+  .limit(limit)
+  .select('name price images');
+  
+  return relatedProducts;
+};
+
 const getProductById = async (id) => {
-  return Product.findById(id);
+  return Product.findById(id).populate('category', 'name');
 };
 
 const updateProductById = async (productId, updateBody) => {
@@ -67,6 +107,8 @@ module.exports = {
   queryProduct,
   getAllProduct,
   getProductById,
+  getProductsByCategory,
+  getRelatedProducts,
   updateProductById,
   deleteProductById,
 };

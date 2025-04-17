@@ -2,10 +2,19 @@ const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { reviewService } = require('../services');
+const { reviewService, productService } = require('../services');
 
+/**
+ * Tạo đánh giá sản phẩm mới
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Promise<Object>} - Trả về đánh giá đã tạo
+ */
 const createReview = catchAsync(async (req, res) => {
-  const review = await reviewService.createReview(req.body);
+  const review = await reviewService.createReview({
+    ...req.body,
+    user: req.user.id,
+  });
   res.status(httpStatus.CREATED).send(review);
 });
 
@@ -35,33 +44,65 @@ const getAllReview = catchAsync(async (req, res) => {
   res.send(reviews);
 });
 
+/**
+ * Lấy đánh giá theo ID
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Promise<Object>} - Trả về đánh giá
+ */
 const getReview = catchAsync(async (req, res) => {
-  const reviewId = req.query.reviewId;
-  if (!reviewId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Review ID is required');
-  }
-  const review = await reviewService.getReviewById(reviewId);
+  const review = await reviewService.getReviewById(req.params.reviewId);
   if (!review) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Review not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
   }
   res.send(review);
 });
 
+/**
+ * Lấy tất cả đánh giá của một sản phẩm
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Promise<Object>} - Trả về danh sách đánh giá phân trang
+ */
+const getProductReviews = catchAsync(async (req, res) => {
+  const filter = { product: req.params.productId };
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const result = await reviewService.getProductReviews(filter, options);
+  res.send(result);
+});
+
+/**
+ * Lấy tất cả đánh giá của một người dùng
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Promise<Object>} - Trả về danh sách đánh giá phân trang
+ */
+const getUserReviews = catchAsync(async (req, res) => {
+  const filter = { user: req.params.userId };
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const result = await reviewService.getUserReviews(filter, options);
+  res.send(result);
+});
+
+/**
+ * Cập nhật đánh giá
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Promise<Object>} - Trả về đánh giá đã cập nhật
+ */
 const updateReview = catchAsync(async (req, res) => {
-  const reviewId = req.query.reviewId;
-  if (!reviewId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Review ID is required');
-  }
-  const review = await reviewService.updateReviewById(reviewId, req.body);
+  const review = await reviewService.updateReview(req.params.reviewId, req.body, req.user.id);
   res.send(review);
 });
 
+/**
+ * Xóa đánh giá
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Promise<Object>} - Trả về null
+ */
 const deleteReview = catchAsync(async (req, res) => {
-  const reviewId = req.query.reviewId;
-  if (!reviewId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Review ID is required');
-  }
-  await reviewService.deleteReviewById(reviewId);
+  await reviewService.deleteReview(req.params.reviewId, req.user.id);
   res.status(httpStatus.NO_CONTENT).send();
 });
 
@@ -83,14 +124,40 @@ const deleteFeedbackFromReview = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(review);
 });
 
+/**
+ * Thích đánh giá
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Promise<Object>} - Trả về đánh giá đã cập nhật
+ */
+const likeReview = catchAsync(async (req, res) => {
+  const review = await reviewService.likeReview(req.params.reviewId, req.user.id);
+  res.send(review);
+});
+
+/**
+ * Bỏ thích đánh giá
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Promise<Object>} - Trả về đánh giá đã cập nhật
+ */
+const unlikeReview = catchAsync(async (req, res) => {
+  const review = await reviewService.unlikeReview(req.params.reviewId, req.user.id);
+  res.send(review);
+});
+
 module.exports = {
   createReview,
   getReviews,
   getAllReview,
   getReview,
+  getProductReviews,
+  getUserReviews,
   updateReview,
   deleteReview,
   addFeedbackToReview,
   updateFeedbackInReview,
   deleteFeedbackFromReview,
+  likeReview,
+  unlikeReview,
 };

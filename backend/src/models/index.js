@@ -4,3 +4,5 @@ module.exports.Product = require('./product.model');
 module.exports.Category = require('./category.model');
 module.exports.Review = require('./review.model');
 module.exports.Picture = require('./picture.model');
+module.exports.Wishlist = require('./wishlist.model');
+module.exports.Order = require('./order.model');

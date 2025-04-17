@@ -33,6 +33,7 @@ const getProducts = catchAsync(async (req, res) => {
   const result = await productService.queryProduct(filter, options);
   res.send(result);
 });
+
 const getAllProduct = catchAsync(async (req, res) => {
   const { page = 1, limit = 12 } = req.query; // Lấy giá trị từ request query
 
@@ -40,6 +41,28 @@ const getAllProduct = catchAsync(async (req, res) => {
   if (!products) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
   }
+  res.send(products);
+});
+
+const getProductsByCategory = catchAsync(async (req, res) => {
+  const { categoryId, page = 1, limit = 12 } = req.query;
+  
+  if (!categoryId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category ID is required');
+  }
+  
+  const products = await productService.getProductsByCategory(categoryId, page, limit);
+  res.send(products);
+});
+
+const getRelatedProducts = catchAsync(async (req, res) => {
+  const { productId, limit = 4 } = req.query;
+  
+  if (!productId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Product ID is required');
+  }
+  
+  const products = await productService.getRelatedProducts(productId, limit);
   res.send(products);
 });
 
@@ -77,6 +100,8 @@ module.exports = {
   createProduct,
   getProducts,
   getAllProduct,
+  getProductsByCategory,
+  getRelatedProducts,
   getProduct,
   updateProduct,
   deleteProduct,

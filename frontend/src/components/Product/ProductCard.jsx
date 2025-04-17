@@ -1,46 +1,136 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
+import { faShoppingCart, faEye } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+import { useCart } from '../../context/CartContext';
 import '../../styles/css/ProductCard.css';
 
 const ProductCard = ({ product }) => {
-  const { id, name, price, image, category, isNew, discount } = product;
+  const { _id, name, price, images, category, isNew, discount } = product;
   const discountedPrice = discount > 0 ? price - (price * discount / 100) : price;
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token || !_id) return;
+        
+        setIsLoadingWishlist(true);
+        const response = await axios.get(`/v1/wishlist/${_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        setIsInWishlist(response.data.isInWishlist);
+      } catch (err) {
+        console.error('Lỗi khi kiểm tra trạng thái yêu thích:', err);
+      } finally {
+        setIsLoadingWishlist(false);
+      }
+    };
+    
+    checkWishlistStatus();
+  }, [_id]);
+
+  const handleToggleWishlist = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích');
+        return;
+      }
+      
+      setIsLoadingWishlist(true);
+      
+      if (isInWishlist) {
+        // Xóa khỏi wishlist
+        await axios.delete(`/v1/wishlist/${_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setIsInWishlist(false);
+      } else {
+        // Thêm vào wishlist
+        await axios.post('/v1/wishlist', 
+          { productId: _id },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+        setIsInWishlist(true);
+      }
+    } catch (err) {
+      console.error('Lỗi khi cập nhật danh sách yêu thích:', err);
+    } finally {
+      setIsLoadingWishlist(false);
+    }
+  };
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    addToCart({
+      id: _id,
+      name,
+      price,
+      image: images[0],
+      quantity: 1
+    });
+  };
 
   return (
     <div className="product-card">
       <div className="product-image-container">
-        <Link to={`/product/${id}`}>
-          <img src={image} alt={name} className="product-image" />
+        <Link to={`/san-pham/${_id}`}>
+          <img src={images[0]} alt={name} className="product-image" />
         </Link>
         
         {isNew && <span className="product-badge new-badge">New</span>}
         {discount > 0 && <span className="product-badge discount-badge">-{discount}%</span>}
         
         <div className="product-actions">
-          <button className="action-button wishlist-button" title="Add to wishlist">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
+          <button 
+            className={`action-button wishlist-button ${isInWishlist ? 'active' : ''}`} 
+            title={isInWishlist ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
+            onClick={handleToggleWishlist}
+            disabled={isLoadingWishlist}
+          >
+            <FontAwesomeIcon icon={isInWishlist ? solidHeart : regularHeart} />
           </button>
-          <button className="action-button cart-button" title="Add to cart">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>
+          <button 
+            className="action-button cart-button" 
+            title="Thêm vào giỏ hàng"
+            onClick={handleAddToCart}
+          >
+            <FontAwesomeIcon icon={faShoppingCart} />
           </button>
-          <button className="action-button quickview-button" title="Quick view">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </button>
+          <Link 
+            to={`/san-pham/${_id}`} 
+            className="action-button quickview-button" 
+            title="Xem chi tiết"
+          >
+            <FontAwesomeIcon icon={faEye} />
+          </Link>
         </div>
       </div>
       
       <div className="product-info">
-        <Link to={`/product/${id}`} className="product-name">{name}</Link>
-        <p className="product-category">{category}</p>
+        <Link to={`/san-pham/${_id}`} className="product-name">{name}</Link>
+        <p className="product-category">{category?.name || category}</p>
         <div className="product-price">
           {discount > 0 && <span className="original-price">{price.toLocaleString('vi-VN')}đ</span>}
           <span className="current-price">{discountedPrice.toLocaleString('vi-VN')}đ</span>
