@@ -12,10 +12,10 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import CategoryPage from './pages/CategoryPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ProfilePage from './pages/ProfilePage';
-import SettingsPage from './pages/SettingsPage';
+//import LoginPage from './pages/LoginPage';
+//import RegisterPage from './pages/RegisterPage';
+//import ProfilePage from './pages/ProfilePage';
+//import SettingsPage from './pages/SettingsPage';
 
 // Styles
 import './styles/css/App.css';
@@ -46,11 +46,11 @@ const App = () => {
             <Route path="thanh-toan" element={<CheckoutPage />} />
             
             {/* Tài khoản */}
-            <Route path="login" element={<LoginPage />} />
+            {/* <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="yeu-thich" element={<Home />} />
+            <Route path="yeu-thich" element={<Home />} /> */}
           </Route>
         </Routes>
       </div>

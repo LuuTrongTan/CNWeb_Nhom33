@@ -30,6 +30,32 @@ export const getProductById = async (productId) => {
   }
 };
 
+// Hàm lấy sản phẩm theo danh mục
+export const getProductsByCategory = async (categoryId, page = 1, limit = 12) => {
+  try {
+    const response = await axios.get(`${API_URL}/product/getByCategory`, {
+      params: { categoryId, page, limit },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm theo danh mục:", error);
+    throw error;
+  }
+};
+
+// Hàm lấy sản phẩm liên quan
+export const getRelatedProducts = async (productId, limit = 4) => {
+  try {
+    const response = await axios.get(`${API_URL}/product/getRelated`, {
+      params: { productId, limit },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm liên quan:", error);
+    throw error;
+  }
+};
+
 export const getProductFilter = async (color, category, size, page) => {
   try {
     const response = await axios.get(`${API_URL}/product/getFilterProducts`, {

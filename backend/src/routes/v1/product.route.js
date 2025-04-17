@@ -13,4 +13,8 @@ router.route('/getAllProduct').get(productController.getAllProduct);
 
 router.route('/getFilterProducts').get(productController.getProducts);
 
+router.route('/getByCategory').get(productController.getProductsByCategory);
+
+router.route('/getRelated').get(productController.getRelatedProducts);
+
 module.exports = router;
