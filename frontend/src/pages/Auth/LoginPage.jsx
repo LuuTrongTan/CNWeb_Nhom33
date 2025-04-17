@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import '../../styles/css/Auth/Auth.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEnvelope,
+  faLock,
+  faEye,
+  faEyeSlash,
+} from "@fortawesome/free-solid-svg-icons";
+import "../../styles/css/Auth/Auth.css";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -19,30 +24,33 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    
+    setError("");
+
     if (!email || !password) {
-      setError('Vui lòng nhập đầy đủ thông tin đăng nhập.');
+      setError("Vui lòng nhập đầy đủ thông tin đăng nhập.");
       return;
     }
 
     try {
       setLoading(true);
-      const response = await axios.post('/v1/auth/login', {
+      const response = await axios.post("/auth/login", {
         email,
-        password
+        password,
       });
 
       // Lưu thông tin đăng nhập và token vào localStorage
-      localStorage.setItem('accessToken', response.data.tokens.access.token);
-      localStorage.setItem('refreshToken', response.data.tokens.refresh.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem("accessToken", response.data.tokens.access.token);
+      localStorage.setItem("refreshToken", response.data.tokens.refresh.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
 
       // Chuyển hướng đến trang chủ
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      console.error('Lỗi đăng nhập:', err);
-      setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      console.error("Lỗi đăng nhập:", err);
+      setError(
+        err.response?.data?.message ||
+          "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
+      );
     } finally {
       setLoading(false);
     }
@@ -107,13 +115,13 @@ const LoginPage = () => {
           </div>
 
           <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? 'Đang xử lý...' : 'Đăng nhập'}
+            {loading ? "Đang xử lý..." : "Đăng nhập"}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Bạn chưa có tài khoản?{' '}
+            Bạn chưa có tài khoản?{" "}
             <Link to="/register" className="auth-link">
               Đăng ký ngay
             </Link>
@@ -124,4 +132,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage; 
+export default LoginPage;

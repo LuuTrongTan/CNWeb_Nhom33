@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:4000/v1";
+const API_URL = "http://localhost:4000";
 
 // Hàm gọi API lấy danh sách sản phẩm có phân trang
 export const fetchProducts = async (page = 1, limit = 12) => {
@@ -18,11 +18,9 @@ export const fetchProducts = async (page = 1, limit = 12) => {
 // Hàm lấy thông tin chi tiết sản phẩm
 export const getProductById = async (productId) => {
   try {
-    const response = await axios.get(
-      `${API_URL}/product`, {
-        params: { productId }
-      }
-    );
+    const response = await axios.get(`${API_URL}/product`, {
+      params: { productId },
+    });
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
@@ -31,7 +29,11 @@ export const getProductById = async (productId) => {
 };
 
 // Hàm lấy sản phẩm theo danh mục
-export const getProductsByCategory = async (categoryId, page = 1, limit = 12) => {
+export const getProductsByCategory = async (
+  categoryId,
+  page = 1,
+  limit = 12
+) => {
   try {
     const response = await axios.get(`${API_URL}/product/getByCategory`, {
       params: { categoryId, page, limit },
@@ -89,11 +91,9 @@ export const createProduct = async (productData) => {
 
 export const deleteProduct = async (productId) => {
   try {
-    const response = await axios.delete(
-      `${API_URL}/product`, {
-        params: { productId }
-      }
-    );
+    const response = await axios.delete(`${API_URL}/product`, {
+      params: { productId },
+    });
     return response.data;
   } catch (error) {
     console.error("Lỗi khi xóa sản phẩm:", error);
@@ -103,13 +103,9 @@ export const deleteProduct = async (productId) => {
 
 export const updateProduct = async (id, bodyData) => {
   try {
-    const response = await axios.patch(
-      `${API_URL}/product`, 
-      bodyData,
-      {
-        params: { productId: id }
-      }
-    );
+    const response = await axios.patch(`${API_URL}/product`, bodyData, {
+      params: { productId: id },
+    });
     return response.data;
   } catch (error) {
     console.error("Lỗi khi cập nhật sản phẩm:", error);
