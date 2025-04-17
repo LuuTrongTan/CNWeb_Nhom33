@@ -122,4 +122,19 @@
 .current-price {
   color: #ff4757;
   font-weight: 600;
+}
+
+/* Thêm kiểu cho nút wishlist khi active */
+.wishlist-button.active {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.wishlist-button.active:hover {
+  background-color: #c0392b;
+}
+
+.action-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 } 

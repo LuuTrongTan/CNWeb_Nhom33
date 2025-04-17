@@ -1,66 +1,71 @@
 const mongoose = require('mongoose');
-const mongoosePaginate = require('mongoose-paginate-v2');
+const { toJSON, paginate } = require('./plugins');
 
-const { Schema } = mongoose;
+const reviewSchema = mongoose.Schema(
+  {
+    user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    product: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Product',
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+    comment: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    images: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    likes: {
+      type: Number,
+      default: 0,
+    },
+    likedBy: [
+      {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'User',
+      },
+    ],
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const feedbackSchema = new Schema({
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  content: {
-    type: String,
-    required: true,
-  },
-  nameTag: {
-    type: String,
-    required: true,
-    default: '',
-  },
-  createdAt: {
-    type: Number,
-    required: true,
-  },
-  updatedAt: {
-    type: Number,
-    required: true,
-  },
-});
+// Đảm bảo mỗi người dùng chỉ đánh giá một sản phẩm một lần
+reviewSchema.index({ user: 1, product: 1 }, { unique: true });
 
-const reviewSchema = new mongoose.Schema({
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  productId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: true,
-  },
-  rating: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 5,
-  },
-  content: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Number,
-    required: true,
-  },
-  updatedAt: {
-    type: Number,
-    required: true,
-  },
-  listFeedback: [feedbackSchema],
-});
+// add plugin that converts mongoose to json
+reviewSchema.plugin(toJSON);
+reviewSchema.plugin(paginate);
 
-// 👉 Thêm plugin paginate vào schema
-reviewSchema.plugin(mongoosePaginate);
+/**
+ * @typedef Review
+ */
+const Review = mongoose.model('Review', reviewSchema);
 
-module.exports = mongoose.model('Review', reviewSchema);
+module.exports = Review;

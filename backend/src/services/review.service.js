@@ -1,122 +1,214 @@
 const httpStatus = require('http-status');
 const { Review } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { productService } = require('./index');
 
+/**
+ * Create a review
+ * @param {Object} reviewBody
+ * @returns {Promise<Review>}
+ */
 const createReview = async (reviewBody) => {
-  return await Review.create(reviewBody);
-};
-
-const queryReview = async (filter, options) => {
-  const paginateOptions = {
-    page: parseInt(options.page, 10) || 1,
-    limit: parseInt(options.limit, 10) || 12,
-    sort: options.sortBy || '-createdAt', // Sắp xếp theo ngày tạo mới nhất
-  };
-
-  return await Review.paginate(filter, paginateOptions);
-};
-
-const getAllReview = async (page = 1, limit = 12) => {
-  page = parseInt(page);
-  limit = parseInt(limit);
-
-  if (page < 1) page = 1;
-
-  const reviews = await Review.find()
-    .skip((page - 1) * limit) // Bỏ qua sản phẩm của các trang trước
-    .limit(limit); // Giới hạn số lượng sản phẩm mỗi trang
-
-  const total = await Review.countDocuments(); // Tổng số sản phẩm
-
-  return {
-    page,
-    limit,
-    total,
-    totalPages: Math.ceil(total / limit),
-    data: reviews,
-  };
-};
-
-const getReviewById = async (id) => {
-  return await Review.findById(id);
-};
-
-const updateReviewById = async (reviewId, updateBody) => {
-  const review = await getReviewById(reviewId);
-  if (!review) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Review not found');
-  }
-
-  Object.assign(review, updateBody);
-  await review.save();
-  return review;
-};
-
-const deleteReviewById = async (reviewId) => {
-  const review = await getReviewById(reviewId);
-  if (!review) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Review not found');
-  }
-
-  await review.remove();
-  return review;
-};
-
-const addFeedbackToReview = async (reviewId, feedback) => {
-  const review = await getReviewById(reviewId);
-  if (!review) {
-    throw new Error('Review not found');
-  }
-
-  // Thêm feedback vào mảng listFeedback
-  review.listFeedback.push({
-    ...feedback,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
+  // Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa
+  const existingReview = await Review.findOne({
+    user: reviewBody.user,
+    product: reviewBody.product,
   });
 
-  // Lưu lại comment
-  return await review.save();
+  if (existingReview) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Bạn đã đánh giá sản phẩm này rồi');
+  }
+
+  const review = await Review.create(reviewBody);
+  
+  // Cập nhật đánh giá trung bình của sản phẩm
+  await updateProductAverageRating(reviewBody.product);
+  
+  return review;
 };
 
-const updateFeedbackInReview = async (reviewId, feedbackId, feedbackBody) => {
-  const review = await getReviewById(reviewId);
-  if (!review) {
-    throw new Error('Review not found');
-  }
-
-  const feedback = review.listFeedback.find((fb) => fb._id.toString() === feedbackId);
-  if (!feedback) {
-    throw new Error('Feedback not found');
-  }
-
-  Object.assign(feedback, feedbackBody, { updatedAt: Date.now() });
-
-  // Lưu lại comment
-  return await review.save();
+/**
+ * Get review by id
+ * @param {ObjectId} id
+ * @returns {Promise<Review>}
+ */
+const getReviewById = async (id) => {
+  return Review.findById(id);
 };
 
-const deleteFeedbackFromReview = async (reviewId, feedbackId) => {
+/**
+ * Get reviews for a product
+ * @param {ObjectId} productId
+ * @param {Object} options - Query options
+ * @returns {Promise<QueryResult>}
+ */
+const getProductReviews = async (productId, options) => {
+  const { page, limit, sort } = options;
+  
+  const reviews = await Review.find({ product: productId })
+    .sort(sort)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .populate('user', 'name avatar')
+    .exec();
+    
+  const total = await Review.countDocuments({ product: productId });
+  
+  return {
+    results: reviews,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+    totalResults: total,
+  };
+};
+
+/**
+ * Get reviews by a user
+ * @param {ObjectId} userId
+ * @param {Object} options - Query options
+ * @returns {Promise<QueryResult>}
+ */
+const getUserReviews = async (userId, options) => {
+  const { page, limit, sort } = options;
+  
+  const reviews = await Review.find({ user: userId })
+    .sort(sort)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .populate('product', 'name images price')
+    .exec();
+    
+  const total = await Review.countDocuments({ user: userId });
+  
+  return {
+    results: reviews,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+    totalResults: total,
+  };
+};
+
+/**
+ * Update review by id
+ * @param {ObjectId} reviewId
+ * @param {Object} updateBody
+ * @returns {Promise<Review>}
+ */
+const updateReview = async (reviewId, updateBody) => {
   const review = await getReviewById(reviewId);
   if (!review) {
-    throw new Error('Review not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
   }
+  
+  Object.assign(review, updateBody);
+  await review.save();
+  
+  // Cập nhật đánh giá trung bình của sản phẩm
+  await updateProductAverageRating(review.product);
+  
+  return review;
+};
 
-  // Xóa feedback khỏi mảng listFeedback
-  review.listFeedback = review.listFeedback.filter((fb) => fb._id.toString() !== feedbackId);
+/**
+ * Delete review by id
+ * @param {ObjectId} reviewId
+ * @returns {Promise<Review>}
+ */
+const deleteReview = async (reviewId) => {
+  const review = await getReviewById(reviewId);
+  if (!review) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
+  }
+  
+  const productId = review.product;
+  
+  await review.remove();
+  
+  // Cập nhật đánh giá trung bình của sản phẩm
+  await updateProductAverageRating(productId);
+  
+  return review;
+};
 
-  // Lưu lại comment
-  return await review.save();
+/**
+ * Like a review
+ * @param {ObjectId} reviewId
+ * @param {ObjectId} userId
+ * @returns {Promise<Review>}
+ */
+const likeReview = async (reviewId, userId) => {
+  const review = await getReviewById(reviewId);
+  if (!review) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
+  }
+  
+  // Kiểm tra nếu người dùng đã thích đánh giá này rồi
+  if (review.likedBy.includes(userId)) {
+    return review;
+  }
+  
+  review.likes += 1;
+  review.likedBy.push(userId);
+  await review.save();
+  
+  return review;
+};
+
+/**
+ * Unlike a review
+ * @param {ObjectId} reviewId
+ * @param {ObjectId} userId
+ * @returns {Promise<Review>}
+ */
+const unlikeReview = async (reviewId, userId) => {
+  const review = await getReviewById(reviewId);
+  if (!review) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
+  }
+  
+  // Kiểm tra nếu người dùng chưa thích đánh giá này
+  if (!review.likedBy.includes(userId)) {
+    return review;
+  }
+  
+  review.likes -= 1;
+  review.likedBy = review.likedBy.filter((id) => id.toString() !== userId.toString());
+  await review.save();
+  
+  return review;
+};
+
+/**
+ * Update product average rating
+ * @param {ObjectId} productId
+ * @returns {Promise<void>}
+ */
+const updateProductAverageRating = async (productId) => {
+  const reviews = await Review.find({ product: productId });
+  
+  if (reviews.length === 0) {
+    await productService.updateProductById(productId, { rating: 0, numReviews: 0 });
+    return;
+  }
+  
+  const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+  const averageRating = totalRating / reviews.length;
+  
+  await productService.updateProductById(productId, {
+    rating: averageRating,
+    numReviews: reviews.length,
+  });
 };
 
 module.exports = {
   createReview,
-  queryReview,
-  getAllReview,
   getReviewById,
-  updateReviewById,
-  deleteReviewById,
-  addFeedbackToReview,
-  updateFeedbackInReview,
-  deleteFeedbackFromReview,
+  getProductReviews,
+  getUserReviews,
+  updateReview,
+  deleteReview,
+  likeReview,
+  unlikeReview,
 };

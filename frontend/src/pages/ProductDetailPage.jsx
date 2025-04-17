@@ -5,6 +5,9 @@ import { useCart } from '../context/CartContext';
 import '../styles/css/ProductDetail.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faShoppingCart, faArrowLeft, faStar, faStarHalfAlt } from '@fortawesome/free-solid-svg-icons';
+import ReviewList from '../components/Review/ReviewList';
+import ReviewForm from '../components/Review/ReviewForm';
+import axios from 'axios';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -17,6 +20,8 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const { addToCart } = useCart();
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -94,6 +99,30 @@ const ProductDetailPage = () => {
     }
   }, [id, loading, error]);
 
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token || !id) return;
+        
+        setIsLoadingWishlist(true);
+        const response = await axios.get(`/v1/wishlist/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        setIsInWishlist(response.data.isInWishlist);
+      } catch (err) {
+        console.error('Lỗi khi kiểm tra trạng thái yêu thích:', err);
+      } finally {
+        setIsLoadingWishlist(false);
+      }
+    };
+    
+    checkWishlistStatus();
+  }, [id]);
+
   const handleQuantityChange = (action) => {
     if (action === 'increase') {
       setQuantity(prev => prev + 1);
@@ -130,6 +159,43 @@ const ProductDetailPage = () => {
 
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
+  };
+
+  const handleToggleWishlist = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích');
+        return;
+      }
+      
+      setIsLoadingWishlist(true);
+      
+      if (isInWishlist) {
+        // Xóa khỏi wishlist
+        await axios.delete(`/v1/wishlist/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setIsInWishlist(false);
+      } else {
+        // Thêm vào wishlist
+        await axios.post('/v1/wishlist', 
+          { productId: id },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+        setIsInWishlist(true);
+      }
+    } catch (err) {
+      console.error('Lỗi khi cập nhật danh sách yêu thích:', err);
+    } finally {
+      setIsLoadingWishlist(false);
+    }
   };
 
   if (loading) {
@@ -286,8 +352,8 @@ const ProductDetailPage = () => {
             <button className="add-to-cart-btn" onClick={handleAddToCart}>
               <FontAwesomeIcon icon={faShoppingCart} /> Thêm vào giỏ hàng
             </button>
-            <button className="add-to-wishlist-btn">
-              <FontAwesomeIcon icon={faHeart} /> Yêu thích
+            <button className={`add-to-wishlist-btn ${isInWishlist ? 'in-wishlist' : ''}`} onClick={handleToggleWishlist} disabled={isLoadingWishlist}>
+              <FontAwesomeIcon icon={faHeart} /> {isInWishlist ? 'Đã yêu thích' : 'Yêu thích'}
             </button>
           </div>
           
@@ -390,24 +456,23 @@ const ProductDetailPage = () => {
                 </div>
               </div>
               
-              <div className="review-form">
-                <h4>Viết đánh giá của bạn</h4>
-                <form>
-                  <div className="form-group">
-                    <label>Đánh giá</label>
-                    <div className="rating-select">
-                      {[...Array(5)].map((_, i) => (
-                        <FontAwesomeIcon key={i} icon={faStar} className="star-selectable" />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="review">Nội dung đánh giá</label>
-                    <textarea id="review" rows="5" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này"></textarea>
-                  </div>
-                  <button type="submit" className="submit-review-btn">Gửi đánh giá</button>
-                </form>
-              </div>
+              <ReviewList productId={id} />
+              
+              <ReviewForm 
+                productId={id} 
+                onReviewSubmitted={() => {
+                  // Reload product data to update review count and rating
+                  const fetchProductDetails = async () => {
+                    try {
+                      const data = await getProductById(id);
+                      setProduct(data);
+                    } catch (err) {
+                      console.error('Lỗi khi cập nhật thông tin sản phẩm:', err);
+                    }
+                  };
+                  fetchProductDetails();
+                }} 
+              />
             </div>
           )}
         </div>

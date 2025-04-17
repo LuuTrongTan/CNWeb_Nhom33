@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+// DEPRECATED: Đây là model cũ, vui lòng sử dụng user.model.js thay thế
+// Giữ lại để tương thích với code cũ, nhưng nên dần thay thế
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -79,4 +81,5 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model("User", userSchema); 
+// Đổi tên model để tránh xung đột với User từ user.model.js
+module.exports = mongoose.model("LegacyUser", userSchema); 
