@@ -17,11 +17,14 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 // Import providers
 import { CartProvider } from "./context/CartContext";
+import { AxiosProvider } from "./context/AxiosContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <CartProvider>
-      <App />
-    </CartProvider>
+    <AxiosProvider>
+      <CartProvider>
+        <App />
+      </CartProvider>
+    </AxiosProvider>
   </StrictMode>
 );

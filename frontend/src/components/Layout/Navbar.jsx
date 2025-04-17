@@ -1,13 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import '../../styles/css/Navbar.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faUser, faCog, faSignOutAlt, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import logo from '../../assets/images/logo.png'; // Đường dẫn đến hình ảnh logo
 
-const Navbar = ({ toggleSidebar }) => {
+const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
   const [searchText, setSearchText] = useState('');
   const [cartCount, setCartCount] = useState(3);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Giả lập trạng thái đăng nhập
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,29 +30,50 @@ const Navbar = ({ toggleSidebar }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
+  };
+
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setShowUserMenu(false);
+    // Thêm logic đăng xuất thực tế ở đây
   };
 
   return (
     <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar-container">
         <div className="navbar-left">
-          <button className="menu-toggle-mobile" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <i className="fa-solid fa-bars"></i>
-          </button>
-          <Link to="/" className="logo">
-            <span className="logo-text">ZIRA</span>
-            <span className="logo-highlight">FASHION</span>
+          {!isSidebarOpen && (
+            <button className="sidebar-toggle" onClick={toggleSidebar}>
+              <FontAwesomeIcon icon={faBars} />
+            </button>
+          )}
+          <Link to="/" className="navbar-logo">
+            <img src={logo} alt="Logo" className="logo-image" />
           </Link>
         </div>
 
         <nav className={`main-nav ${mobileMenuOpen ? 'open' : ''}`}>
           <div className="mobile-nav-header">
-            <Link to="/" className="logo">
-              <span className="logo-text">ZIRA</span>
-              <span className="logo-highlight">FASHION</span>
-            </Link>
+            
             <button className="close-mobile-menu" onClick={closeMobileMenu}>
               <i className="fa-solid fa-xmark"></i>
             </button>
@@ -181,12 +210,42 @@ const Navbar = ({ toggleSidebar }) => {
                 <span className="action-text">Yêu thích</span>
               </Link>
             </div>
-            <div className="action-item desktop-only">
-              <Link to="/tai-khoan" className={location.pathname === '/tai-khoan' ? 'active' : ''}>
-                <i className="fa-regular fa-user"></i>
-                <span className="action-text">Tài khoản</span>
-              </Link>
-            </div>
+            
+            {isLoggedIn ? (
+              <div className="user-profile" ref={dropdownRef}>
+                <button className="user-profile-button" onClick={toggleUserMenu}>
+                  <img
+                    src="https://randomuser.me/api/portraits/men/1.jpg" // Thay thế bằng avatar của người dùng
+                    alt="Avatar"
+                    className="user-avatar"
+                  />
+                  <span>Người dùng <FontAwesomeIcon icon={faChevronDown} size="xs" /></span>
+                </button>
+                
+                {showUserMenu && (
+                  <div className="user-dropdown">
+                    <Link to="/profile" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
+                      <FontAwesomeIcon icon={faUser} />
+                      <span>Hồ sơ</span>
+                    </Link>
+                    <Link to="/settings" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
+                      <FontAwesomeIcon icon={faCog} />
+                      <span>Cài đặt</span>
+                    </Link>
+                    <div className="dropdown-item" onClick={handleLogout} style={{cursor: 'pointer'}}>
+                      <FontAwesomeIcon icon={faSignOutAlt} />
+                      <span>Đăng xuất</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="auth-buttons desktop-only">
+                <Link to="/login" className="auth-button login-button">Đăng nhập</Link>
+                <Link to="/register" className="auth-button register-button">Đăng ký</Link>
+              </div>
+            )}
+            
             <div className="action-item cart-icon">
               <Link to="/gio-hang" className={location.pathname === '/gio-hang' ? 'active' : ''}>
                 <i className="fa-solid fa-shopping-bag"></i>
