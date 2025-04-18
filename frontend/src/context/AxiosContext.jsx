@@ -7,7 +7,7 @@ export const AxiosContext = createContext();
 export const AxiosProvider = ({ children }) => {
   useEffect(() => {
     // Cấu hình axios
-    axios.defaults.baseURL = 'http://localhost:4000/v1';
+    axios.defaults.baseURL = 'http://localhost:4000';
     
     // Thêm interceptor cho request
     axios.interceptors.request.use(

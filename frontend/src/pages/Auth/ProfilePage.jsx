@@ -33,7 +33,7 @@ const ProfilePage = () => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/v1/users/profile', {
+        const response = await axios.get('/users/profile', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -48,7 +48,7 @@ const ProfilePage = () => {
         });
 
         // Lấy danh sách đơn hàng của người dùng
-        const ordersResponse = await axios.get('/v1/orders/user', {
+        const ordersResponse = await axios.get('/orders/user', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -115,7 +115,7 @@ const ProfilePage = () => {
         const uploadFormData = new FormData();
         uploadFormData.append('file', formData.avatar);
         
-        const uploadResponse = await axios.post('/v1/upload', uploadFormData, {
+        const uploadResponse = await axios.post('/upload', uploadFormData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${token}`
@@ -128,7 +128,7 @@ const ProfilePage = () => {
       }
       
       // Cập nhật thông tin người dùng
-      const response = await axios.patch('/v1/users/profile', formDataToSend, {
+      const response = await axios.patch('/users/profile', formDataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'

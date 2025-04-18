@@ -28,7 +28,7 @@ const LoginPage = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post('/v1/auth/login', {
+      const response = await axios.post('/auth/login', {
         email,
         password
       });

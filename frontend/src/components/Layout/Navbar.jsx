@@ -1,8 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FilterContext } from '../../context/FilterContext';
 import '../../styles/css/Navbar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faUser, faCog, faSignOutAlt, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faBars, 
+  faUser, 
+  faCog, 
+  faSignOutAlt, 
+  faChevronDown, 
+  faTachometerAlt, 
+  faBox, 
+  faShoppingBag, 
+  faUsers, 
+  faChartLine 
+} from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/images/logo.png'; // Đường dẫn đến hình ảnh logo
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
@@ -10,12 +22,39 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
   const [cartCount, setCartCount] = useState(3);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Giả lập trạng thái đăng nhập
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { setCategoryFilter, selectedFilter } = useContext(FilterContext);
   
   const dropdownRef = useRef(null);
+
+  // Kiểm tra trạng thái đăng nhập khi component mount
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const user = localStorage.getItem('user');
+      const token = localStorage.getItem('accessToken');
+      
+      if (user && token) {
+        const userObj = JSON.parse(user);
+        setUserData(userObj);
+        setIsLoggedIn(true);
+        setIsAdmin(userObj.role === 'admin');
+      } else {
+        setIsLoggedIn(false);
+        setUserData(null);
+      }
+    };
+    
+    checkLoginStatus();
+    
+    // Lắng nghe sự kiện lưu trữ thay đổi
+    window.addEventListener('storage', checkLoginStatus);
+    return () => window.removeEventListener('storage', checkLoginStatus);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,9 +91,41 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
     setIsLoggedIn(false);
+    setUserData(null);
     setShowUserMenu(false);
-    // Thêm logic đăng xuất thực tế ở đây
+    navigate('/');
+  };
+
+  // Xử lý khi click vào danh mục
+  const handleCategoryClick = (category, subcategory = null) => {
+    if (subcategory) {
+      setCategoryFilter({ 
+        name: `${category} - ${subcategory}`, 
+        value: `${category}-${subcategory}`, 
+        _id: `${category}-${subcategory}` 
+      });
+    } else {
+      setCategoryFilter({ 
+        name: category, 
+        value: category, 
+        _id: category 
+      });
+    }
+    
+    navigate('/products');
+    closeMobileMenu();
+  };
+
+  // Xử lý khi submit form tìm kiếm
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchText.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchText)}`);
+    }
   };
 
   return (
@@ -67,139 +138,208 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
             </button>
           )}
           <Link to="/" className="navbar-logo">
-            <img src={logo} alt="Logo" className="logo-image" />
-          </Link>
-        </div>
+            <img 
+              src={logo} 
+              alt="Logo" 
+              className="logo-image"
+              style={{ backgroundColor: '#ffffff', borderRadius: '4px' }} 
+            />
+        </Link>
+      </div>
 
         <nav className={`main-nav ${mobileMenuOpen ? 'open' : ''}`}>
           <div className="mobile-nav-header">
-            
             <button className="close-mobile-menu" onClick={closeMobileMenu}>
               <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
           <ul className="nav-items">
             <li className="nav-item">
-              <Link to="/nu" className={location.pathname.startsWith('/nu') ? 'active' : ''} onClick={closeMobileMenu}>
+              <div 
+                className={location.pathname === '/products' && selectedFilter?.category?.value?.startsWith('nu') ? 'active' : ''} 
+                onClick={() => handleCategoryClick('nu')}
+                style={{ cursor: 'pointer' }}
+              >
                 Nữ
-              </Link>
+              </div>
               <div className="dropdown-menu">
                 <div className="dropdown-container">
                   <div className="dropdown-column">
                     <h4>Áo</h4>
                     <ul>
-                      <li><Link to="/nu/ao-thun">Áo thun</Link></li>
-                      <li><Link to="/nu/ao-so-mi">Áo sơ mi</Link></li>
-                      <li><Link to="/nu/ao-khoac">Áo khoác</Link></li>
-                      <li><Link to="/nu/ao-len">Áo len</Link></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'ao-thun')} style={{ cursor: 'pointer' }}>Áo thun</div></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'ao-so-mi')} style={{ cursor: 'pointer' }}>Áo sơ mi</div></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'ao-khoac')} style={{ cursor: 'pointer' }}>Áo khoác</div></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'ao-len')} style={{ cursor: 'pointer' }}>Áo len</div></li>
                     </ul>
                   </div>
                   <div className="dropdown-column">
                     <h4>Quần & Váy</h4>
                     <ul>
-                      <li><Link to="/nu/quan-dai">Quần dài</Link></li>
-                      <li><Link to="/nu/quan-jeans">Quần jeans</Link></li>
-                      <li><Link to="/nu/vay">Váy</Link></li>
-                      <li><Link to="/nu/chan-vay">Chân váy</Link></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'quan-dai')} style={{ cursor: 'pointer' }}>Quần dài</div></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'quan-jeans')} style={{ cursor: 'pointer' }}>Quần jeans</div></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'vay')} style={{ cursor: 'pointer' }}>Váy</div></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'chan-vay')} style={{ cursor: 'pointer' }}>Chân váy</div></li>
                     </ul>
                   </div>
                   <div className="dropdown-column">
                     <h4>Phụ kiện</h4>
                     <ul>
-                      <li><Link to="/nu/tui-xach">Túi xách</Link></li>
-                      <li><Link to="/nu/giay">Giày</Link></li>
-                      <li><Link to="/nu/that-lung">Thắt lưng</Link></li>
-                      <li><Link to="/nu/trang-suc">Trang sức</Link></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'tui-xach')} style={{ cursor: 'pointer' }}>Túi xách</div></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'giay')} style={{ cursor: 'pointer' }}>Giày</div></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'that-lung')} style={{ cursor: 'pointer' }}>Thắt lưng</div></li>
+                      <li><div onClick={() => handleCategoryClick('nu', 'trang-suc')} style={{ cursor: 'pointer' }}>Trang sức</div></li>
                     </ul>
                   </div>
                   <div className="dropdown-column dropdown-featured">
                     <img src="https://picsum.photos/seed/women/300/400" alt="Thời trang nữ" />
                     <div className="featured-content">
                       <h4>Bộ sưu tập mới</h4>
-                      <Link to="/nu/bo-suu-tap-moi" className="featured-link">Khám phá ngay</Link>
+                      <div onClick={() => handleCategoryClick('nu', 'bo-suu-tap-moi')} className="featured-link" style={{ cursor: 'pointer' }}>Khám phá ngay</div>
                     </div>
                   </div>
                 </div>
               </div>
             </li>
             <li className="nav-item">
-              <Link to="/nam" className={location.pathname.startsWith('/nam') ? 'active' : ''} onClick={closeMobileMenu}>
+              <div 
+                className={location.pathname === '/products' && selectedFilter?.category?.value?.startsWith('nam') ? 'active' : ''} 
+                onClick={() => handleCategoryClick('nam')}
+                style={{ cursor: 'pointer' }}
+              >
                 Nam
-              </Link>
+              </div>
               <div className="dropdown-menu">
                 <div className="dropdown-container">
                   <div className="dropdown-column">
                     <h4>Áo</h4>
                     <ul>
-                      <li><Link to="/nam/ao-thun">Áo thun</Link></li>
-                      <li><Link to="/nam/ao-so-mi">Áo sơ mi</Link></li>
-                      <li><Link to="/nam/ao-khoac">Áo khoác</Link></li>
-                      <li><Link to="/nam/ao-len">Áo len</Link></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'ao-thun')} style={{ cursor: 'pointer' }}>Áo thun</div></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'ao-so-mi')} style={{ cursor: 'pointer' }}>Áo sơ mi</div></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'ao-khoac')} style={{ cursor: 'pointer' }}>Áo khoác</div></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'ao-len')} style={{ cursor: 'pointer' }}>Áo len</div></li>
                     </ul>
                   </div>
                   <div className="dropdown-column">
                     <h4>Quần</h4>
                     <ul>
-                      <li><Link to="/nam/quan-dai">Quần dài</Link></li>
-                      <li><Link to="/nam/quan-jeans">Quần jeans</Link></li>
-                      <li><Link to="/nam/quan-kaki">Quần kaki</Link></li>
-                      <li><Link to="/nam/quan-short">Quần short</Link></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'quan-dai')} style={{ cursor: 'pointer' }}>Quần dài</div></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'quan-jeans')} style={{ cursor: 'pointer' }}>Quần jeans</div></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'quan-kaki')} style={{ cursor: 'pointer' }}>Quần kaki</div></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'quan-short')} style={{ cursor: 'pointer' }}>Quần short</div></li>
                     </ul>
                   </div>
                   <div className="dropdown-column">
                     <h4>Phụ kiện</h4>
                     <ul>
-                      <li><Link to="/nam/giay">Giày</Link></li>
-                      <li><Link to="/nam/that-lung">Thắt lưng</Link></li>
-                      <li><Link to="/nam/vi">Ví</Link></li>
-                      <li><Link to="/nam/dong-ho">Đồng hồ</Link></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'giay')} style={{ cursor: 'pointer' }}>Giày</div></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'that-lung')} style={{ cursor: 'pointer' }}>Thắt lưng</div></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'vi')} style={{ cursor: 'pointer' }}>Ví</div></li>
+                      <li><div onClick={() => handleCategoryClick('nam', 'dong-ho')} style={{ cursor: 'pointer' }}>Đồng hồ</div></li>
                     </ul>
                   </div>
                   <div className="dropdown-column dropdown-featured">
                     <img src="https://picsum.photos/seed/men/300/400" alt="Thời trang nam" />
                     <div className="featured-content">
                       <h4>Bộ sưu tập mới</h4>
-                      <Link to="/nam/bo-suu-tap-moi" className="featured-link">Khám phá ngay</Link>
+                      <div onClick={() => handleCategoryClick('nam', 'bo-suu-tap-moi')} className="featured-link" style={{ cursor: 'pointer' }}>Khám phá ngay</div>
                     </div>
                   </div>
                 </div>
               </div>
             </li>
             <li className="nav-item">
-              <Link to="/tre-em" className={location.pathname.startsWith('/tre-em') ? 'active' : ''} onClick={closeMobileMenu}>
+              <div 
+                onClick={() => handleCategoryClick('tre-em')}
+                className={location.pathname === '/products' && selectedFilter?.category?.value?.startsWith('tre-em') ? 'active' : ''}
+                style={{ cursor: 'pointer' }}
+              >
                 Trẻ em
-              </Link>
+              </div>
             </li>
             <li className="nav-item">
-              <Link to="/phu-kien" className={location.pathname.startsWith('/phu-kien') ? 'active' : ''} onClick={closeMobileMenu}>
+              <div 
+                onClick={() => handleCategoryClick('phu-kien')}
+                className={location.pathname === '/products' && selectedFilter?.category?.value?.startsWith('phu-kien') ? 'active' : ''}
+                style={{ cursor: 'pointer' }}
+              >
                 Phụ kiện
-              </Link>
+              </div>
             </li>
             <li className="nav-item">
-              <Link to="/sale" className={location.pathname.startsWith('/sale') ? 'active' : ''} onClick={closeMobileMenu}>
+              <div 
+                onClick={() => handleCategoryClick('sale')}
+                className={location.pathname === '/products' && selectedFilter?.category?.value === 'sale' ? 'active' : ''}
+                style={{ cursor: 'pointer' }}
+              >
                 Sale
-              </Link>
+              </div>
             </li>
             <li className="nav-item">
-              <Link to="/moi" className={location.pathname.startsWith('/moi') ? 'active' : ''} onClick={closeMobileMenu}>
+              <div 
+                onClick={() => handleCategoryClick('moi')}
+                className={location.pathname === '/products' && selectedFilter?.category?.value === 'moi' ? 'active' : ''}
+                style={{ cursor: 'pointer' }}
+              >
                 Mới
-              </Link>
+              </div>
             </li>
-          </ul>
+            {isAdmin && (
+              <li className="nav-item">
+                <Link to="/admin" className={location.pathname.startsWith('/admin') ? 'active' : ''} onClick={closeMobileMenu}>
+                  Quản lý
+                </Link>
+                <div className="dropdown-menu">
+                  <div className="dropdown-container">
+                    <div className="dropdown-column admin-menu">
+                      <h4>Quản lý</h4>
+                      <ul>
+                        <li>
+                          <Link to="/admin/dashboard">
+                            <FontAwesomeIcon icon={faTachometerAlt} /> Dashboard
+                          </Link>
+                        </li>
+                        <li>
+                          <Link to="/admin/products">
+                            <FontAwesomeIcon icon={faBox} /> Quản lý sản phẩm
+                          </Link>
+                        </li>
+                        <li>
+                          <Link to="/admin/orders">
+                            <FontAwesomeIcon icon={faShoppingBag} /> Quản lý đơn hàng
+                          </Link>
+                        </li>
+                        <li>
+                          <Link to="/admin/users">
+                            <FontAwesomeIcon icon={faUsers} /> Quản lý người dùng
+                          </Link>
+                        </li>
+                        <li>
+                          <Link to="/admin/reports">
+                            <FontAwesomeIcon icon={faChartLine} /> Báo cáo & Thống kê
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            )}
+      </ul>
         </nav>
 
         <div className="search-container desktop-only">
-          <div className="search-box">
-            <input
-              type="text"
+          <form className="search-box" onSubmit={handleSearch}>
+          <input
+            type="text"
               placeholder="Tìm kiếm sản phẩm..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-            <button className="search-button">
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+            <button type="submit" className="search-button">
               <i className="fa-solid fa-search"></i>
             </button>
-          </div>
+          </form>
         </div>
 
         <div className="navbar-right">
@@ -215,11 +355,11 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
               <div className="user-profile" ref={dropdownRef}>
                 <button className="user-profile-button" onClick={toggleUserMenu}>
                   <img
-                    src="https://randomuser.me/api/portraits/men/1.jpg" // Thay thế bằng avatar của người dùng
+                    src={userData?.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(userData?.name || "User")}
                     alt="Avatar"
                     className="user-avatar"
                   />
-                  <span>Người dùng <FontAwesomeIcon icon={faChevronDown} size="xs" /></span>
+                  <span>{userData?.name || "Người dùng"} <FontAwesomeIcon icon={faChevronDown} size="xs" /></span>
                 </button>
                 
                 {showUserMenu && (
@@ -232,6 +372,12 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                       <FontAwesomeIcon icon={faCog} />
                       <span>Cài đặt</span>
                     </Link>
+                    {isAdmin && (
+                      <Link to="/admin/dashboard" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
+                        <FontAwesomeIcon icon={faTachometerAlt} />
+                        <span>Trang quản trị</span>
+                      </Link>
+                    )}
                     <div className="dropdown-item" onClick={handleLogout} style={{cursor: 'pointer'}}>
                       <FontAwesomeIcon icon={faSignOutAlt} />
                       <span>Đăng xuất</span>
@@ -243,7 +389,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
               <div className="auth-buttons desktop-only">
                 <Link to="/login" className="auth-button login-button">Đăng nhập</Link>
                 <Link to="/register" className="auth-button register-button">Đăng ký</Link>
-              </div>
+        </div>
             )}
             
             <div className="action-item cart-icon">
@@ -251,7 +397,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                 <i className="fa-solid fa-shopping-bag"></i>
                 <span className="action-text desktop-only">Giỏ hàng</span>
                 {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
-              </Link>
+            </Link>
             </div>
             <div className="action-item search-icon-mobile">
               <button>
@@ -263,12 +409,17 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
       </div>
 
       <div className={`mobile-search ${mobileMenuOpen ? 'open' : ''}`}>
-        <div className="search-box">
-          <input type="text" placeholder="Tìm kiếm sản phẩm..." />
-          <button className="search-button">
+        <form className="search-box" onSubmit={handleSearch}>
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm sản phẩm..." 
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <button type="submit" className="search-button">
             <i className="fa-solid fa-search"></i>
           </button>
-        </div>
+        </form>
       </div>
 
       <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={closeMobileMenu}></div>

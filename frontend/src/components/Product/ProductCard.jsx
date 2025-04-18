@@ -22,7 +22,7 @@ const ProductCard = ({ product }) => {
         if (!token || !_id) return;
         
         setIsLoadingWishlist(true);
-        const response = await axios.get(`/v1/wishlist/${_id}`, {
+        const response = await axios.get(`/wishlist/${_id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -54,7 +54,7 @@ const ProductCard = ({ product }) => {
       
       if (isInWishlist) {
         // Xóa khỏi wishlist
-        await axios.delete(`/v1/wishlist/${_id}`, {
+        await axios.delete(`/wishlist/${_id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -62,7 +62,7 @@ const ProductCard = ({ product }) => {
         setIsInWishlist(false);
       } else {
         // Thêm vào wishlist
-        await axios.post('/v1/wishlist', 
+        await axios.post('/wishlist', 
           { productId: _id },
           {
             headers: {
@@ -95,7 +95,7 @@ const ProductCard = ({ product }) => {
   return (
     <div className="product-card">
       <div className="product-image-container">
-        <Link to={`/san-pham/${_id}`}>
+        <Link to={`/products/${_id}`}>
           <img src={images[0]} alt={name} className="product-image" />
         </Link>
         
@@ -119,7 +119,7 @@ const ProductCard = ({ product }) => {
             <FontAwesomeIcon icon={faShoppingCart} />
           </button>
           <Link 
-            to={`/san-pham/${_id}`} 
+            to={`/products/${_id}`} 
             className="action-button quickview-button" 
             title="Xem chi tiết"
           >
@@ -129,7 +129,7 @@ const ProductCard = ({ product }) => {
       </div>
       
       <div className="product-info">
-        <Link to={`/san-pham/${_id}`} className="product-name">{name}</Link>
+        <Link to={`/products/${_id}`} className="product-name">{name}</Link>
         <p className="product-category">{category?.name || category}</p>
         <div className="product-price">
           {discount > 0 && <span className="original-price">{price.toLocaleString('vi-VN')}đ</span>}

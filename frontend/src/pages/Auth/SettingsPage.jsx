@@ -40,7 +40,7 @@ const SettingsPage = () => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/v1/users/profile', {
+        const response = await axios.get('/users/profile', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -50,7 +50,7 @@ const SettingsPage = () => {
         
         // Lấy cài đặt thông báo nếu có API
         try {
-          const notificationsResponse = await axios.get('/v1/users/notifications', {
+          const notificationsResponse = await axios.get('/users/notifications', {
             headers: {
               Authorization: `Bearer ${token}`
             }
@@ -122,7 +122,7 @@ const SettingsPage = () => {
     try {
       const token = localStorage.getItem('accessToken');
       
-      await axios.post('/v1/auth/change-password', {
+      await axios.post('/auth/change-password', {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword
       }, {
@@ -154,7 +154,7 @@ const SettingsPage = () => {
     try {
       const token = localStorage.getItem('accessToken');
       
-      await axios.patch('/v1/users/notifications', notificationSettings, {
+      await axios.patch('/users/notifications', notificationSettings, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -183,7 +183,7 @@ const SettingsPage = () => {
       try {
         const token = localStorage.getItem('accessToken');
         
-        await axios.delete('/v1/users/me', {
+        await axios.delete('/users/me', {
           headers: {
             Authorization: `Bearer ${token}`
           }

@@ -399,7 +399,7 @@ const CategoryPage = () => {
             <div className="products-grid">
               {products.map(product => (
                 <div className="product-card" key={product._id}>
-                  <Link to={`/san-pham/${product._id}`} className="product-image">
+                  <Link to={`/products/${product._id}`} className="product-image">
                     <img 
                       src={product.images && product.images.length > 0 
                         ? product.images[0]
@@ -413,7 +413,7 @@ const CategoryPage = () => {
                   </Link>
                   <div className="product-info">
                     <h3 className="product-name">
-                      <Link to={`/san-pham/${product._id}`}>{product.name}</Link>
+                      <Link to={`/products/${product._id}`}>{product.name}</Link>
                     </h3>
                     <div className="product-price">
                       {product.salePrice ? (

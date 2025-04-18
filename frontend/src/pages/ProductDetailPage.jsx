@@ -106,7 +106,7 @@ const ProductDetailPage = () => {
         if (!token || !id) return;
         
         setIsLoadingWishlist(true);
-        const response = await axios.get(`/v1/wishlist/${id}`, {
+        const response = await axios.get(`/wishlist/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -173,7 +173,7 @@ const ProductDetailPage = () => {
       
       if (isInWishlist) {
         // Xóa khỏi wishlist
-        await axios.delete(`/v1/wishlist/${id}`, {
+        await axios.delete(`/wishlist/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -181,7 +181,7 @@ const ProductDetailPage = () => {
         setIsInWishlist(false);
       } else {
         // Thêm vào wishlist
-        await axios.post('/v1/wishlist', 
+        await axios.post('/wishlist', 
           { productId: id },
           {
             headers: {
@@ -212,7 +212,7 @@ const ProductDetailPage = () => {
       <div className="product-detail-error">
         <h2>Đã xảy ra lỗi!</h2>
         <p>{error}</p>
-        <Link to="/san-pham" className="back-button">
+        <Link to="/products" className="back-button">
           <FontAwesomeIcon icon={faArrowLeft} /> Quay lại danh sách sản phẩm
         </Link>
       </div>
@@ -224,7 +224,7 @@ const ProductDetailPage = () => {
       <div className="product-detail-not-found">
         <h2>Không tìm thấy sản phẩm</h2>
         <p>Sản phẩm này không tồn tại hoặc đã bị xóa.</p>
-        <Link to="/san-pham" className="back-button">
+        <Link to="/products" className="back-button">
           <FontAwesomeIcon icon={faArrowLeft} /> Quay lại danh sách sản phẩm
         </Link>
       </div>
@@ -235,7 +235,7 @@ const ProductDetailPage = () => {
     <div className="product-detail-container">
       <div className="breadcrumb">
         <Link to="/">Trang chủ</Link> / 
-        <Link to="/san-pham">Sản phẩm</Link> / 
+        <Link to="/products">Sản phẩm</Link> / 
         <span>{product.name}</span>
       </div>
       
@@ -483,7 +483,7 @@ const ProductDetailPage = () => {
           <h2>Sản phẩm liên quan</h2>
           <div className="related-products-grid">
             {relatedProducts.map(relatedProduct => (
-              <Link to={`/san-pham/${relatedProduct._id}`} key={relatedProduct._id} className="related-product-card">
+              <Link to={`/products/${relatedProduct._id}`} key={relatedProduct._id} className="related-product-card">
                 <div className="related-product-image">
                   <img 
                     src={relatedProduct.images && relatedProduct.images.length > 0 

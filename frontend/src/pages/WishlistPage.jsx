@@ -27,7 +27,7 @@ const WishlistPage = () => {
         return;
       }
       
-      const response = await axios.get('/v1/wishlist', {
+      const response = await axios.get('/wishlist', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -46,7 +46,7 @@ const WishlistPage = () => {
     try {
       const token = localStorage.getItem('accessToken');
       
-      await axios.delete(`/v1/wishlist/${productId}`, {
+      await axios.delete(`/wishlist/${productId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -97,7 +97,7 @@ const WishlistPage = () => {
       {wishlistItems.length === 0 ? (
         <div className="empty-wishlist">
           <p>Danh sách yêu thích của bạn đang trống</p>
-          <Link to="/san-pham" className="shop-now-btn">Mua sắm ngay</Link>
+          <Link to="/products" className="shop-now-btn">Mua sắm ngay</Link>
         </div>
       ) : (
         <>
@@ -105,7 +105,7 @@ const WishlistPage = () => {
             {wishlistItems.map((product) => (
               <div className="wishlist-item" key={product._id}>
                 <div className="item-image">
-                  <Link to={`/san-pham/${product._id}`}>
+                  <Link to={`/products/${product._id}`}>
                     <img src={product.images[0]} alt={product.name} />
                   </Link>
                   <button 
@@ -118,7 +118,7 @@ const WishlistPage = () => {
                 </div>
                 <div className="item-details">
                   <h3 className="item-name">
-                    <Link to={`/san-pham/${product._id}`}>{product.name}</Link>
+                    <Link to={`/products/${product._id}`}>{product.name}</Link>
                   </h3>
                   <div className="item-price">
                     {product.discount > 0 ? (
@@ -145,7 +145,7 @@ const WishlistPage = () => {
             ))}
           </div>
           <div className="wishlist-actions">
-            <Link to="/san-pham" className="continue-shopping-btn">
+            <Link to="/products" className="continue-shopping-btn">
               Tiếp tục mua sắm
             </Link>
           </div>

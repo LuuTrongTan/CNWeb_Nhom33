@@ -86,7 +86,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
       
       try {
         const token = localStorage.getItem('accessToken');
-        const response = await axios.post('/v1/upload', formData, {
+        const response = await axios.post('/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${token}`
@@ -142,7 +142,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
         images: imageUrls
       };
       
-      await axios.post(`/v1/product/${productId}/reviews`, reviewData, {
+      await axios.post(`/product/${productId}/reviews`, reviewData, {
         headers: {
           Authorization: `Bearer ${token}`
         }

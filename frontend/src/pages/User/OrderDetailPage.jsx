@@ -363,7 +363,7 @@ const OrderDetailPage = () => {
                   <img src={item.image} alt={item.name} />
                 </div>
                 <div className="item-details">
-                  <Link to={`/san-pham/${item.product}`} className="item-name">{item.name}</Link>
+                  <Link to={`/products/${item.product}`} className="item-name">{item.name}</Link>
                   {item.size && <p className="item-variant">Size: {item.size}</p>}
                   {item.color && <p className="item-variant">Màu: {item.color}</p>}
                   <div className="item-price">
@@ -378,7 +378,7 @@ const OrderDetailPage = () => {
             ))}
           </div>
           <div className="order-actions no-print">
-            <Link to="/san-pham" className="continue-shopping-btn">
+            <Link to="/products" className="continue-shopping-btn">
               Tiếp tục mua sắm
             </Link>
             {order.status === 'delivered' && (

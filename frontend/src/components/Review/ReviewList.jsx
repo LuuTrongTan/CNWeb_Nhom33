@@ -26,7 +26,7 @@ const ReviewList = ({ productId }) => {
     const fetchReviews = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`/v1/product/${productId}/reviews`, {
+        const response = await axios.get(`/product/${productId}/reviews`, {
           params: {
             page,
             limit: 5,
@@ -69,13 +69,13 @@ const ReviewList = ({ productId }) => {
       
       // Gọi API thích hoặc bỏ thích
       if (hasLiked) {
-        await axios.delete(`/v1/review/${reviewId}/unlike`, {
+        await axios.delete(`/review/${reviewId}/unlike`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
       } else {
-        await axios.post(`/v1/review/${reviewId}/like`, {}, {
+        await axios.post(`/review/${reviewId}/like`, {}, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

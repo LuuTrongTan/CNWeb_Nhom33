@@ -50,7 +50,7 @@ const Home = () => {
       <section className="featured-products">
         <div className="section-header">
           <h2>Sản phẩm nổi bật</h2>
-          <Link to="/san-pham" className="view-all">Xem tất cả</Link>
+          <Link to="/products" className="view-all">Xem tất cả</Link>
         </div>
         <div className="products-grid">
           {featuredProducts.map(product => (

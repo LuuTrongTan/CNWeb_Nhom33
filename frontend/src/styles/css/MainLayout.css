@@ -1,41 +1,73 @@
 /* MainLayout.css */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+}
+
 .layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f9f9f9;
+  position: relative;
+}
+
+.layout.sidebar-expanded .content {
+  filter: brightness(0.7);
+  pointer-events: none;
+}
+
+.content {
+  flex: 1;
+  min-height: calc(100vh - 60px - 60px); /* 60px navbar, 60px footer */
+  position: relative;
+  transition: margin-left 0.3s ease;
 }
 
 .main-container {
   display: flex;
-  flex-grow: 1;
-  position: relative;
-}
-
-.sidebar-container {
-  width: 280px;
-  transition: all 0.3s ease;
-  z-index: 100;
-  background-color: #fff;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
-  height: calc(100vh - 60px);
-  position: sticky;
-  top: 60px;
-}
-
-.sidebar-container.closed {
-  width: 0;
-  overflow: hidden;
-}
-
-.content {
-  flex-grow: 1;
-  padding: 25px;
-  overflow: auto;
+  flex: 1;
+  padding-top: 60px; /* Chiều cao của navbar */
   min-height: calc(100vh - 60px);
 }
 
-.sidebar-overlay {
+.sidebar-container {
+  position: fixed;
+  top: 60px; /* Chiều cao của navbar */
+  left: 0;
+  height: calc(100vh - 60px); /* Chiều cao của viewport trừ navbar */
+  width: 280px;
+  z-index: 100;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-open .sidebar-container {
+  transform: translateX(0);
+}
+
+.sidebar-closed .sidebar-container {
+  transform: translateX(-100%);
+}
+
+.sidebar-open .content {
+  margin-left: 280px; /* Chiều rộng của sidebar */
+}
+
+.sidebar-closed .content {
+  margin-left: 0;
+}
+
+.footer {
+  min-height: 60px;
+  background-color: #f8f9fa;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Overlay cho thiết bị di động khi sidebar mở */
+.overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -43,52 +75,125 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 90;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
+  display: none;
 }
 
-.sidebar-overlay.visible {
-  opacity: 1;
-  visibility: visible;
+.sidebar-open .overlay {
+  display: block;
 }
 
-@media (max-width: 1200px) {
+/* Responsive */
+@media (min-width: 992px) {
   .sidebar-container {
-    width: 250px;
+    position: fixed;
+    transform: translateX(0);
   }
   
   .content {
-    padding: 20px;
+    margin-left: 280px;
+  }
+  
+  .sidebar-closed .content {
+    margin-left: 0;
+  }
+  
+  .sidebar-closed .sidebar-container {
+    transform: translateX(-100%);
+  }
+  
+  .overlay {
+    display: none !important;
   }
 }
 
-@media (max-width: 992px) {
-  .sidebar-container {
-    width: 230px;
+@media (max-width: 991px) {
+  .content {
+    margin-left: 0;
   }
 }
 
 @media (max-width: 768px) {
   .sidebar-container {
-    position: fixed;
-    height: 100%;
     width: 280px;
-    left: 0;
-    top: 0;
-    transform: translateX(-100%);
-    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
   }
-  
-  .sidebar-container.open {
-    transform: translateX(0);
+}
+
+@media (max-width: 576px) {
+  .sidebar-container {
+    width: 260px;
   }
-  
-  .sidebar-container.closed {
-    transform: translateX(-100%);
+}
+
+@media (max-width: 375px) {
+  .sidebar-container {
+    width: 240px;
   }
-  
-  .content {
-    padding: 15px;
+}
+
+/* Footer positioning */
+.footer {
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Navbar positioning */
+.navbar {
+  height: 60px;
+  z-index: 1001;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Hiển thị overlay khi sidebar mở trên thiết bị di động */
+@media (max-width: 768px) {
+  .sidebar-open .overlay {
+    display: block;
+    opacity: 1;
   }
+
+  .sidebar-container {
+    width: 280px;
+  }
+
+  .sidebar-open .content {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* Đảm bảo nội dung footer hiển thị đúng */
+.footer {
+  background-color: #fff;
+  width: 100%;
+}
+
+/* Hiệu ứng khi sidebar mở và đóng */
+.sidebar-toggle-btn {
+  position: fixed;
+  left: 15px;
+  bottom: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ff4c3b;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border: none;
+  transition: all 0.3s ease;
+  display: none;
+}
+
+.sidebar-closed .sidebar-toggle-btn {
+  display: flex;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: #ff3c2a;
+  transform: scale(1.05);
 } 
