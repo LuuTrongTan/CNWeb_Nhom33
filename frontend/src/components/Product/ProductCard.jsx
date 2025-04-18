@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
-import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
-import { faShoppingCart, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faHeart, faShoppingCart, faEye, faStar as solidStar, faStar as regularStar } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { useCart } from '../../context/CartContext';
 import '../../styles/css/ProductCard.css';
 
 const ProductCard = ({ product }) => {
-  const { _id, name, price, images, category, isNew, discount } = product;
+  const { _id, name, price, images, category, discount = 0 } = product;
   const discountedPrice = discount > 0 ? price - (price * discount / 100) : price;
+  
+  const { addToCart } = useCart();
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
-  const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkWishlistStatus = async () => {
@@ -40,7 +41,6 @@ const ProductCard = ({ product }) => {
   }, [_id]);
 
   const handleToggleWishlist = async (e) => {
-    e.preventDefault();
     e.stopPropagation();
     
     try {
@@ -80,61 +80,93 @@ const ProductCard = ({ product }) => {
   };
 
   const handleAddToCart = (e) => {
-    e.preventDefault();
     e.stopPropagation();
     
     addToCart({
       id: _id,
       name,
-      price,
+      price: discountedPrice,
       image: images[0],
       quantity: 1
     });
   };
 
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const navigateToProductDetail = () => {
+    navigate(`/products/${_id}`);
+  };
+
   return (
-    <div className="product-card">
-      <div className="product-image-container">
-        <Link to={`/products/${_id}`}>
-          <img src={images[0]} alt={name} className="product-image" />
-        </Link>
-        
-        {isNew && <span className="product-badge new-badge">New</span>}
-        {discount > 0 && <span className="product-badge discount-badge">-{discount}%</span>}
-        
-        <div className="product-actions">
-          <button 
-            className={`action-button wishlist-button ${isInWishlist ? 'active' : ''}`} 
-            title={isInWishlist ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
-            onClick={handleToggleWishlist}
-            disabled={isLoadingWishlist}
-          >
-            <FontAwesomeIcon icon={isInWishlist ? solidHeart : regularHeart} />
-          </button>
-          <button 
-            className="action-button cart-button" 
-            title="Thêm vào giỏ hàng"
-            onClick={handleAddToCart}
-          >
-            <FontAwesomeIcon icon={faShoppingCart} />
-          </button>
-          <Link 
-            to={`/products/${_id}`} 
-            className="action-button quickview-button" 
-            title="Xem chi tiết"
-          >
-            <FontAwesomeIcon icon={faEye} />
-          </Link>
+    <div className="product-card-link" onClick={navigateToProductDetail}>
+      <div className="product-card">
+        <div className="product-image-container">
+          {!imageLoaded && <div className="image-placeholder"></div>}
+          <img
+            src={images && images.length > 0 ? images[0] : '/images/placeholder.png'}
+            alt={name}
+            className={`product-image ${imageLoaded ? 'loaded' : ''}`}
+            onLoad={handleImageLoad}
+          />
+          
+          {product.isNew && <div className="product-badge new-badge">Mới</div>}
+          {discount > 0 && <div className="product-badge discount-badge">-{discount}%</div>}
+          
+          <div className="product-actions">
+            <button
+              className={`action-button wishlist-button ${isInWishlist ? 'active' : ''}`}
+              onClick={handleToggleWishlist}
+              aria-label="Thêm vào yêu thích"
+              disabled={isLoadingWishlist}
+            >
+              <FontAwesomeIcon icon={faHeart} />
+            </button>
+            <button 
+              className="action-button cart-button" 
+              onClick={handleAddToCart}
+              aria-label="Thêm vào giỏ hàng"
+            >
+              <FontAwesomeIcon icon={faShoppingCart} />
+            </button>
+            <button 
+              className="action-button quickview-button" 
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateToProductDetail();
+              }}
+              aria-label="Xem chi tiết"
+            >
+              <FontAwesomeIcon icon={faEye} />
+            </button>
+          </div>
         </div>
-      </div>
-      
-      <div className="product-info">
-        <Link to={`/products/${_id}`} className="product-name">{name}</Link>
-        <p className="product-category">{category?.name || category}</p>
-        <div className="product-price">
-          {discount > 0 && <span className="original-price">{price.toLocaleString('vi-VN')}đ</span>}
-          <span className="current-price">{discountedPrice.toLocaleString('vi-VN')}đ</span>
+        
+        <div className="product-info">
+          <span className="product-category">{category?.name || category}</span>
+          <h3 className="product-name">{name}</h3>
+          
+          <div className="product-rating">
+            <div className="stars">
+              {[...Array(5)].map((_, i) => (
+                <span key={i} className={`star ${i < Math.floor(Math.random() * 2 + 3) ? 'filled' : ''}`}>★</span>
+              ))}
+            </div>
+            <span className="rating-count">({Math.floor(Math.random() * 20 + 5)})</span>
+          </div>
+          
+          <div className="product-price">
+            {discount > 0 && 
+              <span className="original-price">{price.toLocaleString('vi-VN')}đ</span>
+            }
+            <span className="current-price">{discountedPrice.toLocaleString('vi-VN')}đ</span>
+          </div>
         </div>
+        
+        <button className="quick-add" onClick={handleAddToCart}>
+          Thêm vào giỏ
+        </button>
       </div>
     </div>
   );

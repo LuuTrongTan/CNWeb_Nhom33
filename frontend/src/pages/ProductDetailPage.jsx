@@ -4,10 +4,21 @@ import { getProductById, getRelatedProducts } from '../service/productAPI';
 import { useCart } from '../context/CartContext';
 import '../styles/css/ProductDetail.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart, faShoppingCart, faArrowLeft, faStar, faStarHalfAlt } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faHeart, 
+  faShoppingCart, 
+  faArrowLeft, 
+  faStar, 
+  faStarHalfAlt, 
+  faShieldAlt, 
+  faTruck, 
+  faUndoAlt,
+  faCheck
+} from '@fortawesome/free-solid-svg-icons';
 import ReviewList from '../components/Review/ReviewList';
 import ReviewForm from '../components/Review/ReviewForm';
 import axios from 'axios';
+import ProductCard from '../components/Product/ProductCard';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -22,6 +33,8 @@ const ProductDetailPage = () => {
   const { addToCart } = useCart();
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -52,6 +65,13 @@ const ProductDetailPage = () => {
     
     // Cuộn trang lên đầu khi component được mount
     window.scrollTo(0, 0);
+    
+    // Reset state khi thay đổi sản phẩm
+    setSelectedSize('');
+    setSelectedColor('');
+    setQuantity(1);
+    setSelectedImage(0);
+    setAddedToCart(false);
   }, [id]);
 
   // Hàm tạm thời để hiển thị dữ liệu giả trong trường hợp API chưa hoạt động
@@ -64,7 +84,7 @@ const ProductDetailPage = () => {
         price: 350000,
         salePrice: 280000,
         discount: 20,
-        description: 'Áo thun basic form rộng, chất liệu cotton 100%, mềm mại và thoáng khí. Phù hợp cho cả nam và nữ, dễ dàng kết hợp với nhiều trang phục khác nhau.',
+        description: 'Áo thun basic form rộng, chất liệu cotton 100%, mềm mại và thoáng khí. Phù hợp cho cả nam và nữ, dễ dàng kết hợp với nhiều trang phục khác nhau. Thiết kế đơn giản nhưng vẫn thời trang, là item không thể thiếu trong tủ đồ của bạn.\n\nChất liệu cotton cao cấp, thấm hút mồ hôi tốt, thoáng mát khi mặc. Form áo rộng rãi, thoải mái khi vận động. Có thể kết hợp với quần jeans, quần shorts hoặc quần tây tùy theo phong cách của bạn.',
         colors: ['Đen', 'Trắng', 'Xám', 'Xanh Navy'],
         sizes: ['S', 'M', 'L', 'XL'],
         images: [
@@ -150,7 +170,16 @@ const ProductDetailPage = () => {
     };
     
     addToCart(productToAdd);
-    alert('Đã thêm sản phẩm vào giỏ hàng!');
+    setAddedToCart(true);
+    
+    // Tự động ẩn thông báo sau 3 giây
+    setTimeout(() => {
+      setAddedToCart(false);
+    }, 3000);
+  };
+
+  const handleImageSelect = (index) => {
+    setSelectedImage(index);
   };
 
   const handleColorSelect = (color) => {
@@ -239,14 +268,29 @@ const ProductDetailPage = () => {
         <span>{product.name}</span>
       </div>
       
+      {addedToCart && (
+        <div className="added-to-cart-notification">
+          <FontAwesomeIcon icon={faCheck} />
+          <span>Sản phẩm đã được thêm vào giỏ hàng</span>
+        </div>
+      )}
+      
       <div className="product-detail-content">
         <div className="product-images">
           <div className="main-image">
-            <img src={product.mainImage || product.images[0]} alt={product.name} />
+            <img src={product.images[selectedImage] || product.mainImage} alt={product.name} />
+            {product.discount > 0 && (
+              <div className="product-badge discount-badge">-{product.discount}%</div>
+            )}
           </div>
+          
           <div className="thumbnail-images">
             {product.images && product.images.map((image, index) => (
-              <div className="thumbnail" key={index}>
+              <div 
+                className={`thumbnail ${selectedImage === index ? 'active' : ''}`} 
+                key={index}
+                onClick={() => handleImageSelect(index)}
+              >
                 <img src={image} alt={`${product.name} - Ảnh ${index + 1}`} />
               </div>
             ))}
@@ -292,8 +336,15 @@ const ProductDetailPage = () => {
             )}
           </div>
           
+          <div className="product-status">
+            <span className={`availability ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
+              <FontAwesomeIcon icon={faCheck} />
+              {product.inStock ? 'Còn hàng' : 'Hết hàng'}
+            </span>
+          </div>
+          
           <div className="product-short-description">
-            <p>{product.description.substring(0, 150)}...</p>
+            <p>{product.description.split('\n')[0]}</p>
           </div>
           
           <div className="product-options">
@@ -352,9 +403,37 @@ const ProductDetailPage = () => {
             <button className="add-to-cart-btn" onClick={handleAddToCart}>
               <FontAwesomeIcon icon={faShoppingCart} /> Thêm vào giỏ hàng
             </button>
-            <button className={`add-to-wishlist-btn ${isInWishlist ? 'in-wishlist' : ''}`} onClick={handleToggleWishlist} disabled={isLoadingWishlist}>
+            <button 
+              className={`add-to-wishlist-btn ${isInWishlist ? 'in-wishlist' : ''}`} 
+              onClick={handleToggleWishlist} 
+              disabled={isLoadingWishlist}
+            >
               <FontAwesomeIcon icon={faHeart} /> {isInWishlist ? 'Đã yêu thích' : 'Yêu thích'}
             </button>
+          </div>
+          
+          <div className="product-benefits">
+            <div className="benefit">
+              <FontAwesomeIcon icon={faTruck} />
+              <div>
+                <h4>Giao hàng miễn phí</h4>
+                <p>Cho đơn hàng từ 500K</p>
+              </div>
+            </div>
+            <div className="benefit">
+              <FontAwesomeIcon icon={faShieldAlt} />
+              <div>
+                <h4>Bảo hành sản phẩm</h4>
+                <p>Đổi trả trong 30 ngày</p>
+              </div>
+            </div>
+            <div className="benefit">
+              <FontAwesomeIcon icon={faUndoAlt} />
+              <div>
+                <h4>Đổi trả dễ dàng</h4>
+                <p>Hoàn tiền 100%</p>
+              </div>
+            </div>
           </div>
           
           <div className="product-meta-info">
@@ -404,7 +483,9 @@ const ProductDetailPage = () => {
           {activeTab === 'description' && (
             <div className="tab-panel">
               <h3>Mô tả sản phẩm</h3>
-              <p>{product.description}</p>
+              {product.description.split('\n').map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
             </div>
           )}
           
@@ -483,21 +564,18 @@ const ProductDetailPage = () => {
           <h2>Sản phẩm liên quan</h2>
           <div className="related-products-grid">
             {relatedProducts.map(relatedProduct => (
-              <Link to={`/products/${relatedProduct._id}`} key={relatedProduct._id} className="related-product-card">
-                <div className="related-product-image">
-                  <img 
-                    src={relatedProduct.images && relatedProduct.images.length > 0 
-                      ? relatedProduct.images[0] 
-                      : 'https://picsum.photos/seed/product/300/400'
-                    } 
-                    alt={relatedProduct.name}
-                  />
-                </div>
-                <div className="related-product-info">
-                  <h3>{relatedProduct.name}</h3>
-                  <p className="related-product-price">{relatedProduct.price.toLocaleString()}đ</p>
-                </div>
-              </Link>
+              <ProductCard 
+                key={relatedProduct._id} 
+                product={{
+                  _id: relatedProduct._id,
+                  name: relatedProduct.name,
+                  price: relatedProduct.price,
+                  images: relatedProduct.images,
+                  category: relatedProduct.category || 'Thời trang',
+                  isNew: Math.random() > 0.7,
+                  discount: Math.random() > 0.7 ? Math.floor(Math.random() * 30) + 10 : 0
+                }}
+              />
             ))}
           </div>
         </div>

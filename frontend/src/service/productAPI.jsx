@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:4000/v1";
+const API_URL = "http://localhost:4000";
 
 // Hàm gọi API lấy danh sách sản phẩm có phân trang
 export const fetchProducts = async (page = 1, limit = 12) => {
