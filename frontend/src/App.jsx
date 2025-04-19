@@ -1,100 +1,92 @@
+// export default App
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Layout components
-import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
+// Layouts
+import MainLayout from './components/Layout/MainLayout';
 
-// Auth pages
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import OAuthCallback from './pages/auth/OAuthCallback';
-import TwoFactorAuth from './pages/auth/TwoFactorAuth';
+// Pages
+import Home from './pages/HomePage';
+import ProductPage from './pages/ProductPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import CategoryPage from './pages/CategoryPage';
+import LoginPage from './pages/Auth/LoginPage';
+import RegisterPage from './pages/Auth/RegisterPage';
+import ProfilePage from './pages/Auth/ProfilePage';
+import SettingsPage from './pages/Auth/SettingsPage';
+import WishlistPage from './pages/WishlistPage';
+import OrderHistoryPage from './pages/User/OrderHistoryPage';
+import OrderDetailPage from './pages/User/OrderDetailPage';
 
-// User pages
-import Profile from './pages/user/Profile';
-import OrderHistory from './pages/user/OrderHistory';
-import OrderDetails from './pages/user/OrderDetails';
-import Wishlist from './pages/user/Wishlist';
-import SecuritySettings from './pages/user/SecuritySettings';
+// Admin Pages
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import ProductManagement from './pages/Admin/ProductManagement';
+import BannerManagementPage from './pages/Admin/BannerManagementPage';
+import AddEditBannerPage from './pages/Admin/AddEditBannerPage';
+import AdminLayout from './components/Layout/AdminLayout';
 
-// Protected route component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-  
-  return children;
-};
+// Styles
+import './styles/css/App.css';
 
-function App() {
+// Context Providers
+import { CartProvider } from './context/CartContext';
+import { FilterProvider } from './context/FilterContext';
+
+const App = () => {
   return (
-    <div className="app">
-      <Header />
-      <main className="container mx-auto px-4 py-8 min-h-screen">
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/oauth/callback" element={<OAuthCallback />} />
-          <Route path="/two-factor-auth" element={<TwoFactorAuth />} />
-          
-          {/* Protected routes */}
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/orders" 
-            element={
-              <ProtectedRoute>
-                <OrderHistory />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/orders/:orderId" 
-            element={
-              <ProtectedRoute>
-                <OrderDetails />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/wishlist" 
-            element={
-              <ProtectedRoute>
-                <Wishlist />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/security" 
-            element={
-              <ProtectedRoute>
-                <SecuritySettings />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Redirect root to login page for now */}
-          <Route path="/" element={<Navigate to="/login" />} />
-        </Routes>
-      </main>
-      <Footer />
-    </div>
+    <Router>
+      <CartProvider>
+        <FilterProvider>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<MainLayout />}>
+                {/* Trang chính */}
+                <Route index element={<Home />} />
+                
+                {/* Sản phẩm */}
+                <Route path="products" element={<ProductPage />} />
+                <Route path="products/:id" element={<ProductDetailPage />} />
+                
+                {/* Danh mục */}
+                <Route path="nu/*" element={<CategoryPage />} />
+                <Route path="nam/*" element={<CategoryPage />} />
+                <Route path="tre-em/*" element={<CategoryPage />} />
+                <Route path="phu-kien/*" element={<CategoryPage />} />
+                <Route path="sale/*" element={<CategoryPage />} />
+                <Route path="moi/*" element={<CategoryPage />} />
+                
+                {/* Giỏ hàng và Thanh toán */}
+                <Route path="gio-hang" element={<CartPage />} />
+                <Route path="thanh-toan" element={<CheckoutPage />} />
+                
+                {/* Tài khoản */}
+                <Route path="login" element={<LoginPage />} />
+                <Route path="register" element={<RegisterPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="yeu-thich" element={<WishlistPage />} />
+                <Route path="don-hang" element={<OrderHistoryPage />} />
+                <Route path="don-hang/:orderId" element={<OrderDetailPage />} />
+              </Route>
+
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="products" element={<ProductManagement />} />
+                <Route path="banners" element={<BannerManagementPage />} />
+                <Route path="banners/add" element={<AddEditBannerPage />} />
+                <Route path="banners/edit/:id" element={<AddEditBannerPage />} />
+                {/* Thêm các route Admin khác ở đây */}
+              </Route>
+            </Routes>
+          </div>
+        </FilterProvider>
+      </CartProvider>
+    </Router>
   );
-}
+};
 
 export default App;

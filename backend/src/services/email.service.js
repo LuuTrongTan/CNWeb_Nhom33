@@ -1,34 +1,63 @@
 const nodemailer = require('nodemailer');
-require('dotenv').config();
+const config = require('../config/config');
+const logger = require('../config/logger');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const transport = nodemailer.createTransport(config.email.smtp);
+/* istanbul ignore next */
+if (config.env !== 'test') {
+  transport
+    .verify()
+    .then(() => logger.info('Connected to email server'))
+    .catch(() => logger.warn('Unable to connect to email server. Make sure you have configured the SMTP options in .env'));
+}
 
-exports.sendVerificationEmail = async (email, code) => {
-  const mailOptions = {
-    from: process.env.SMTP_USER,
-    to: email,
-    subject: 'Xác thực tài khoản của bạn',
-    text: `Mã xác thực của bạn là: ${code}. Vui lòng nhập mã này để xác thực tài khoản.`,
-  };
-
-  await transporter.sendMail(mailOptions);
+/**
+ * Send an email
+ * @param {string} to
+ * @param {string} subject
+ * @param {string} text
+ * @returns {Promise}
+ */
+const sendEmail = async (to, subject, text) => {
+  const msg = { from: config.email.from, to, subject, text };
+  await transport.sendMail(msg);
 };
 
-exports.sendResetPasswordEmail = async (email, code) => {
-  const mailOptions = {
-    from: process.env.SMTP_USER,
-    to: email,
-    subject: 'Đặt lại mật khẩu',
-    text: `Mã xác thực để đặt lại mật khẩu của bạn là: ${code}. Mã này có hiệu lực trong 10 phút.`,
-  };
+/**
+ * Send reset password email
+ * @param {string} to
+ * @param {string} token
+ * @returns {Promise}
+ */
+const sendResetPasswordEmail = async (to, token) => {
+  const subject = 'Reset password';
+  // replace this url with the link to the reset password page of your front-end app
+  const resetPasswordUrl = `http://link-to-app/reset-password?token=${token}`;
+  const text = `Dear user,
+To reset your password, click on this link: ${resetPasswordUrl}
+If you did not request any password resets, then ignore this email.`;
+  await sendEmail(to, subject, text);
+};
 
-  await transporter.sendMail(mailOptions);
+/**
+ * Send verification email
+ * @param {string} to
+ * @param {string} token
+ * @returns {Promise}
+ */
+const sendVerificationEmail = async (to, token) => {
+  const subject = 'Email Verification';
+  // replace this url with the link to the email verification page of your front-end app
+  const verificationEmailUrl = `http://link-to-app/verify-email?token=${token}`;
+  const text = `Dear user,
+To verify your email, click on this link: ${verificationEmailUrl}
+If you did not create an account, then ignore this email.`;
+  await sendEmail(to, subject, text);
+};
+
+module.exports = {
+  transport,
+  sendEmail,
+  sendResetPasswordEmail,
+  sendVerificationEmail,
 };

@@ -1,27 +1,30 @@
 const mongoose = require('mongoose');
+const { toJSON, paginate } = require('./plugins');
 
-const wishlistSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  products: [{
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true
+const wishlistSchema = mongoose.Schema(
+  {
+    user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'User',
+      required: true,
     },
-    addedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }]
-}, { timestamps: true });
+    products: [{
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Product',
+    }],
+  },
+  {
+    timestamps: true,
+  }
+);
 
-// Ensure a user can't add the same product twice
-wishlistSchema.index({ user: 1, 'products.product': 1 }, { unique: true });
+// Thêm plugin để chuyển đổi mongoose sang json
+wishlistSchema.plugin(toJSON);
+wishlistSchema.plugin(paginate);
 
+/**
+ * @typedef Wishlist
+ */
 const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
 module.exports = Wishlist; 

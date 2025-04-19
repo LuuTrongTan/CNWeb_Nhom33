@@ -1,19 +1,33 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import App from './App';
-import { AuthProvider } from './contexts/AuthContext';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import './assets/styles/index.css';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import React from "react";
+import App from "./App.jsx";
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
+// Import core styles
+import "./styles/scss/main.scss";
+import "./styles/css/index.css";
+import "./styles/css/App.css";
+
+// Import component styles
+import "./styles/css/Navbar.css";
+import "./styles/css/ProductCard.css";
+
+// Import icon library
+import "@fortawesome/fontawesome-free/css/all.min.css";
+
+// Import providers
+import { CartProvider } from "./context/CartContext";
+import { AxiosProvider } from "./context/AxiosContext";
+import { AuthProvider } from "./context/AuthContext";
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <AxiosProvider>
       <AuthProvider>
-        <App />
-        <ToastContainer position="top-right" autoClose={3000} />
+        <CartProvider>
+          <App />
+        </CartProvider>
       </AuthProvider>
-    </BrowserRouter>
-  </React.StrictMode>
+    </AxiosProvider>
+  </StrictMode>
 );

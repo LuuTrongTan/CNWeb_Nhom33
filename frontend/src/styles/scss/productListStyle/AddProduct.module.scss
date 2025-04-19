@@ -1,0 +1,98 @@
+// .container {
+//   max-width: 400px;
+//   margin: auto;
+//   padding: 20px;
+//   background: white;
+//   border-radius: 10px;
+//   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+//   display: flex;
+//   flex-direction: column;
+
+//   input {
+//     width: 96%;
+//     margin-bottom: 13px;
+//     padding: 8px;
+//     border: 1px solid #ccc;
+//     border-radius: 5px;
+//   }
+
+//   label {
+//     display: block;
+//     margin-bottom: 5px;
+//     font-size: 14px;
+//     font-weight: bold;
+//   }
+
+//   .fileInput {
+//     margin-bottom: 10px;
+//   }
+
+//   .imagePreview {
+//     display: flex;
+//     flex-wrap: wrap;
+//     gap: 10px;
+//     margin-bottom: 10px;
+
+//     img {
+//       width: 80px;
+//       height: 80px;
+//       object-fit: cover;
+//       border-radius: 5px;
+//       border: 1px solid #ddd;
+//     }
+//   }
+
+// }
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+
+  .formRow {
+    display: flex;
+    gap: 20px; /* Khoảng cách giữa các input */
+    margin-bottom: 15px;
+  }
+
+  .formRow > div {
+    flex: 1; /* Chia đều không gian */
+  }
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  .imagePreview img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin-right: 10px;
+  }
+
+  .cancelButton {
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .saveButton {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+}

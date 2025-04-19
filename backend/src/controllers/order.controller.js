@@ -1,128 +1,97 @@
-const Order = require('../models/order.model');
-const { validationResult } = require('express-validator');
+const httpStatus = require('http-status');
+const catchAsync = require('../utils/catchAsync');
+const { orderService } = require('../services');
+const ApiError = require('../utils/ApiError');
 
-// Get user's orders
-exports.getUserOrders = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    
-    const orders = await Order.find({ user: userId })
-      .sort({ createdAt: -1 })
-      .populate('products.product');
-    
-    res.status(200).json({
-      success: true,
-      orders
-    });
-  } catch (error) {
-    console.error('Get orders error:', error);
-    res.status(500).json({ message: 'Server error while fetching orders' });
-  }
-};
+/**
+ * Tạo đơn hàng mới
+ */
+const createOrder = catchAsync(async (req, res) => {
+  const order = await orderService.createOrder({
+    ...req.body,
+    user: req.user.id,
+  });
+  res.status(httpStatus.CREATED).send(order);
+});
 
-// Get specific order details
-exports.getOrderDetails = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const orderId = req.params.orderId;
-    
-    const order = await Order.findOne({
-      _id: orderId,
-      user: userId
-    }).populate('products.product');
-    
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-    
-    res.status(200).json({
-      success: true,
-      order
-    });
-  } catch (error) {
-    console.error('Get order details error:', error);
-    res.status(500).json({ message: 'Server error while fetching order details' });
-  }
-};
+/**
+ * Lấy danh sách đơn hàng của người dùng đăng nhập
+ */
+const getUserOrders = catchAsync(async (req, res) => {
+  const filter = { user: req.user.id };
+  const options = {
+    sortBy: req.query.sortBy || 'createdAt:desc',
+    limit: parseInt(req.query.limit, 10) || 10,
+    page: parseInt(req.query.page, 10) || 1,
+    populate: 'items.product',
+  };
+  
+  const result = await orderService.queryOrders(filter, options);
+  res.send(result);
+});
 
-// Create new order
-exports.createOrder = async (req, res) => {
-  try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    
-    const userId = req.user.id;
-    const {
-      products,
-      totalAmount,
-      shippingAddress,
-      paymentMethod,
-      notes
-    } = req.body;
-    
-    // Create new order
-    const newOrder = new Order({
-      user: userId,
-      products,
-      totalAmount,
-      shippingAddress,
-      paymentMethod,
-      notes
-    });
-    
-    await newOrder.save();
-    
-    // Get the order with populated products
-    const order = await Order.findById(newOrder._id).populate('products.product');
-    
-    res.status(201).json({
-      success: true,
-      message: 'Order created successfully',
-      order
-    });
-  } catch (error) {
-    console.error('Create order error:', error);
-    res.status(500).json({ message: 'Server error while creating order' });
+/**
+ * Lấy chi tiết đơn hàng theo ID
+ */
+const getOrderById = catchAsync(async (req, res) => {
+  const order = await orderService.getOrderById(req.params.orderId);
+  
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }
-};
+  
+  // Kiểm tra quyền truy cập, chỉ cho phép xem đơn hàng của chính mình
+  // hoặc admin/staff có quyền xem tất cả
+  if (order.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền xem đơn hàng này');
+  }
+  
+  res.send(order);
+});
 
-// Cancel order
-exports.cancelOrder = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const orderId = req.params.orderId;
-    
-    // Find the order
-    const order = await Order.findOne({
-      _id: orderId,
-      user: userId
-    });
-    
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-    
-    // Check if order can be cancelled
-    if (order.orderStatus !== 'processing') {
-      return res.status(400).json({
-        message: 'Order cannot be cancelled at its current status'
-      });
-    }
-    
-    // Update order status
-    order.orderStatus = 'cancelled';
-    await order.save();
-    
-    res.status(200).json({
-      success: true,
-      message: 'Order cancelled successfully',
-      order
-    });
-  } catch (error) {
-    console.error('Cancel order error:', error);
-    res.status(500).json({ message: 'Server error while cancelling order' });
+/**
+ * Hủy đơn hàng
+ */
+const cancelOrder = catchAsync(async (req, res) => {
+  const order = await orderService.getOrderById(req.params.orderId);
+  
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }
+  
+  // Chỉ cho phép người dùng hủy đơn hàng của chính mình
+  if (order.user.toString() !== req.user.id) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền hủy đơn hàng này');
+  }
+  
+  // Chỉ cho phép hủy đơn hàng khi trạng thái là "pending" hoặc "processing"
+  if (order.status !== 'pending' && order.status !== 'processing') {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST, 
+      'Không thể hủy đơn hàng khi đã được vận chuyển hoặc giao hàng'
+    );
+  }
+  
+  const updatedOrder = await orderService.updateOrderById(
+    req.params.orderId, 
+    { status: 'cancelled', cancelledAt: new Date() }
+  );
+  
+  res.send(updatedOrder);
+});
+
+/**
+ * Lấy số liệu thống kê đơn hàng của người dùng
+ */
+const getOrderStats = catchAsync(async (req, res) => {
+  const stats = await orderService.getUserOrderStats(req.user.id);
+  res.send(stats);
+});
+
+module.exports = {
+  createOrder,
+  getUserOrders,
+  getOrderById,
+  cancelOrder,
+  getOrderStats,
 }; 

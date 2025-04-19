@@ -1,0 +1,399 @@
+/* Add Product Page Styles */
+.add-product-page {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 60px);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+/* Form Layout */
+.product-form {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-section {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-section h2 {
+  font-size: 18px;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-weight: 600;
+  border-bottom: 1px solid #e6e6e6;
+  padding-bottom: 10px;
+}
+
+/* Form Groups & Inputs */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #444;
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #4a6cf7;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
+}
+
+input.error,
+textarea.error,
+select.error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.error-message.with-icon {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.info-message {
+  color: #0d6efd;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.required {
+  color: #dc3545;
+}
+
+/* Input with prefix/suffix */
+.input-with-prefix,
+.input-with-suffix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 12px;
+  color: #666;
+}
+
+.input-with-prefix input {
+  padding-left: 25px;
+}
+
+.input-suffix {
+  position: absolute;
+  right: 12px;
+  color: #666;
+}
+
+.input-with-suffix input {
+  padding-right: 25px;
+}
+
+/* Checkbox styles */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+/* Image Upload */
+.image-upload-container {
+  margin-bottom: 20px;
+}
+
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.image-preview-item {
+  position: relative;
+  width: 100%;
+  height: 110px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.image-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #dc3545;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.remove-image-btn:hover {
+  background-color: rgba(255, 255, 255, 1);
+  color: #b02a37;
+}
+
+.upload-box {
+  width: 100%;
+  height: 110px;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-box:hover {
+  border-color: #4a6cf7;
+}
+
+.upload-icon {
+  font-size: 24px;
+  color: #6c757d;
+  margin-bottom: 8px;
+}
+
+.image-info {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.image-info p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Attributes Styles */
+.attributes-container {
+  margin-bottom: 20px;
+}
+
+.no-attributes {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  text-align: center;
+  color: #6c757d;
+  margin-bottom: 15px;
+}
+
+.attributes-list {
+  margin-bottom: 15px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.attribute-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.attribute-name {
+  font-weight: 500;
+  margin-right: 5px;
+}
+
+.attribute-value {
+  flex-grow: 1;
+  color: #666;
+}
+
+.remove-attribute-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 5px;
+  margin-left: 10px;
+}
+
+.add-attribute-form {
+  display: flex;
+  gap: 10px;
+}
+
+.attribute-inputs {
+  display: flex;
+  flex-grow: 1;
+  gap: 10px;
+}
+
+.add-attribute-btn {
+  background-color: #e9ecef;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #495057;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+}
+
+.add-attribute-btn:hover {
+  background-color: #dde2e6;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid #e6e6e6;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #4a6cf7;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2951f5;
+}
+
+.btn-primary:disabled {
+  background-color: #a3b7fa;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn-secondary:disabled {
+  background-color: #9aa4ab;
+  cursor: not-allowed;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .page-header button {
+    align-self: flex-start;
+  }
+} 
