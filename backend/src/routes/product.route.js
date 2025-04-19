@@ -7,21 +7,19 @@ const router = express.Router();
 router
   .route('/')
   .post(productController.createProduct)
-  .get(productController.getProduct)
+  .get(productController.getProductById)
   .patch(productController.updateProduct)
   .delete(productController.deleteProduct);
 
 router.route('/getAllProduct').get(productController.getAllProduct);
 
-router.route('/getFilterProducts').get(productController.getProducts);
+router.route('/searchProducts').post(productController.getProductsBySearch);
 
 router.route('/getByCategory').get(productController.getProductsByCategory);
 
 router.route('/getRelated').get(productController.getRelatedProducts);
 
 // Thêm route để lấy đánh giá theo sản phẩm
-router.route('/:productId/reviews')
-  .get(reviewController.getProductReviews)
-  .post(auth(), reviewController.createReview);
+router.route('/:productId/reviews').get(reviewController.getProductReviews).post(auth(), reviewController.createReview);
 
 module.exports = router;

@@ -9,35 +9,15 @@ const createProduct = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send(product);
 });
 
-// $in thì  bất kỳ sản phẩm nào có ít nhất một giá trị trong danh sách. còn $all thì  sản phẩm phải chứa tất cả các giá trị được chỉ định.
-const getProducts = catchAsync(async (req, res) => {
-  const filter = {
-    ...(req.query.category && { category: { $in: req.query.category } }),
-    ...(req.query.size && { sizes: { $all: req.query.size.split(',') } }),
-    ...(req.query.color && { colors: { $in: req.query.color } }),
-    ...(req.query.price && {
-      price: {
-        $gte: Number(req.query.price.split('-')[0]),
-        $lte: Number(req.query.price.split('-')[1]),
-      },
-    }),
-    ...(req.query.name && { name: { $regex: req.query.name, $options: 'i' } }),
-  };
-
-  const options = {
-    page: req.query.page,
-    limit: req.query.limit,
-    sortBy: req.query.sortBy,
-  };
-
-  const result = await productService.queryProduct(filter, options);
+const getProductsBySearch = catchAsync(async (req, res) => {
+  const result = await productService.searchProducts(req.body);
   res.send(result);
 });
 
 const getAllProduct = catchAsync(async (req, res) => {
   const { page = 1, limit = 12 } = req.query; // Lấy giá trị từ request query
 
-  const products = await productService.getAllProduct(parseInt(page), parseInt(limit));
+  const products = await productService.getAllProducts(parseInt(page), parseInt(limit));
   if (!products) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
   }
@@ -46,27 +26,27 @@ const getAllProduct = catchAsync(async (req, res) => {
 
 const getProductsByCategory = catchAsync(async (req, res) => {
   const { categoryId, page = 1, limit = 12 } = req.query;
-  
+
   if (!categoryId) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Category ID is required');
   }
-  
+
   const products = await productService.getProductsByCategory(categoryId, page, limit);
   res.send(products);
 });
 
 const getRelatedProducts = catchAsync(async (req, res) => {
   const { productId, limit = 4 } = req.query;
-  
+
   if (!productId) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Product ID is required');
   }
-  
+
   const products = await productService.getRelatedProducts(productId, limit);
   res.send(products);
 });
 
-const getProduct = catchAsync(async (req, res) => {
+const getProductById = catchAsync(async (req, res) => {
   const productId = req.query.productId;
   if (!productId) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Product ID is required');
@@ -98,11 +78,11 @@ const deleteProduct = catchAsync(async (req, res) => {
 
 module.exports = {
   createProduct,
-  getProducts,
+  getProductsBySearch,
   getAllProduct,
   getProductsByCategory,
   getRelatedProducts,
-  getProduct,
+  getProductById,
   updateProduct,
   deleteProduct,
 };

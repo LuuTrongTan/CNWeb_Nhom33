@@ -12,23 +12,6 @@ const createProduct = async (productBody) => {
 };
 
 /**
- * Truy vấn sản phẩm với các tùy chọn lọc và phân trang
- * @param {Object} filter - Điều kiện lọc 
- * @param {Object} options - Tùy chọn truy vấn
- * @returns {Promise<QueryResult>} Kết quả truy vấn với phân trang
- */
-const queryProducts = async (filter, options) => {
-  const paginateOptions = {
-    page: parseInt(options.page, 10) || 1,
-    limit: parseInt(options.limit, 10) || 12,
-    sort: options.sortBy || '-createdAt',
-    populate: options.populate || 'category',
-  };
-
-  return await Product.paginate(filter, paginateOptions);
-};
-
-/**
  * Tìm kiếm sản phẩm với nhiều điều kiện lọc
  * @param {Object} options - Tùy chọn tìm kiếm
  * @returns {Promise<Object>} Danh sách sản phẩm và thông tin phân trang
@@ -52,7 +35,7 @@ const searchProducts = async (options = {}) => {
     colors = [],
     sizes = [],
     brands = [],
-    tags = []
+    tags = [],
   } = options;
 
   const query = {};
@@ -63,7 +46,7 @@ const searchProducts = async (options = {}) => {
       { name: { $regex: searchTerm, $options: 'i' } },
       { description: { $regex: searchTerm, $options: 'i' } },
       { shortDescription: { $regex: searchTerm, $options: 'i' } },
-      { 'attributes.value': { $regex: searchTerm, $options: 'i' } }
+      { 'attributes.value': { $regex: searchTerm, $options: 'i' } },
     ];
   }
 
@@ -111,7 +94,7 @@ const searchProducts = async (options = {}) => {
 
   // Lọc theo màu sắc
   if (colors && colors.length > 0) {
-    query.colors = { $in: colors };
+    query.colors = { $all: colors };
   }
 
   // Lọc theo kích thước
@@ -131,7 +114,7 @@ const searchProducts = async (options = {}) => {
 
   // Sắp xếp
   const sort = {};
-  
+
   // Xử lý các trường hợp sắp xếp đặc biệt
   if (sortBy === 'price' && sortOrder === 'asc') {
     sort.price = 1;
@@ -158,11 +141,7 @@ const searchProducts = async (options = {}) => {
   const skip = (Number(page) - 1) * Number(limit);
 
   // Thực hiện truy vấn
-  const products = await Product.find(query)
-    .sort(sort)
-    .skip(skip)
-    .limit(Number(limit))
-    .populate('category', 'name slug');
+  const products = await Product.find(query).sort(sort).skip(skip).limit(Number(limit)).populate('category', 'name slug');
 
   // Đếm tổng số sản phẩm phù hợp với điều kiện
   const total = await Product.countDocuments(query);
@@ -172,14 +151,14 @@ const searchProducts = async (options = {}) => {
     page: Number(page),
     limit: Number(limit),
     totalPages: Math.ceil(total / Number(limit)),
-    totalItems: total
+    totalItems: total,
   };
 };
 
 /**
  * Lấy tất cả sản phẩm với phân trang
  * @param {number} page - Số trang
- * @param {number} limit - Số lượng mỗi trang 
+ * @param {number} limit - Số lượng mỗi trang
  * @returns {Promise<Object>} Danh sách sản phẩm và thông tin phân trang
  */
 const getAllProducts = async (page = 1, limit = 12) => {
@@ -218,20 +197,20 @@ const getProductsByCategory = async (categoryId, page = 1, limit = 12) => {
 
   if (page < 1) page = 1;
 
-  const products = await Product.find({ 
+  const products = await Product.find({
     category: categoryId,
     isActive: true,
-    stock: { $gt: 0 }
+    stock: { $gt: 0 },
   })
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit)
     .populate('category', 'name slug');
 
-  const total = await Product.countDocuments({ 
+  const total = await Product.countDocuments({
     category: categoryId,
     isActive: true,
-    stock: { $gt: 0 }
+    stock: { $gt: 0 },
   });
 
   return {
@@ -260,22 +239,22 @@ const getProductBySlug = async (slug) => {
  */
 const getRelatedProducts = async (productId, limit = 4) => {
   const product = await getProductById(productId);
-  
+
   if (!product) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy sản phẩm');
   }
 
   // Lấy sản phẩm cùng danh mục, loại trừ sản phẩm hiện tại
-  const relatedProducts = await Product.find({ 
+  const relatedProducts = await Product.find({
     category: product.category,
     _id: { $ne: productId },
     isActive: true,
-    stock: { $gt: 0 }
+    stock: { $gt: 0 },
   })
-  .sort({ soldCount: -1, rating: -1 })
-  .limit(limit)
-  .select('name price images slug hasDiscount discountPrice');
-  
+    .sort({ soldCount: -1, rating: -1 })
+    .limit(limit)
+    .select('name price images slug hasDiscount discountPrice');
+
   return relatedProducts;
 };
 
@@ -285,15 +264,15 @@ const getRelatedProducts = async (productId, limit = 4) => {
  * @returns {Promise<Product[]>} Danh sách sản phẩm nổi bật
  */
 const getFeaturedProducts = async (limit = 8) => {
-  return Product.find({ 
+  return Product.find({
     isFeatured: true,
     isActive: true,
-    stock: { $gt: 0 }
+    stock: { $gt: 0 },
   })
-  .sort({ createdAt: -1 })
-  .limit(limit)
-  .select('name price images slug hasDiscount discountPrice rating')
-  .populate('category', 'name slug');
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .select('name price images slug hasDiscount discountPrice rating')
+    .populate('category', 'name slug');
 };
 
 /**
@@ -302,14 +281,14 @@ const getFeaturedProducts = async (limit = 8) => {
  * @returns {Promise<Product[]>} Danh sách sản phẩm mới
  */
 const getNewArrivals = async (limit = 8) => {
-  return Product.find({ 
+  return Product.find({
     isActive: true,
-    stock: { $gt: 0 }
+    stock: { $gt: 0 },
   })
-  .sort({ createdAt: -1 })
-  .limit(limit)
-  .select('name price images slug hasDiscount discountPrice')
-  .populate('category', 'name slug');
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .select('name price images slug hasDiscount discountPrice')
+    .populate('category', 'name slug');
 };
 
 /**
@@ -318,14 +297,14 @@ const getNewArrivals = async (limit = 8) => {
  * @returns {Promise<Product[]>} Danh sách sản phẩm bán chạy
  */
 const getBestSellingProducts = async (limit = 8) => {
-  return Product.find({ 
+  return Product.find({
     isActive: true,
-    stock: { $gt: 0 }
+    stock: { $gt: 0 },
   })
-  .sort({ soldCount: -1 })
-  .limit(limit)
-  .select('name price images slug hasDiscount discountPrice soldCount')
-  .populate('category', 'name slug');
+    .sort({ soldCount: -1 })
+    .limit(limit)
+    .select('name price images slug hasDiscount discountPrice soldCount')
+    .populate('category', 'name slug');
 };
 
 /**
@@ -368,7 +347,7 @@ const deleteProductById = async (productId) => {
   // Thay vì xóa vĩnh viễn, có thể đánh dấu sản phẩm là không hoạt động
   // product.isActive = false;
   // await product.save();
-  
+
   // Hoặc xóa vĩnh viễn nếu cần
   await product.deleteOne();
   return product;
@@ -382,25 +361,22 @@ const getProductStats = async () => {
   const totalProducts = await Product.countDocuments();
   const activeProducts = await Product.countDocuments({ isActive: true });
   const outOfStockProducts = await Product.countDocuments({ stock: 0 });
-  const lowStockProducts = await Product.countDocuments({ 
-    stock: { $gt: 0, $lte: '$lowStockThreshold' }
+  const lowStockProducts = await Product.countDocuments({
+    stock: { $gt: 0, $lte: '$lowStockThreshold' },
   });
   const featuredProducts = await Product.countDocuments({ isFeatured: true });
   const discountedProducts = await Product.countDocuments({ hasDiscount: true });
-  
+
   // Đếm sản phẩm theo danh mục
   const productsByCategory = await Product.aggregate([
     { $group: { _id: '$category', count: { $sum: 1 } } },
     { $sort: { count: -1 } },
-    { $limit: 5 }
+    { $limit: 5 },
   ]);
-  
+
   // Lấy thông tin danh mục cho kết quả
-  const populatedProductsByCategory = await Product.populate(
-    productsByCategory,
-    { path: '_id', select: 'name slug' }
-  );
-  
+  const populatedProductsByCategory = await Product.populate(productsByCategory, { path: '_id', select: 'name slug' });
+
   return {
     total: totalProducts,
     active: activeProducts,
@@ -408,13 +384,12 @@ const getProductStats = async () => {
     lowStock: lowStockProducts,
     featured: featuredProducts,
     discounted: discountedProducts,
-    byCategory: populatedProductsByCategory
+    byCategory: populatedProductsByCategory,
   };
 };
 
 module.exports = {
   createProduct,
-  queryProducts,
   searchProducts,
   getAllProducts,
   getProductById,
@@ -426,5 +401,5 @@ module.exports = {
   getBestSellingProducts,
   updateProductById,
   deleteProductById,
-  getProductStats
+  getProductStats,
 };

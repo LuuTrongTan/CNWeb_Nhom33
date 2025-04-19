@@ -38,19 +38,19 @@ module.exports = {
   mongoose: {
     url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
     options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-      autoIndex: true,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      family: 4, // IPv4, skip IPv6
-      dnsPromises: { lookup: null },
-      writeConcern: {
-        w: 'majority',
-        wtimeout: 5000
-      }
+      // useNewUrlParser: true,
+      // useUnifiedTopology: true,
+      // useCreateIndex: true,
+      // useFindAndModify: false,
+      // autoIndex: true,
+      // serverSelectionTimeoutMS: 5000,
+      // socketTimeoutMS: 45000,
+      // family: 4, // IPv4, skip IPv6
+      // dnsPromises: { lookup: null },
+      // writeConcern: {
+      //   w: 'majority',
+      //   wtimeout: 5000
+      // }
     },
   },
   jwt: {
