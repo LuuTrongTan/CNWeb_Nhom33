@@ -94,12 +94,12 @@ const searchProducts = async (options = {}) => {
 
   // Lọc theo màu sắc
   if (colors && colors.length > 0) {
-    query.colors = { $all: colors };
+    query.colors = { $in: colors };
   }
 
   // Lọc theo kích thước
   if (sizes && sizes.length > 0) {
-    query.sizes = { $in: sizes };
+    query.sizes = { $all: sizes };
   }
 
   // Lọc theo thương hiệu

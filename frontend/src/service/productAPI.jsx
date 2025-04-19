@@ -67,9 +67,9 @@ export const getProductFilter = async (
 ) => {
   try {
     const response = await axios.post(`${API_URL}/product/searchProducts`, {
-      color: color,
-      category: category,
-      size: size ? size.join(",") : "",
+      colors: color ?? "",
+      category: category ?? null,
+      sizes: size ?? [],
       minPrice: minPrice ? minPrice : 0,
       maxPrice: maxPrice ? maxPrice : 10000000,
     });

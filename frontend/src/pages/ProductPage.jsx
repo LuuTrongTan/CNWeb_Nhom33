@@ -13,7 +13,7 @@ import {
 import axios from "axios";
 import ProductCard from "../components/Product/ProductCard";
 import "../styles/css/ProductList.css";
-import { fetchProductsAPI } from "../service/productAPI"; // Import hàm fetchProducts từ productAPI
+import { fetchProductsAPI, getProductFilter } from "../service/productAPI"; // Import hàm fetchProducts từ productAPI
 import { FilterContext } from "../context/FilterContext"; // Import context filter nếu cần
 
 const ProductPage = () => {
@@ -57,12 +57,21 @@ const ProductPage = () => {
   ];
 
   useEffect(() => {
+    console.log("Selected filter:", selectedFilter);
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Trong môi trường thực tế, đây sẽ là một API call đến backend
-        const response = await fetchProductsAPI();
-        setProducts(response.data);
+
+        const response = await getProductFilter(
+          selectedFilter.color,
+          selectedFilter.category,
+          selectedFilter.size,
+          selectedFilter.price.min,
+          selectedFilter.price.max
+        );
+
+        console.log("Dữ liệu sản phẩm:", response);
+        setProducts(response.products);
         setTotalProduct(response.total);
         setTotalPage(response.totalPages);
 
@@ -74,10 +83,7 @@ const ProductPage = () => {
           setPageNumbers(initialPages);
         }
 
-        // Sử dụng dữ liệu mẫu từ products.js
-        // const module = await import("../data/products");
         setTimeout(() => {
-          // setProducts(module.default);
           setLoading(false);
         }, 500); // Giả lập thời gian tải
       } catch (err) {
@@ -88,7 +94,7 @@ const ProductPage = () => {
     };
 
     fetchProducts();
-  }, [totalPage]);
+  }, [totalPage, selectedFilter]);
 
   // Lọc sản phẩm theo danh mục
   const filterByCategory = (product) => {
@@ -137,11 +143,6 @@ const ProductPage = () => {
     return a.id - b.id;
   };
 
-  useEffect(() => {
-    console.log("Updated selectedFilter:", selectedFilter);
-    filterProducts();
-  }, [selectedFilter]);
-
   // Lọc và sắp xếp sản phẩm
   const filteredProducts = products
     .filter(filterByCategory)
@@ -189,6 +190,7 @@ const ProductPage = () => {
         selectedFilter.price.max
       );
       setProducts(response.data);
+      console.log("Filtered products:", response);
       setTotalProduct(response.total);
       setTotalPage(response.totalPages);
     } catch (error) {
