@@ -19,6 +19,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { getOrderById, cancelOrder } from '../../service/orderAPI';
 import '../../styles/css/OrderDetail.css';
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const OrderDetailPage = () => {
   const { orderId } = useParams();
@@ -31,32 +33,44 @@ const OrderDetailPage = () => {
   const printRef = useRef();
 
   useEffect(() => {
+    const fetchOrderDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`/api/orders/${orderId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        setOrder(response.data);
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin đơn hàng:", err);
+        setError("Không thể lấy thông tin đơn hàng. Vui lòng thử lại sau.");
+        toast.error("Không thể lấy thông tin đơn hàng");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchOrderDetails();
   }, [orderId]);
 
-  const fetchOrderDetails = async () => {
-    try {
-      setLoading(true);
-      const data = await getOrderById(orderId);
-      setOrder(data);
-      setLoading(false);
-    } catch (err) {
-      setError('Không thể tải thông tin đơn hàng. Vui lòng thử lại sau.');
-      setLoading(false);
-    }
-  };
-
   const handleCancelOrder = async () => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) {
+      return;
+    }
+
     try {
-      setCancelLoading(true);
-      await cancelOrder(orderId);
-      // Cập nhật trạng thái đơn hàng sau khi hủy thành công
-      fetchOrderDetails();
-      setShowCancelModal(false);
+      const response = await axios.patch(`/api/orders/${orderId}/cancel`, {}, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      setOrder(response.data);
+      toast.success("Đơn hàng đã được hủy thành công");
     } catch (err) {
-      setError('Không thể hủy đơn hàng. Vui lòng thử lại sau.');
-    } finally {
-      setCancelLoading(false);
+      console.error("Lỗi khi hủy đơn hàng:", err);
+      toast.error(err.response?.data?.message || "Không thể hủy đơn hàng. Vui lòng thử lại sau.");
     }
   };
 
@@ -169,20 +183,20 @@ const OrderDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="order-detail-loading">
-        <FontAwesomeIcon icon={faSpinner} spin />
-        <p>Đang tải thông tin đơn hàng...</p>
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="order-detail-error">
-        <p>{error}</p>
-        <button className="retry-button" onClick={fetchOrderDetails}>Thử lại</button>
-        <Link to="/don-hang" className="back-button">
-          <FontAwesomeIcon icon={faArrowLeft} /> Quay lại danh sách đơn hàng
+      <div className="max-w-4xl mx-auto p-6 text-center">
+        <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
+          {error}
+        </div>
+        <Link to="/account/orders" className="text-blue-600 hover:underline">
+          Quay lại danh sách đơn hàng
         </Link>
       </div>
     );
@@ -190,239 +204,239 @@ const OrderDetailPage = () => {
 
   if (!order) {
     return (
-      <div className="order-not-found">
-        <p>Không tìm thấy thông tin đơn hàng</p>
-        <Link to="/don-hang" className="back-button">
-          <FontAwesomeIcon icon={faArrowLeft} /> Quay lại danh sách đơn hàng
+      <div className="max-w-4xl mx-auto p-6 text-center">
+        <div className="bg-yellow-100 text-yellow-700 p-4 rounded-lg mb-4">
+          Không tìm thấy thông tin đơn hàng
+        </div>
+        <Link to="/account/orders" className="text-blue-600 hover:underline">
+          Quay lại danh sách đơn hàng
         </Link>
       </div>
     );
   }
 
-  return (
-    <div className="order-detail-container" ref={printRef}>
-      <div className="order-detail-header">
-        <div className="header-left">
-          <Link to="/don-hang" className="back-link no-print">
-            <FontAwesomeIcon icon={faArrowLeft} /> Quay lại danh sách
-          </Link>
-          <h1>Chi tiết đơn hàng #{order._id.slice(-6)}</h1>
-          <p className="order-date">Đặt hàng ngày: {formatDate(order.createdAt)}</p>
-        </div>
-        <div className="header-right">
-          <div className={`order-status ${getStatusColor(order.status)}`}>
-            <FontAwesomeIcon icon={getStatusIcon(order.status)} />
-            {getStatusText(order.status)}
-          </div>
-          <div className="order-actions-buttons no-print">
-            <button className="action-btn print-btn" onClick={handlePrint}>
-              <FontAwesomeIcon icon={faPrint} /> In đơn hàng
-            </button>
-            <button className="action-btn share-btn" onClick={handleShare}>
-              <FontAwesomeIcon icon={faShare} /> Chia sẻ
-            </button>
-            {(order.status === 'pending' || order.status === 'processing') && (
-              <button 
-                className="cancel-order-btn" 
-                onClick={() => setShowCancelModal(true)}
-              >
-                <FontAwesomeIcon icon={faTimes} /> Hủy đơn hàng
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+  // Tạo các bước trạng thái đơn hàng
+  const orderSteps = [
+    { status: 'pending', label: 'Đặt hàng thành công' },
+    { status: 'processing', label: 'Đang xử lý' },
+    { status: 'shipped', label: 'Đang vận chuyển' },
+    { status: 'delivered', label: 'Đã giao hàng' }
+  ];
 
-      <div className="order-detail-content">
-        <div className="order-info-section">
-          <div className="timeline-section">
-            <h2>Trạng thái đơn hàng</h2>
-            <div className="order-timeline">
-              <div className={`timeline-step ${order.status !== 'cancelled' ? 'active' : ''}`}>
-                <div className="step-icon">
-                  <FontAwesomeIcon icon={faInfoCircle} />
-                </div>
-                <div className="step-content">
-                  <h4>Đặt hàng</h4>
-                  <p>{formatDate(order.createdAt)}</p>
-                </div>
-              </div>
-              
-              <div className={`timeline-step ${order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered' ? 'active' : ''}`}>
-                <div className="step-icon">
-                  <FontAwesomeIcon icon={faBoxOpen} />
-                </div>
-                <div className="step-content">
-                  <h4>Xử lý</h4>
-                  <p>{order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered' ? formatDate(order.updatedAt) : '—'}</p>
-                </div>
-              </div>
-              
-              <div className={`timeline-step ${order.status === 'shipped' || order.status === 'delivered' ? 'active' : ''}`}>
-                <div className="step-icon">
-                  <FontAwesomeIcon icon={faTruck} />
-                </div>
-                <div className="step-content">
-                  <h4>Giao hàng</h4>
-                  <p>{order.status === 'shipped' || order.status === 'delivered' ? formatDate(order.updatedAt) : '—'}</p>
-                </div>
-              </div>
-              
-              <div className={`timeline-step ${order.status === 'delivered' ? 'active' : ''}`}>
-                <div className="step-icon">
-                  <FontAwesomeIcon icon={faCheck} />
-                </div>
-                <div className="step-content">
-                  <h4>Hoàn thành</h4>
-                  <p>{order.deliveredAt ? formatDate(order.deliveredAt) : '—'}</p>
-                </div>
-              </div>
-              
-              {order.status === 'cancelled' && (
-                <div className="timeline-step cancelled active">
-                  <div className="step-icon">
-                    <FontAwesomeIcon icon={faTimes} />
-                  </div>
-                  <div className="step-content">
-                    <h4>Đã hủy</h4>
-                    <p>{order.cancelledAt ? formatDate(order.cancelledAt) : formatDate(order.updatedAt)}</p>
-                  </div>
-                </div>
+  // Xác định bước hiện tại
+  const getCurrentStep = () => {
+    if (order.status === 'cancelled') {
+      return -1; // Đơn hàng đã hủy
+    }
+    return orderSteps.findIndex(step => step.status === order.status);
+  };
+
+  const currentStep = getCurrentStep();
+
+  return (
+    <div className="order-detail-page max-w-4xl mx-auto p-4 md:p-6">
+      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        {/* Tiêu đề và trạng thái */}
+        <div className="p-4 md:p-6 border-b">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold">Chi tiết đơn hàng #{order._id.substring(0, 8)}</h1>
+              <p className="text-gray-500 text-sm mt-1">
+                Ngày đặt: {new Date(order.createdAt).toLocaleDateString('vi-VN')}
+              </p>
+            </div>
+            <div className="mt-2 md:mt-0">
+              {order.status === 'cancelled' ? (
+                <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                  Đã hủy
+                </span>
+              ) : (
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  order.status === 'delivered' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-blue-100 text-blue-800'
+                }`}>
+                  {order.status === 'pending' && 'Chờ xử lý'}
+                  {order.status === 'processing' && 'Đang xử lý'}
+                  {order.status === 'shipped' && 'Đang vận chuyển'}
+                  {order.status === 'delivered' && 'Đã giao hàng'}
+                </span>
               )}
             </div>
           </div>
 
-          <div className="order-details-grid">
-            <div className="details-card shipping-info">
-              <h3><FontAwesomeIcon icon={faMapMarkerAlt} /> Thông tin giao hàng</h3>
-              <div className="card-content">
-                <p><strong><FontAwesomeIcon icon={faUser} /> Người nhận:</strong> {order.shippingAddress.fullName}</p>
-                <p><strong><FontAwesomeIcon icon={faPhone} /> Số điện thoại:</strong> {order.shippingAddress.phone}</p>
-                <p><strong><FontAwesomeIcon icon={faMapMarkerAlt} /> Địa chỉ:</strong> {order.shippingAddress.address}, {order.shippingAddress.ward}, {order.shippingAddress.district}, {order.shippingAddress.city}</p>
-                {order.trackingNumber && (
-                  <p><strong>Mã vận đơn:</strong> {order.trackingNumber}</p>
-                )}
-                {order.shippingProvider && (
-                  <p><strong>Đơn vị vận chuyển:</strong> {order.shippingProvider}</p>
-                )}
+          {/* Tiến trình đơn hàng */}
+          {order.status !== 'cancelled' && (
+            <div className="my-6">
+              <div className="relative">
+                {/* Đường kẻ nối các bước */}
+                <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -translate-y-1/2"></div>
+                
+                {/* Đường kẻ đã hoàn thành */}
+                <div 
+                  className="absolute top-1/2 left-0 h-1 bg-green-500 -translate-y-1/2"
+                  style={{ width: `${(currentStep / (orderSteps.length - 1)) * 100}%` }}
+                ></div>
+                
+                {/* Các điểm trạng thái */}
+                <div className="relative flex justify-between">
+                  {orderSteps.map((step, index) => (
+                    <div key={step.status} className="flex flex-col items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        index <= currentStep 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-gray-200 text-gray-500'
+                      }`}>
+                        {index <= currentStep ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          index + 1
+                        )}
+                      </div>
+                      <span className={`text-xs text-center mt-2 ${
+                        index <= currentStep ? 'text-gray-800 font-medium' : 'text-gray-500'
+                      }`}>
+                        {step.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-            
-            <div className="details-card payment-info">
-              <h3><FontAwesomeIcon icon={faCreditCard} /> Thông tin thanh toán</h3>
-              <div className="card-content">
-                <p><strong>Phương thức:</strong> {getPaymentMethodText(order.paymentMethod)}</p>
-                <p><strong>Trạng thái:</strong> {order.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}</p>
-                {order.isPaid && order.paidAt && (
-                  <p><strong>Thời gian thanh toán:</strong> {formatDate(order.paidAt)}</p>
-                )}
-                {order.paymentResult && order.paymentResult.id && (
-                  <p><strong>Mã giao dịch:</strong> {order.paymentResult.id}</p>
-                )}
-              </div>
-            </div>
+          )}
 
-            <div className="details-card order-summary">
-              <h3><FontAwesomeIcon icon={faShoppingBag} /> Tóm tắt đơn hàng</h3>
-              <div className="card-content">
-                <div className="summary-row">
-                  <span>Tổng tiền sản phẩm:</span>
-                  <span>{formatPrice(order.totalItemsPrice)}</span>
-                </div>
-                <div className="summary-row">
-                  <span>Phí vận chuyển:</span>
-                  <span>{formatPrice(order.shippingPrice)}</span>
-                </div>
-                {order.taxPrice > 0 && (
-                  <div className="summary-row">
-                    <span>Thuế:</span>
-                    <span>{formatPrice(order.taxPrice)}</span>
-                  </div>
-                )}
-                {order.discountPrice > 0 && (
-                  <div className="summary-row discount">
-                    <span>Giảm giá:</span>
-                    <span>-{formatPrice(order.discountPrice)}</span>
-                  </div>
-                )}
-                <div className="summary-row total">
-                  <span>Tổng thanh toán:</span>
-                  <span>{formatPrice(order.totalPrice)}</span>
-                </div>
+          {/* Nếu đơn hàng đã bị hủy */}
+          {order.status === 'cancelled' && (
+            <div className="my-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center mb-2 text-red-600">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span className="font-medium">Đơn hàng đã bị hủy</span>
               </div>
+              <p className="text-red-600 text-sm">
+                Ngày hủy: {new Date(order.cancelledAt).toLocaleDateString('vi-VN')}
+              </p>
+            </div>
+          )}
+
+          {/* Nút hủy đơn hàng */}
+          {(order.status === 'pending' || order.status === 'processing') && (
+            <div className="mt-4">
+              <button 
+                onClick={handleCancelOrder}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+              >
+                Hủy đơn hàng
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Thông tin vận chuyển */}
+        <div className="p-4 md:p-6 border-b">
+          <h2 className="text-lg font-semibold mb-4">Thông tin vận chuyển</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Địa chỉ giao hàng</h3>
+              <div className="mt-1">
+                <p className="font-medium">{order.shippingAddress.fullName}</p>
+                <p>{order.shippingAddress.phone}</p>
+                <p>{order.shippingAddress.address}, {order.shippingAddress.ward}, {order.shippingAddress.district}, {order.shippingAddress.city}</p>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Phương thức vận chuyển</h3>
+              <p className="mt-1">Giao hàng tiêu chuẩn</p>
+              
+              <h3 className="text-sm font-medium text-gray-500 mt-4">Phương thức thanh toán</h3>
+              <p className="mt-1">
+                {order.paymentMethod === 'cod' && 'Thanh toán khi nhận hàng (COD)'}
+                {order.paymentMethod === 'card' && 'Thanh toán bằng thẻ tín dụng'}
+                {order.paymentMethod === 'banking' && 'Chuyển khoản ngân hàng'}
+                {order.paymentMethod === 'momo' && 'Ví điện tử MoMo'}
+              </p>
+              
+              <h3 className="text-sm font-medium text-gray-500 mt-4">Trạng thái thanh toán</h3>
+              <p className="mt-1">
+                {order.isPaid ? (
+                  <span className="text-green-600 font-medium">Đã thanh toán</span>
+                ) : (
+                  <span className="text-yellow-600 font-medium">Chưa thanh toán</span>
+                )}
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="order-items-section">
-          <h2>Sản phẩm đã đặt</h2>
-          <div className="order-items-list">
+        {/* Danh sách sản phẩm */}
+        <div className="p-4 md:p-6 border-b">
+          <h2 className="text-lg font-semibold mb-4">Sản phẩm đã đặt</h2>
+          <div className="space-y-4">
             {order.items.map((item, index) => (
-              <div className="order-item" key={index}>
-                <div className="item-image">
-                  <img src={item.image} alt={item.name} />
-                </div>
-                <div className="item-details">
-                  <Link to={`/products/${item.product}`} className="item-name">{item.name}</Link>
-                  {item.size && <p className="item-variant">Size: {item.size}</p>}
-                  {item.color && <p className="item-variant">Màu: {item.color}</p>}
-                  <div className="item-price">
-                    <span>{formatPrice(item.price)}</span>
-                    <span className="item-quantity">x{item.quantity}</span>
+              <div key={index} className="flex items-start py-3 border-b last:border-b-0">
+                <img 
+                  src={item.image} 
+                  alt={item.name} 
+                  className="w-16 h-16 object-cover rounded" 
+                />
+                <div className="ml-4 flex-1">
+                  <h3 className="font-medium">{item.name}</h3>
+                  <div className="flex justify-between mt-1">
+                    <div className="text-sm text-gray-500">
+                      {item.quantity} x {item.price.toLocaleString()}đ
+                      {item.color && <span className="ml-2">| Màu: {item.color}</span>}
+                      {item.size && <span className="ml-2">| Size: {item.size}</span>}
+                    </div>
+                    <div className="font-medium">
+                      {(item.price * item.quantity).toLocaleString()}đ
+                    </div>
                   </div>
-                </div>
-                <div className="item-total">
-                  {formatPrice(item.price * item.quantity)}
                 </div>
               </div>
             ))}
           </div>
-          <div className="order-actions no-print">
-            <Link to="/products" className="continue-shopping-btn">
-              Tiếp tục mua sắm
-            </Link>
-            {order.status === 'delivered' && (
-              <Link to={`/danh-gia?order=${order._id}`} className="review-order-btn">
-                Đánh giá sản phẩm
-              </Link>
+        </div>
+
+        {/* Tổng hợp thanh toán */}
+        <div className="p-4 md:p-6">
+          <h2 className="text-lg font-semibold mb-4">Tổng thanh toán</h2>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>Tạm tính:</span>
+              <span>{order.totalItemsPrice.toLocaleString()}đ</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Phí vận chuyển:</span>
+              <span>{order.shippingPrice.toLocaleString()}đ</span>
+            </div>
+            {order.taxPrice > 0 && (
+              <div className="flex justify-between">
+                <span>Thuế:</span>
+                <span>{order.taxPrice.toLocaleString()}đ</span>
+              </div>
             )}
+            {order.discountPrice > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Giảm giá:</span>
+                <span>-{order.discountPrice.toLocaleString()}đ</span>
+              </div>
+            )}
+            <div className="flex justify-between pt-2 border-t font-bold mt-2">
+              <span>Tổng cộng:</span>
+              <span className="text-xl text-blue-600">{order.totalPrice.toLocaleString()}đ</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {showCancelModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Xác nhận hủy đơn hàng</h3>
-            <p>Bạn có chắc chắn muốn hủy đơn hàng #{order._id.slice(-6)}?</p>
-            <p className="modal-note">Lưu ý: Hành động này không thể hoàn tác.</p>
-            <div className="modal-actions">
-              <button 
-                className="modal-btn cancel-btn" 
-                onClick={() => setShowCancelModal(false)}
-                disabled={cancelLoading}
-              >
-                Không, giữ đơn hàng
-              </button>
-              <button 
-                className="modal-btn confirm-btn" 
-                onClick={handleCancelOrder}
-                disabled={cancelLoading}
-              >
-                {cancelLoading ? (
-                  <>
-                    <FontAwesomeIcon icon={faSpinner} spin /> Đang xử lý...
-                  </>
-                ) : (
-                  <>
-                    <FontAwesomeIcon icon={faTimes} /> Hủy đơn hàng
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="mt-6 text-center">
+        <Link to="/account/orders" className="text-blue-600 hover:underline">
+          Quay lại danh sách đơn hàng
+        </Link>
+      </div>
     </div>
   );
 };
