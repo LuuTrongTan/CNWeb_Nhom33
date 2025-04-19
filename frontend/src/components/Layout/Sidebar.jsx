@@ -1,9 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FilterContext } from '../../context/FilterContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/css/Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ toggleSidebar }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedFilter, setSelectedFilter, resetFilters } = useContext(FilterContext);
@@ -134,10 +136,17 @@ const Sidebar = () => {
   return (
     <div className="sidebar" onClick={handleSidebarClick}>
       <div className="sidebar-header">
-        <h2 className="sidebar-title">Bộ lọc sản phẩm</h2>
-        <button className="reset-btn" onClick={handleResetFilters}>
-          Xóa bộ lọc
-        </button>
+        <div className="sidebar-title-container">
+          <h2 className="sidebar-title">Bộ lọc sản phẩm</h2>
+        </div>
+        <div className="sidebar-actions">
+          <button className="reset-btn" onClick={handleResetFilters}>
+            Xóa bộ lọc
+          </button>
+          <button className="close-sidebar-btn" onClick={toggleSidebar} aria-label="Đóng sidebar">
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+        </div>
       </div>
 
       {/* Danh mục sản phẩm */}
@@ -260,6 +269,12 @@ const Sidebar = () => {
           Mua ngay
         </button>
       </div>
+
+      {/* Nút ẩn/hiện sidebar ở cuối sidebar - Làm nổi bật hơn */}
+      <button className="sidebar-toggle-btn-inside" onClick={toggleSidebar} aria-label="Ẩn sidebar">
+        <FontAwesomeIcon icon={faChevronLeft} />
+        <span>Ẩn bộ lọc</span>
+      </button>
     </div>
   );
 };

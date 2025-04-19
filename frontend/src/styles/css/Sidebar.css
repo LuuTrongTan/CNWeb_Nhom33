@@ -36,7 +36,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.sidebar-title-container {
+  display: flex;
+  align-items: center;
 }
 
 .sidebar-title {
@@ -358,4 +365,74 @@
   .sidebar-banner {
     padding: 0.8rem;
   }
+}
+
+/* Thêm CSS cho nút đóng sidebar */
+.sidebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.close-sidebar-btn {
+  background: transparent;
+  border: none;
+  color: #444;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  transition: all 0.2s ease;
+}
+
+.close-sidebar-btn:hover {
+  background-color: #f1f1f1;
+  color: #ff4c3b;
+}
+
+@media (max-width: 991px) {
+  .close-sidebar-btn {
+    display: flex;
+  }
+}
+
+@media (min-width: 992px) {
+  .close-sidebar-btn {
+    display: flex;
+  }
+}
+
+/* CSS cho nút ẩn/hiện sidebar ở cuối sidebar */
+.sidebar-toggle-btn-inside {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  background-color: #ff4c3b;
+  color: white;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(255, 76, 59, 0.3);
+}
+
+.sidebar-toggle-btn-inside:hover {
+  background-color: #e73c3c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 76, 59, 0.4);
+}
+
+.sidebar-toggle-btn-inside svg {
+  font-size: 14px;
 } 

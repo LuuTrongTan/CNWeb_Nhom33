@@ -54,19 +54,22 @@ const ProductPage = () => {
       try {
         setLoading(true);
         // Trong môi trường thực tế, đây sẽ là một API call đến backend
-        // const response = await axios.get('/api/products');
-        // setProducts(response.data);
-        
+        const response = await fetchProductsAPI();
+        setProducts(response.data);
+       
+
+       
+
         // Sử dụng dữ liệu mẫu từ products.js
-        const module = await import('../data/products');
+        // const module = await import("../data/products");
         setTimeout(() => {
-          setProducts(module.default);
+          // setProducts(module.default);
           setLoading(false);
         }, 500); // Giả lập thời gian tải
       } catch (err) {
-        setError('Có lỗi xảy ra khi tải dữ liệu sản phẩm');
+        setError("Có lỗi xảy ra khi tải dữ liệu sản phẩm");
         setLoading(false);
-        console.error('Lỗi khi tải sản phẩm:', err);
+        console.error("Lỗi khi tải sản phẩm:", err);
       }
     };
     

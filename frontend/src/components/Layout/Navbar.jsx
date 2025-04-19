@@ -17,7 +17,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import '../../../src/styles/css/Navbar.css';
-// Không cần import logo
+import logoImage from '../../assets/images/logo.png';  // Import logo
 
 const Navbar = ({ toggleSidebar }) => {
   const [scrolled, setScrolled] = useState(false);
@@ -80,16 +80,18 @@ const Navbar = ({ toggleSidebar }) => {
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar-container">
         <div className="navbar-left">
-          <button 
-            className="menu-toggle" 
-            onClick={toggleSidebar}
-            aria-label="Toggle Sidebar"
-          >
-            <FontAwesomeIcon icon={faBars} />
-          </button>
+          
           
           <Link to="/" className="navbar-logo">
-            <img src="/assets/images/logo-ts.png" alt="TS ShopNow" className="logo-image" />
+            <div className="logo-container">
+              <div className="logo-image-container">
+                <img src={logoImage} alt="S and T" className="logo-image" />
+              </div>
+              <div className="logo-text">
+                <span className="logo-name">S and T</span>
+                <span className="logo-slogan">Style in Every Thread</span>
+              </div>
+            </div>
           </Link>
           
           <ul className="main-nav">
