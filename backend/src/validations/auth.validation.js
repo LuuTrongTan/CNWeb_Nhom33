@@ -53,7 +53,7 @@ const verifyEmail = {
 
 const googleLoginSchema = {
   body: Joi.object().keys({
-    idToken: Joi.string().required(),
+    token: Joi.string().required(),
   }),
 };
 
