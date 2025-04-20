@@ -1,6 +1,42 @@
+const { OAuth2Client } = require('google-auth-library');
+const jwt = require('jsonwebtoken');
+const config = require('../config/config');
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const client = new OAuth2Client(CLIENT_ID);
+const User = require('../models/user.model');
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
+
+const googleAuth = catchAsync(async (req, res) => {
+  const { token } = req.body;
+  let payload;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+  } catch (err) {
+    console.error('ID token verification failed:', err);
+    return res.status(400).json({ message: 'Token không hợp lệ' });
+  }
+
+  const email = payload.email;
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    user = await userService.createUser({
+      email,
+      name: payload.name,
+      role: 'user',
+      isEmailVerified: true
+    });
+  }
+
+  const tokens = await tokenService.generateAuthTokens(user);
+  res.json({ user, tokens });
+});
 
 const register = catchAsync(async (req, res) => {
   const userData = { ...req.body, role: 'user' };
@@ -57,4 +93,5 @@ module.exports = {
   resetPassword,
   sendVerificationEmail,
   verifyEmail,
+  googleAuth,
 };
