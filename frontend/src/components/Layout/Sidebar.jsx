@@ -8,6 +8,7 @@ import {
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/css/Sidebar.css";
+import { getCategoryByTagName } from "../../service/categoryAPI";
 
 const Sidebar = ({ toggleSidebar }) => {
   const location = useLocation();
@@ -32,50 +33,8 @@ const Sidebar = ({ toggleSidebar }) => {
   const [expandedCategories, setExpandedCategories] = useState([]);
 
   // Danh mục sản phẩm
-  const categories = [
-    {
-      name: "Áo",
-      subcategories: [
-        "Áo thun",
-        "Áo sơ mi",
-        "Áo khoác",
-        "Áo polo",
-        "Áo hoodie & sweater",
-      ],
-    },
-    {
-      name: "Quần",
-      subcategories: [
-        "Quần jean",
-        "Quần tây",
-        "Quần short",
-        "Quần jogger",
-        "Quần kaki",
-      ],
-    },
-    {
-      name: "Giày & Dép",
-      subcategories: [
-        "Giày sneaker",
-        "Giày tây",
-        "Giày thể thao",
-        "Dép & Sandal",
-      ],
-    },
-    {
-      name: "Phụ kiện",
-      subcategories: [
-        "Ví",
-        "Thắt lưng",
-        "Cà vạt",
-        "Túi xách",
-        "Mũ nón",
-        "Trang sức",
-      ],
-    },
-  ];
 
-  const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
+  const sizes = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"];
   const colors = [
     { name: "Đen", code: "#000000" },
     { name: "Trắng", code: "#FFFFFF" },
@@ -106,12 +65,69 @@ const Sidebar = ({ toggleSidebar }) => {
       max: 1000000,
     },
     {
-      label: "Trên 1.000.000đ",
-      value: "over-1m",
+      label: "1.000.000đ - 3.000.000đ",
+      value: "1m-3m",
       min: 1000000,
-      max: 999999999,
+      max: 3000000,
+    },
+    {
+      label: "3.000.000đ - 5.000.000đ",
+      value: "3m-5m",
+      min: 3000000,
+      max: 5000000,
+    },
+    {
+      label: "Trên 5.000.000đ",
+      value: "over-5m",
+      min: 5000000,
+      max: 999999999, // hoặc giá trần tùy bạn
     },
   ];
+
+  const [categories, setCategories] = useState([
+    {
+      name: "Áo",
+      subcategories: [],
+    },
+    {
+      name: "Quần",
+      subcategories: [],
+    },
+    {
+      name: "Giày & Dép",
+      subcategories: [],
+    },
+    {
+      name: "Phụ kiện",
+      subcategories: [],
+    },
+  ]);
+
+  useEffect(() => {
+    const getCategory = async () => {
+      try {
+        categories.map(async (category) => {
+          const response = await getCategoryByTagName(category.name);
+          setCategories((prevCategories) =>
+            prevCategories.map((cat) => {
+              if (cat.name === category.name) {
+                return { ...cat, subcategories: response };
+              }
+              return cat;
+            })
+          );
+        });
+
+        // console.log("Dữ liệu sản phẩm:", response);
+      } catch (err) {
+        setError("Có lỗi xảy ra khi tải dữ liệu sản phẩm");
+        setLoading(false);
+        console.error("Lỗi khi tải sản phẩm:", err);
+      }
+    };
+
+    getCategory();
+  }, []);
 
   // Mở rộng hoặc thu gọn phần lọc
   const toggleFilter = (filterId) => {
@@ -130,16 +146,14 @@ const Sidebar = ({ toggleSidebar }) => {
     );
   };
 
-  // Xử lý khi chọn danh mục
-  const handleCategoryClick = (category) => {
-    console.log(category);
-    navigate(`/products?category=${encodeURIComponent(category)}`);
-  };
-
   // Xử lý khi chọn danh mục con
   const handleSubcategoryClick = (subcategory) => {
     console.log(subcategory);
-    navigate(`/products?subcategory=${encodeURIComponent(subcategory)}`);
+
+    setSelectedFilter((prev) => ({
+      ...prev,
+      category: prev.category === subcategory ? null : subcategory,
+    }));
   };
 
   // Xử lý khi chọn kích thước
@@ -160,9 +174,9 @@ const Sidebar = ({ toggleSidebar }) => {
     });
   };
 
-  // useEffect(() => {
-  //   console.log("Updated selectedFilter:", selectedFilter);
-  // }, [selectedFilter]);
+  useEffect(() => {
+    console.log("Updated selectedFilter:", selectedFilter);
+  }, [selectedFilter]);
 
   // Xử lý khi chọn màu sắc
   const handleColorChange = (color) => {
@@ -172,12 +186,28 @@ const Sidebar = ({ toggleSidebar }) => {
     }));
   };
 
-  // Xử lý khi chọn khoảng giá
   const handlePriceChange = (priceRange) => {
-    setSelectedFilter((prev) => ({
-      ...prev,
-      price: prev.price?.value === priceRange.value ? undefined : priceRange,
-    }));
+    setSelectedFilter((prev) => {
+      const isSame = prev.price?.value === priceRange.value;
+
+      if (isSame) {
+        // Nếu chọn lại cái cũ, set về giá trị mặc định
+        return {
+          ...prev,
+          price: {
+            value: "all",
+            min: 0,
+            max: 10000000,
+          },
+        };
+      }
+
+      // Cập nhật khoảng giá mới
+      return {
+        ...prev,
+        price: priceRange,
+      };
+    });
   };
 
   // Hàm xử lý reset tất cả bộ lọc
@@ -254,7 +284,7 @@ const Sidebar = ({ toggleSidebar }) => {
                         className="subcategory-link"
                         onClick={() => handleSubcategoryClick(subcategory)}
                       >
-                        {subcategory}
+                        {subcategory.name}
                       </div>
                     </li>
                   ))}

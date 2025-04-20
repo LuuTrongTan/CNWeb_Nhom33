@@ -13,7 +13,7 @@ const createCategory = async (categoryBody) => {
   if (existingCategory) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Tên danh mục đã tồn tại');
   }
-  
+
   return await Category.create(categoryBody);
 };
 
@@ -29,53 +29,40 @@ const createCategory = async (categoryBody) => {
  * @returns {Promise<Object>} Danh sách danh mục và thông tin phân trang
  */
 const getAllCategories = async (options = {}) => {
-  const { 
-    page = 1, 
-    limit = 10, 
-    searchTerm = '', 
-    isActive, 
-    sortBy = 'createdAt', 
-    sortOrder = 'desc' 
-  } = options;
-  
+  const { page = 1, limit = 30, searchTerm = '', isActive, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+
   // Xây dựng điều kiện truy vấn
   const query = {};
-  
+
   // Thêm điều kiện tìm kiếm nếu có
   if (searchTerm) {
-    query.$or = [
-      { name: { $regex: searchTerm, $options: 'i' } },
-      { description: { $regex: searchTerm, $options: 'i' } }
-    ];
+    query.$or = [{ name: { $regex: searchTerm, $options: 'i' } }, { description: { $regex: searchTerm, $options: 'i' } }];
   }
-  
+
   // Lọc theo trạng thái kích hoạt nếu được chỉ định
   if (isActive !== undefined) {
     query.isActive = isActive;
   }
-  
+
   // Xây dựng tùy chọn sắp xếp
   const sort = {};
   sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
-  
+
   // Tính toán bỏ qua
   const skip = (page - 1) * limit;
-  
+
   // Thực hiện tìm kiếm với phân trang
-  const categories = await Category.find(query)
-    .sort(sort)
-    .skip(skip)
-    .limit(limit);
-  
+  const categories = await Category.find(query).sort(sort).skip(skip).limit(limit);
+
   // Đếm tổng số danh mục phù hợp với điều kiện truy vấn
   const total = await Category.countDocuments(query);
-  
+
   return {
     categories,
     page: parseInt(page),
     limit: parseInt(limit),
     totalPages: Math.ceil(total / limit),
-    totalItems: total
+    totalItems: total,
   };
 };
 
@@ -108,7 +95,7 @@ const updateCategoryById = async (categoryId, updateBody) => {
   if (!category) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy danh mục');
   }
-  
+
   // Kiểm tra trùng tên danh mục nếu có cập nhật tên
   if (updateBody.name && updateBody.name !== category.name) {
     const existingCategory = await Category.findOne({ name: updateBody.name });
@@ -116,7 +103,7 @@ const updateCategoryById = async (categoryId, updateBody) => {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Tên danh mục đã tồn tại');
     }
   }
-  
+
   Object.assign(category, updateBody);
   await category.save();
   return category;
@@ -132,11 +119,11 @@ const deleteCategoryById = async (categoryId) => {
   if (!category) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy danh mục');
   }
-  
+
   // Thay vì xóa vĩnh viễn, có thể đánh dấu danh mục là không hoạt động
   // category.isActive = false;
   // await category.save();
-  
+
   // Hoặc xóa vĩnh viễn nếu cần
   await category.deleteOne();
   return category;
@@ -150,18 +137,25 @@ const getCategoryStats = async () => {
   const totalCategories = await Category.countDocuments();
   const activeCategories = await Category.countDocuments({ isActive: true });
   const inactiveCategories = await Category.countDocuments({ isActive: false });
-  
+
   // Tìm danh mục mới nhất
-  const latestCategories = await Category.find()
-    .sort({ createdAt: -1 })
-    .limit(5);
-  
+  const latestCategories = await Category.find().sort({ createdAt: -1 }).limit(5);
+
   return {
     total: totalCategories,
     active: activeCategories,
     inactive: inactiveCategories,
-    latest: latestCategories
+    latest: latestCategories,
   };
+};
+
+/**
+ * Lấy danh mục theo tagCategory (không phân biệt chữ hoa/chữ thường)
+ * @param {string} tagCategory - TagCategory của danh mục
+ * @returns {Promise<Array<Category>>}
+ */
+const getCategoriesByTagCategory = async (tagCategory) => {
+  return Category.find({ tagCategory: { $regex: new RegExp(`^${tagCategory}$`, 'i') } });
 };
 
 module.exports = {
@@ -171,5 +165,6 @@ module.exports = {
   getCategoryBySlug,
   updateCategoryById,
   deleteCategoryById,
-  getCategoryStats
+  getCategoryStats,
+  getCategoriesByTagCategory,
 };

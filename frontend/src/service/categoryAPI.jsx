@@ -25,6 +25,21 @@ export const getCategoryById = async (categoryId) => {
   }
 };
 
+export const getCategoryByTagName = async (tagCategory) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/category/getCategoriesByTagCategory`,
+      {
+        params: { tagCategory },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy chi tiết danh mục:", error);
+    throw error;
+  }
+};
+
 export const createCategory = async (categoryData) => {
   try {
     const response = await axios.post(`${API_URL}/category`, categoryData, {
@@ -35,23 +50,6 @@ export const createCategory = async (categoryData) => {
     return response.data;
   } catch (error) {
     console.error("Lỗi khi tạo danh mục:", error);
-    throw error;
-  }
-};
-
-export const getProductFilter = async (color, category, size, page) => {
-  try {
-    const response = await axios.get(`${API_URL}/product/getFilterProducts`, {
-      params: {
-        color: color,
-        category: category,
-        size: size ? size.join(",") : "",
-        page: page ? page : "1",
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Lỗi khi lấy sản phẩm có bộ lọc:", error);
     throw error;
   }
 };

@@ -21,10 +21,11 @@ const searchProducts = async (options = {}) => {
     page = 1,
     limit = 12,
     searchTerm = '',
-    categoryId,
+    category,
+    tagCategory,
     minPrice,
     maxPrice,
-    hasDiscount,
+    // hasDiscount,
     isActive,
     isNewArrival,
     isFeatured,
@@ -51,8 +52,13 @@ const searchProducts = async (options = {}) => {
   }
 
   // Lọc theo danh mục
-  if (categoryId) {
-    query.category = categoryId;
+  if (category) {
+    query.category = category;
+  }
+
+  // Lọc theo tagCategory (không phân biệt chữ hoa/chữ thường)
+  if (tagCategory) {
+    query.tagCategory = { $regex: new RegExp(`^${tagCategory}$`, 'i') };
   }
 
   // Lọc theo khoảng giá
@@ -62,20 +68,20 @@ const searchProducts = async (options = {}) => {
     if (maxPrice !== undefined) query.price.$lte = maxPrice;
   }
 
-  // Lọc theo trạng thái giảm giá
-  if (hasDiscount !== undefined) {
-    query.hasDiscount = hasDiscount;
-  }
+  // // Lọc theo trạng thái giảm giá
+  // if (hasDiscount !== undefined) {
+  //   query.hasDiscount = hasDiscount;
+  // }
 
-  // Lọc theo trạng thái kích hoạt
-  if (isActive !== undefined) {
-    query.isActive = isActive;
-  }
+  // // Lọc theo trạng thái kích hoạt
+  // if (isActive !== undefined) {
+  //   query.isActive = isActive;
+  // }
 
-  // Lọc theo trạng thái mới nhất
-  if (isNewArrival !== undefined) {
-    query.isNewArrival = isNewArrival;
-  }
+  // // Lọc theo trạng thái mới nhất
+  // if (isNewArrival !== undefined) {
+  //   query.isNewArrival = isNewArrival;
+  // }
 
   // Lọc theo trạng thái nổi bật
   if (isFeatured !== undefined) {
@@ -135,6 +141,7 @@ const searchProducts = async (options = {}) => {
   } else {
     // Mặc định
     sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    sort._id = 1;
   }
 
   // Tính toán bỏ qua

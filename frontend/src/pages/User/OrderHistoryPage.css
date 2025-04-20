@@ -200,8 +200,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* === Error Message === */
@@ -493,15 +497,15 @@
 }
 
 /* === Responsive Design === */
-@media (max-width: 1200px) {
+@media (max-width: 1080px) {
   .order-statistics {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   .filter-buttons {
     justify-content: space-between;
   }
-  
+
   .filter-buttons button {
     margin-bottom: 0.5rem;
   }
@@ -511,21 +515,21 @@
   .order-history-page {
     padding: 1rem;
   }
-  
+
   .order-statistics {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .order-status {
     padding: 0.35rem 0.6rem;
     font-size: 0.8rem;
   }
-  
-  .orders-table th, 
+
+  .orders-table th,
   .orders-table td {
     padding: 0.75rem;
   }
-  
+
   .actions {
     flex-direction: column;
   }
@@ -535,17 +539,17 @@
   .order-statistics {
     grid-template-columns: 1fr;
   }
-  
+
   .item-name {
     max-width: 100px;
   }
-  
+
   .orders-table {
     font-size: 0.9rem;
   }
-  
+
   .pagination button {
     width: 36px;
     height: 36px;
   }
-} 
+}

@@ -60,18 +60,22 @@ export const getRelatedProducts = async (productId, limit = 4) => {
 
 export const getProductFilter = async (
   color,
-  category,
+  categoryId,
   size,
   minPrice,
-  maxPrice
+  maxPrice,
+  page,
+  searchTerm
 ) => {
   try {
     const response = await axios.post(`${API_URL}/product/searchProducts`, {
       colors: color ?? "",
-      category: category ?? null,
-      sizes: size ?? [],
-      minPrice: minPrice ? minPrice : 0,
-      maxPrice: maxPrice ? maxPrice : 10000000,
+      category: categoryId ?? null,
+      sizes: Array.isArray(size) ? size : size ? [size] : [],
+      minPrice: minPrice !== undefined ? minPrice : 0,
+      maxPrice: maxPrice !== undefined ? maxPrice : 10000000,
+      page: Math.max(1, page ?? 1),
+      searchTerm: searchTerm ?? "",
     });
     return response.data;
   } catch (error) {
