@@ -60,7 +60,7 @@ const ProductPage = () => {
           searchTerm
         );
 
-        // console.log("Dữ liệu sản phẩm:", response);
+        console.log("Dữ liệu sản phẩm:", response);
         setProducts(response.products);
         setTotalProduct(response.total);
         setTotalPage(response.totalPages);
@@ -86,13 +86,6 @@ const ProductPage = () => {
 
     fetchProducts();
   }, [totalPage, selectedFilter, searchTerm]);
-
-  // Lọc sản phẩm theo từ khóa tìm kiếm
-  const filterBySearchTerm = (product) => {
-    if (!searchTerm) return true;
-
-    return product.name.toLowerCase().includes(searchTerm.toLowerCase());
-  };
 
   // Sắp xếp sản phẩm
   const sortProducts = (a, b) => {
@@ -125,11 +118,11 @@ const ProductPage = () => {
 
       setCurrentPage(pageNumber.index);
 
-      setPageNumbers((prevPageNumbers) =>
-        prevPageNumbers.map((page) =>
-          page.index === pageNumber.index ? { ...page, wasClicked: true } : page
-        )
-      );
+      // setPageNumbers((prevPageNumbers) =>
+      //   prevPageNumbers.map((page) =>
+      //     page.index === pageNumber.index ? { ...page, wasClicked: true } : page
+      //   )
+      // );
     } catch (error) {
       console.error("Lỗi khi lấy thêm sản phẩm:", error);
     }
@@ -212,7 +205,7 @@ const ProductPage = () => {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1);
+              // setCurrentPage(1);
             }}
           />
           <button className="search-button">
