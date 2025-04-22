@@ -5,36 +5,74 @@ const CartPage = () => {
     const { cart, removeFromCart, updateQuantity, calculateTotal } = useCart();
     const navigate = useNavigate();
 
+    const handleCheckout = () => {
+        // Kiểm tra xem giỏ hàng có trống không
+        if (cart.length === 0) {
+            alert('Giỏ hàng của bạn đang trống');
+            return;
+        }
+        // Chuyển hướng đến trang thanh toán
+        navigate("/thanh-toan");
+    };
+
     return (
         <div className="cart-container p-6 max-w-4xl mx-auto bg-white shadow-lg rounded-lg">
-            
             <h1 className="text-2xl font-bold mb-4">Giỏ hàng của bạn</h1>
 
-            {cart.length === 0 ? <p>Giỏ hàng trống</p> : (
-                cart.map(item => (
-                    <div key={item.id} className="cart-item flex justify-between items-center border-b py-4">
-                        <img src={item.image} alt={item.name} className="w-24 h-24 object-cover" />
-                        <div className="flex-1 ml-4">
-                            <h3 className="font-semibold">{item.name}</h3>
-                            <p className="text-gray-500">Giá: {item.price.toLocaleString()} VND</p>
-                            <div className="flex items-center mt-2">
-                                <input 
-                                    type="number" 
-                                    value={item.quantity} 
-                                    className="quantity-input border p-1 w-16" 
-                                    onChange={e => updateQuantity(item.id, parseInt(e.target.value))} 
-                                />
-                                <button onClick={() => removeFromCart(item.id)} className="remove-btn ml-4 text-red-500">Xóa</button>
+            {cart.length === 0 ? (
+                <div className="empty-cart">
+                    <p>Giỏ hàng trống</p>
+                    <button 
+                        onClick={() => navigate("/products")}
+                        className="continue-shopping-btn mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+                    >
+                        Tiếp tục mua sắm
+                    </button>
+                </div>
+            ) : (
+                <>
+                    {cart.map(item => (
+                        <div key={item.id} className="cart-item flex justify-between items-center border-b py-4">
+                            <img src={item.image} alt={item.name} className="w-24 h-24 object-cover" />
+                            <div className="flex-1 ml-4">
+                                <h3 className="font-semibold">{item.name}</h3>
+                                <p className="text-gray-500">Giá: {item.price.toLocaleString()} VND</p>
+                                {item.selectedSize && (
+                                    <p className="text-gray-500">Kích thước: {item.selectedSize}</p>
+                                )}
+                                {item.selectedColor && (
+                                    <p className="text-gray-500">Màu sắc: {item.selectedColor}</p>
+                                )}
+                                <div className="flex items-center mt-2">
+                                    <input 
+                                        type="number" 
+                                        value={item.quantity} 
+                                        min="1"
+                                        className="quantity-input border p-1 w-16" 
+                                        onChange={e => updateQuantity(item.id, parseInt(e.target.value))} 
+                                    />
+                                    <button 
+                                        onClick={() => removeFromCart(item.id)} 
+                                        className="remove-btn ml-4 text-red-500"
+                                    >
+                                        Xóa
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))
-            )}
+                    ))}
 
-            <div className="cart-footer text-right mt-4">
-                <h2 className="text-lg font-bold">Tổng tiền: {calculateTotal().toLocaleString()} VND</h2>
-                <button onClick={() => navigate("/checkout") } className="checkout-btn mt-2 px-4 py-2 bg-blue-500 text-white rounded">Tiến hành thanh toán</button>
-            </div>
+                    <div className="cart-footer text-right mt-4">
+                        <h2 className="text-lg font-bold">Tổng tiền: {calculateTotal().toLocaleString()} VND</h2>
+                        <button 
+                            onClick={handleCheckout} 
+                            className="checkout-btn mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                        >
+                            Tiến hành thanh toán
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 };

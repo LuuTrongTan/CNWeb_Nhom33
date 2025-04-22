@@ -13,7 +13,7 @@ const ProductDetailPage = () => {
     }
     
     const productToAdd = {
-      id: product._id,  // Đảm bảo có id
+      id: product._id,  
       name: product.name,
       price: product.price,
       images: product.images,

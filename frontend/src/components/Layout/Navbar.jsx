@@ -146,7 +146,7 @@ const Navbar = ({ toggleSidebar }) => {
               {wishlistItems.length > 0 && <span className="badge">{wishlistItems.length}</span>}
             </Link>
             
-            <Link to="/cart" className="nav-icon-link">
+            <Link to="/gio-hang" className="nav-icon-link">
               <FontAwesomeIcon icon={faShoppingCart} />
               {cartItems.length > 0 && <span className="badge">{cartItems.length}</span>}
             </Link>
