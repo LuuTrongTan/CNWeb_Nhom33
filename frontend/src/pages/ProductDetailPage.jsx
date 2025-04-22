@@ -42,7 +42,6 @@ const ProductDetailPage = () => {
         setLoading(true);
         const data = await getProductById(id);
         setProduct(data);
-
         // Lấy sản phẩm liên quan sau khi có thông tin sản phẩm
         try {
           const relatedData = await getRelatedProducts(id);
@@ -94,7 +93,6 @@ const ProductDetailPage = () => {
         setIsLoadingWishlist(false);
       }
     };
-
     checkWishlistStatus();
   }, [id]);
 
@@ -286,7 +284,6 @@ const ProductDetailPage = () => {
               })}
               <span className="review-count">({product.reviews} đánh giá)</span>
             </div>
-
             <div className="product-sku">
               <span>Mã sản phẩm:</span> {product.sku}
             </div>
@@ -382,7 +379,6 @@ const ProductDetailPage = () => {
               </div>
             </div>
           </div>
-
           <div className="product-actions">
             <button className="add-to-cart-btn" onClick={handleAddToCart}>
               <FontAwesomeIcon icon={faShoppingCart} /> Thêm vào giỏ hàng
@@ -564,7 +560,6 @@ const ProductDetailPage = () => {
           )}
         </div>
       </div>
-
       {relatedProducts.length > 0 && (
         <div className="related-products">
           <h2>Sản phẩm liên quan</h2>

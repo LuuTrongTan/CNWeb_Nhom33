@@ -371,7 +371,6 @@
   .hero-content h1 {
     font-size: 2.5rem;
   }
-
   .services-section {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -392,7 +391,6 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
-
   .categories-section,
   .featured-products,
   .services-section {

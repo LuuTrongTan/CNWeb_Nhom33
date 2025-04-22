@@ -95,7 +95,6 @@ const updateCategoryById = async (categoryId, updateBody) => {
   if (!category) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy danh mục');
   }
-
   // Kiểm tra trùng tên danh mục nếu có cập nhật tên
   if (updateBody.name && updateBody.name !== category.name) {
     const existingCategory = await Category.findOne({ name: updateBody.name });
@@ -103,7 +102,6 @@ const updateCategoryById = async (categoryId, updateBody) => {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Tên danh mục đã tồn tại');
     }
   }
-
   Object.assign(category, updateBody);
   await category.save();
   return category;

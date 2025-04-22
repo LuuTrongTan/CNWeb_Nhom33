@@ -25,7 +25,7 @@ const searchProducts = async (options = {}) => {
     tagCategory,
     minPrice,
     maxPrice,
-    // hasDiscount,
+    hasDiscount,
     isActive,
     isNewArrival,
     isFeatured,
@@ -68,20 +68,20 @@ const searchProducts = async (options = {}) => {
     if (maxPrice !== undefined) query.price.$lte = maxPrice;
   }
 
-  // // Lọc theo trạng thái giảm giá
-  // if (hasDiscount !== undefined) {
-  //   query.hasDiscount = hasDiscount;
-  // }
+  // Lọc theo trạng thái giảm giá
+  if (hasDiscount !== undefined) {
+    query.hasDiscount = hasDiscount;
+  }
 
-  // // Lọc theo trạng thái kích hoạt
-  // if (isActive !== undefined) {
-  //   query.isActive = isActive;
-  // }
+  // Lọc theo trạng thái kích hoạt
+  if (isActive !== undefined) {
+    query.isActive = isActive;
+  }
 
-  // // Lọc theo trạng thái mới nhất
-  // if (isNewArrival !== undefined) {
-  //   query.isNewArrival = isNewArrival;
-  // }
+  // Lọc theo trạng thái mới nhất
+  if (isNewArrival !== undefined) {
+    query.isNewArrival = isNewArrival;
+  }
 
   // Lọc theo trạng thái nổi bật
   if (isFeatured !== undefined) {
