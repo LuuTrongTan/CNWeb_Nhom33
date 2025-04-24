@@ -65,7 +65,10 @@ export const getProductFilter = async (
   minPrice,
   maxPrice,
   page,
-  searchTerm
+  searchTerm,
+  sortBy,
+  sortOrder,
+  isFeatured
 ) => {
   try {
     const response = await axios.post(`${API_URL}/product/searchProducts`, {
@@ -76,6 +79,9 @@ export const getProductFilter = async (
       maxPrice: maxPrice !== undefined ? maxPrice : 10000000,
       page: Math.max(1, page ?? 1),
       searchTerm: searchTerm ?? "",
+      sortBy: sortBy ?? "createdAt",
+      sortOrder: sortOrder ?? "desc",
+      isFeatured: isFeatured ?? null,
     });
     return response.data;
   } catch (error) {

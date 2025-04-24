@@ -20,9 +20,7 @@ const ProductPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sortBy, setSortBy] = useState("featured");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [priceRangeFilter, setPriceRangeFilter] = useState("");
+  const [sortBy, setSortBy] = useState("all");
   const [showSortFilter, setShowSortFilter] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("grid");
@@ -34,10 +32,21 @@ const ProductPage = () => {
     useContext(FilterContext);
 
   const sortOptions = [
-    { id: "featured", name: "Nổi bật" },
-    { id: "newest", name: "Mới nhất" },
-    { id: "price-asc", name: "Giá tăng dần" },
-    { id: "price-desc", name: "Giá giảm dần" },
+    { id: "all", name: "Tất cả", sortBy: "createdAt", sortOrder: "desc" },
+    { id: "featured", name: "Nổi bật", sortBy: "createdAt", sortOrder: "desc" },
+
+    {
+      id: "price-asc",
+      name: "Giá tăng dần",
+      sortBy: "price",
+      sortOrder: "asc",
+    },
+    {
+      id: "price-desc",
+      name: "Giá giảm dần",
+      sortBy: "price",
+      sortOrder: "desc",
+    },
   ];
 
   useEffect(() => {
@@ -57,7 +66,10 @@ const ProductPage = () => {
           selectedFilter.price.min,
           selectedFilter.price.max,
           1,
-          searchTerm
+          searchTerm,
+          selectedFilter.sortBy,
+          selectedFilter.sortOrder,
+          selectedFilter.isFeatured
         );
 
         console.log("Dữ liệu sản phẩm:", response);
@@ -87,16 +99,6 @@ const ProductPage = () => {
     fetchProducts();
   }, [totalPage, selectedFilter, searchTerm]);
 
-  // Sắp xếp sản phẩm
-  const sortProducts = (a, b) => {
-    if (sortBy === "price-asc") return a.price - b.price;
-    if (sortBy === "price-desc") return b.price - a.price;
-    if (sortBy === "newest") return new Date(b.id) - new Date(a.id); // Giả sử id có thể dùng làm mốc thời gian
-
-    // Mặc định: nổi bật
-    return a.id - b.id;
-  };
-
   // //Lấy thêm sản phẩm
   const handleClickMoreProduct = async (pageNumber) => {
     try {
@@ -109,7 +111,10 @@ const ProductPage = () => {
         selectedFilter.price.min,
         selectedFilter.price.max,
         pageNumber.index,
-        searchTerm
+        searchTerm,
+        selectedFilter.sortBy,
+        selectedFilter.sortOrder,
+        selectedFilter.isFeatured
       );
 
       console.log("Dữ liệu sản phẩm:", response);
@@ -118,11 +123,11 @@ const ProductPage = () => {
 
       setCurrentPage(pageNumber.index);
 
-      // setPageNumbers((prevPageNumbers) =>
-      //   prevPageNumbers.map((page) =>
-      //     page.index === pageNumber.index ? { ...page, wasClicked: true } : page
-      //   )
-      // );
+      setPageNumbers((prevPageNumbers) =>
+        prevPageNumbers.map((page) =>
+          page.index === pageNumber.index ? { ...page, wasClicked: true } : page
+        )
+      );
     } catch (error) {
       console.error("Lỗi khi lấy thêm sản phẩm:", error);
     }
@@ -155,6 +160,43 @@ const ProductPage = () => {
       setSelectedFilter((prev) => ({
         ...prev,
         color: "",
+      }));
+    }
+  };
+
+  const handleSortOptions = (option) => {
+    if (option.id === "all") {
+      setSelectedFilter((prev) => ({
+        ...prev,
+        sortBy: option.sortBy,
+        sortOrder: option.sortOrder,
+        isFeatured: null,
+      }));
+    }
+
+    if (option.id === "featured") {
+      setSelectedFilter((prev) => ({
+        ...prev,
+        sortBy: option.sortBy,
+        sortOrder: option.sortOrder,
+        isFeatured: true,
+      }));
+    }
+
+    if (option.id === "price-asc") {
+      setSelectedFilter((prev) => ({
+        ...prev,
+        sortBy: option.sortBy,
+        sortOrder: option.sortOrder,
+        isFeatured: null,
+      }));
+    }
+
+    if (option.id === "price-desc") {
+      setSelectedFilter((prev) => ({
+        ...prev,
+        sortBy: option.sortBy,
+        sortOrder: option.sortOrder,
       }));
     }
   };
@@ -285,7 +327,7 @@ const ProductPage = () => {
               <FontAwesomeIcon icon={faSort} />
               <span>
                 {sortOptions.find((option) => option.id === sortBy)?.name ||
-                  "Nổi bật"}
+                  "Tất cả"}
               </span>
               <FontAwesomeIcon
                 icon={faChevronRight}
@@ -302,7 +344,7 @@ const ProductPage = () => {
                       sortBy === option.id ? "active" : ""
                     }`}
                     onClick={() => {
-                      console.log("Đã chọn:", option.name);
+                      handleSortOptions(option);
                       setSortBy(option.id);
                       setShowSortFilter(false);
                     }}

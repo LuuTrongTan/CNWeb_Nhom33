@@ -25,18 +25,13 @@ const searchProducts = async (options = {}) => {
     tagCategory,
     minPrice,
     maxPrice,
-    hasDiscount,
-    isActive,
     isNewArrival,
     isFeatured,
     isBestSeller,
     sortBy = 'createdAt',
     sortOrder = 'desc',
-    includeOutOfStock = false,
     colors = [],
     sizes = [],
-    brands = [],
-    tags = [],
   } = options;
 
   const query = {};
@@ -68,34 +63,19 @@ const searchProducts = async (options = {}) => {
     if (maxPrice !== undefined) query.price.$lte = maxPrice;
   }
 
-  // Lọc theo trạng thái giảm giá
-  if (hasDiscount !== undefined) {
-    query.hasDiscount = hasDiscount;
-  }
-
-  // Lọc theo trạng thái kích hoạt
-  if (isActive !== undefined) {
-    query.isActive = isActive;
-  }
-
   // Lọc theo trạng thái mới nhất
   if (isNewArrival !== undefined) {
     query.isNewArrival = isNewArrival;
   }
 
   // Lọc theo trạng thái nổi bật
-  if (isFeatured !== undefined) {
+  if (typeof isFeatured === 'boolean') {
     query.isFeatured = isFeatured;
   }
 
   // Lọc theo trạng thái bán chạy
   if (isBestSeller !== undefined) {
     query.isBestSeller = isBestSeller;
-  }
-
-  // Lọc theo tình trạng kho hàng
-  if (!includeOutOfStock) {
-    query.stock = { $gt: 0 };
   }
 
   // Lọc theo màu sắc
@@ -106,16 +86,6 @@ const searchProducts = async (options = {}) => {
   // Lọc theo kích thước
   if (sizes && sizes.length > 0) {
     query.sizes = { $all: sizes };
-  }
-
-  // Lọc theo thương hiệu
-  if (brands && brands.length > 0) {
-    query.brand = { $in: brands };
-  }
-
-  // Lọc theo tags
-  if (tags && tags.length > 0) {
-    query.tags = { $in: tags };
   }
 
   // Sắp xếp
@@ -161,6 +131,152 @@ const searchProducts = async (options = {}) => {
     totalItems: total,
   };
 };
+
+// const searchProducts = async (options = {}) => {
+//   const {
+//     page = 1,
+//     limit = 12,
+//     searchTerm = '',
+//     category,
+//     tagCategory,
+//     minPrice,
+//     maxPrice,
+//     hasDiscount,
+//     isActive,
+//     isNewArrival,
+//     isFeatured,
+//     isBestSeller,
+//     sortBy = 'createdAt',
+//     sortOrder = 'desc',
+//     includeOutOfStock = false,
+//     colors = [],
+//     sizes = [],
+//     brands = [],
+//     tags = [],
+//   } = options;
+
+//   const query = {};
+
+//   // Lọc theo từ khóa tìm kiếm
+//   if (searchTerm) {
+//     query.$or = [
+//       { name: { $regex: searchTerm, $options: 'i' } },
+//       { description: { $regex: searchTerm, $options: 'i' } },
+//       { shortDescription: { $regex: searchTerm, $options: 'i' } },
+//       { 'attributes.value': { $regex: searchTerm, $options: 'i' } },
+//     ];
+//   }
+
+//   // Lọc theo danh mục
+//   if (category) {
+//     query.category = category;
+//   }
+
+//   // Lọc theo tagCategory (không phân biệt chữ hoa/chữ thường)
+//   if (tagCategory) {
+//     query.tagCategory = { $regex: new RegExp(`^${tagCategory}$`, 'i') };
+//   }
+
+//   // Lọc theo khoảng giá
+//   if (minPrice !== undefined || maxPrice !== undefined) {
+//     query.price = {};
+//     if (minPrice !== undefined) query.price.$gte = minPrice;
+//     if (maxPrice !== undefined) query.price.$lte = maxPrice;
+//   }
+
+//   // Lọc theo trạng thái giảm giá
+//   if (hasDiscount !== undefined) {
+//     query.hasDiscount = hasDiscount;
+//   }
+
+//   // Lọc theo trạng thái kích hoạt
+//   if (isActive !== undefined) {
+//     query.isActive = isActive;
+//   }
+
+//   // Lọc theo trạng thái mới nhất
+//   if (isNewArrival !== undefined) {
+//     query.isNewArrival = isNewArrival;
+//   }
+
+//   // Lọc theo trạng thái nổi bật
+//   if (isFeatured !== undefined) {
+//     query.isFeatured = isFeatured;
+//   }
+
+//   // Lọc theo trạng thái bán chạy
+//   if (isBestSeller !== undefined) {
+//     query.isBestSeller = isBestSeller;
+//   }
+
+//   // Lọc theo tình trạng kho hàng
+//   if (!includeOutOfStock) {
+//     query.stock = { $gt: 0 };
+//   }
+
+//   // Lọc theo màu sắc
+//   if (colors && colors.length > 0) {
+//     query.colors = { $in: colors };
+//   }
+
+//   // Lọc theo kích thước
+//   if (sizes && sizes.length > 0) {
+//     query.sizes = { $all: sizes };
+//   }
+
+//   // Lọc theo thương hiệu
+//   if (brands && brands.length > 0) {
+//     query.brand = { $in: brands };
+//   }
+
+//   // Lọc theo tags
+//   if (tags && tags.length > 0) {
+//     query.tags = { $in: tags };
+//   }
+
+//   // Sắp xếp
+//   const sort = {};
+
+//   // Xử lý các trường hợp sắp xếp đặc biệt
+//   if (sortBy === 'price' && sortOrder === 'asc') {
+//     sort.price = 1;
+//   } else if (sortBy === 'price' && sortOrder === 'desc') {
+//     sort.price = -1;
+//   } else if (sortBy === 'name' && sortOrder === 'asc') {
+//     sort.name = 1;
+//   } else if (sortBy === 'name' && sortOrder === 'desc') {
+//     sort.name = -1;
+//   } else if (sortBy === 'newest') {
+//     sort.createdAt = -1;
+//   } else if (sortBy === 'oldest') {
+//     sort.createdAt = 1;
+//   } else if (sortBy === 'rating') {
+//     sort.rating = -1;
+//   } else if (sortBy === 'bestSelling') {
+//     sort.soldCount = -1;
+//   } else {
+//     // Mặc định
+//     sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+//     sort._id = 1;
+//   }
+
+//   // Tính toán bỏ qua
+//   const skip = (Number(page) - 1) * Number(limit);
+
+//   // Thực hiện truy vấn
+//   const products = await Product.find(query).sort(sort).skip(skip).limit(Number(limit)).populate('category', 'name slug');
+
+//   // Đếm tổng số sản phẩm phù hợp với điều kiện
+//   const total = await Product.countDocuments(query);
+
+//   return {
+//     products,
+//     page: Number(page),
+//     limit: Number(limit),
+//     totalPages: Math.ceil(total / Number(limit)),
+//     totalItems: total,
+//   };
+// };
 
 /**
  * Lấy tất cả sản phẩm với phân trang

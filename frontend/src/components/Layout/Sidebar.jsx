@@ -13,15 +13,8 @@ import { getCategoryByTagName } from "../../service/categoryAPI";
 const Sidebar = ({ toggleSidebar }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const {
-    selectedFilter,
-    setSelectedFilter,
-    resetFilters,
-    addSizeFilter,
-    setCategoryFilter,
-    setColorFilter,
-    setPriceFilter,
-  } = useContext(FilterContext);
+  const { selectedFilter, setSelectedFilter, resetFilters } =
+    useContext(FilterContext);
   const [expandedFilters, setExpandedFilters] = useState({
     categories: true,
     size: true,
@@ -228,7 +221,7 @@ const Sidebar = ({ toggleSidebar }) => {
         </div>
         <div className="sidebar-actions">
           <button className="reset-btn" onClick={handleResetFilters}>
-            Xóa bộ lọc
+            Xóa lọc
           </button>
           <button
             className="close-sidebar-btn"
