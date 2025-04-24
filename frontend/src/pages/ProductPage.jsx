@@ -278,7 +278,9 @@ const ProductPage = () => {
           <div className="filter-dropdown">
             <button
               className="filter-button"
-              onClick={() => handleFilterClick("sort")}
+              onClick={() => {
+                setShowSortFilter(!showSortFilter);
+              }}
             >
               <FontAwesomeIcon icon={faSort} />
               <span>
@@ -300,6 +302,7 @@ const ProductPage = () => {
                       sortBy === option.id ? "active" : ""
                     }`}
                     onClick={() => {
+                      console.log("Đã chọn:", option.name);
                       setSortBy(option.id);
                       setShowSortFilter(false);
                     }}
