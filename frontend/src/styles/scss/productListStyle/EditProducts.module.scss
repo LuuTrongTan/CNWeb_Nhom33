@@ -1,0 +1,113 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between; // Căn hai phần tử ra hai phía
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .addButton {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+
+    &:hover {
+      background-color: #218838;
+    }
+  }
+
+  .backButton {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+
+    .button {
+      display: flex;
+      gap: 10px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f4f4f4;
+    }
+  }
+
+  .editButton {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #218838;
+    }
+  }
+
+  .deleteButton {
+    background-color: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    margin-left: 5px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #c82333;
+    }
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+  }
+
+  .paginationButton {
+    padding: 8px 12px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #ddd;
+
+    &:hover {
+      background-color: #ccc;
+    }
+  }
+
+  .active {
+    background-color: #007bff;
+    color: white;
+  }
+}

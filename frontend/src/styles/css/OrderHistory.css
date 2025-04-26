@@ -379,7 +379,7 @@
   .order-stats {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .orders-table th:nth-child(2),
   .orders-table td:nth-child(2) {
     display: none;
@@ -390,23 +390,22 @@
   .order-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .order-filters {
     flex-direction: column;
   }
-  
+
   .filter-buttons {
     overflow-x: auto;
     padding-bottom: 0.5rem;
     width: 100%;
   }
-  
   .orders-table th:nth-child(4),
   .orders-table td:nth-child(4) {
     display: none;
   }
-  
+
   .page-title {
     font-size: 1.5rem;
   }
-} 
+}

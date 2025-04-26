@@ -1,0 +1,197 @@
+.review-form {
+  margin-top: 30px;
+  padding: 25px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.review-form h4 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #555;
+}
+
+.rating-select {
+  display: flex;
+  gap: 10px;
+}
+
+.hidden-radio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.star-selectable {
+  font-size: 24px;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star-selectable:hover {
+  color: #ffb800;
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus, textarea:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+.submit-review-btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-review-btn:hover {
+  background-color: #3a7bd5;
+}
+
+.submit-review-btn:disabled {
+  background-color: #a0c5e8;
+  cursor: not-allowed;
+}
+
+.error-message {
+  padding: 12px;
+  background-color: #fff5f5;
+  color: #e53e3e;
+  border-left: 4px solid #e53e3e;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.success-message {
+  padding: 12px;
+  background-color: #f0fff4;
+  color: #38a169;
+  border-left: 4px solid #38a169;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.image-upload-container {
+  margin-bottom: 15px;
+}
+
+.image-upload-input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.image-upload-button {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 10px;
+}
+
+.image-upload-button:hover {
+  background-color: #e0e0e0;
+}
+
+.image-upload-container small {
+  color: #888;
+  font-size: 12px;
+}
+
+.image-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.image-preview {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.remove-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+  padding: 0;
+}
+
+.remove-image:hover {
+  background-color: rgba(255, 0, 0, 0.8);
+}
+
+.review-form-login-required {
+  margin-top: 30px;
+  padding: 25px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.review-form-login-required a {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.review-form-login-required a:hover {
+  text-decoration: underline;
+} 
