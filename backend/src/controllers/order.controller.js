@@ -7,10 +7,37 @@ const ApiError = require('../utils/ApiError');
  * Tạo đơn hàng mới
  */
 const createOrder = catchAsync(async (req, res) => {
+  // Kiểm tra dữ liệu đầu vào
+  const { items, shippingAddress, paymentMethod, totalItemsPrice, shippingPrice, taxPrice, discountPrice, notes } = req.body;
+  
+  if (!items || items.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Giỏ hàng không được trống');
+  }
+  
+  if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.address || 
+      !shippingAddress.city || !shippingAddress.district || !shippingAddress.ward || !shippingAddress.phone) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Thông tin giao hàng không đầy đủ');
+  }
+  
+  if (!paymentMethod) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Vui lòng chọn phương thức thanh toán');
+  }
+  
+  // Tạo đơn hàng
   const order = await orderService.createOrder({
-    ...req.body,
     user: req.user.id,
+    items,
+    shippingAddress,
+    paymentMethod,
+    totalItemsPrice: totalItemsPrice || 0,
+    shippingPrice: shippingPrice || 0,
+    taxPrice: taxPrice || 0,
+    discountPrice: discountPrice || 0,
+    notes: notes || '',
+    // Tính tổng tiền đơn hàng
+    totalPrice: (totalItemsPrice || 0) + (shippingPrice || 0) + (taxPrice || 0) - (discountPrice || 0),
   });
+  
   res.status(httpStatus.CREATED).send(order);
 });
 

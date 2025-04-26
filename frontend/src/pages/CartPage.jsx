@@ -1,9 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useState } from "react";
+import CheckoutForm from "../components/Checkout/CheckoutForm";
 
 const CartPage = () => {
     const { cart, removeFromCart, updateQuantity, calculateTotal } = useCart();
     const navigate = useNavigate();
+    const [showCheckoutForm, setShowCheckoutForm] = useState(false);
+    
+    const handleBuyNow = () => {
+        if (cart.length === 0) {
+            alert("Giỏ hàng của bạn đang trống!");
+            return;
+        }
+        setShowCheckoutForm(true);
+    };
 
     return (
         <div className="cart-container p-6 max-w-4xl mx-auto bg-white shadow-lg rounded-lg">
@@ -33,8 +44,16 @@ const CartPage = () => {
 
             <div className="cart-footer text-right mt-4">
                 <h2 className="text-lg font-bold">Tổng tiền: {calculateTotal().toLocaleString()} VND</h2>
-                <button onClick={() => navigate("/checkout") } className="checkout-btn mt-2 px-4 py-2 bg-blue-500 text-white rounded">Tiến hành thanh toán</button>
+                {!showCheckoutForm ? (
+                    <button onClick={handleBuyNow} className="checkout-btn mt-2 px-4 py-2 bg-blue-500 text-white rounded">Mua hàng</button>
+                ) : null}
             </div>
+            
+            {showCheckoutForm && (
+                <div className="checkout-form-container mt-8 border-t pt-4">
+                    <CheckoutForm onCancel={() => setShowCheckoutForm(false)} />
+                </div>
+            )}
         </div>
     );
 };
