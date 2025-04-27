@@ -129,12 +129,61 @@
   color: #ffc107;
 }
 
-.star-filled {
+/* .star-filled {
   color: #ffc107;
 }
 
 .star-empty {
   color: #e0e0e0;
+} */
+
+.star {
+  position: relative;
+  color: #e0e0e0; /* sao rỗng */
+  display: inline-block;
+}
+
+.star::before {
+  content: "\f005"; /* faStar */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  color: #ffc107; /* phần sao vàng */
+  width: 0;
+}
+
+.star-10::before {
+  width: 10%;
+}
+.star-20::before {
+  width: 20%;
+}
+.star-30::before {
+  width: 30%;
+}
+.star-40::before {
+  width: 40%;
+}
+.star-50::before {
+  width: 50%;
+}
+.star-60::before {
+  width: 60%;
+}
+.star-70::before {
+  width: 70%;
+}
+.star-80::before {
+  width: 80%;
+}
+.star-90::before {
+  width: 90%;
+}
+.star-100::before {
+  width: 100%;
 }
 
 .review-count {
@@ -306,7 +355,7 @@
 }
 
 /* Action Buttons */
-.product-actions {
+.product-action {
   display: flex;
   gap: 15px;
   margin: 25px 0;
@@ -585,7 +634,7 @@ textarea {
   gap: 20px;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1500px) {
   .related-products-grid {
     grid-template-columns: repeat(3, 1fr);
   }

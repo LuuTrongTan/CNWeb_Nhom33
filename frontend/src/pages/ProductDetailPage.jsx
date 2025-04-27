@@ -19,10 +19,12 @@ import ReviewList from "../components/Review/ReviewList";
 import ReviewForm from "../components/Review/ReviewForm";
 import axios from "axios";
 import ProductCard from "../components/Product/ProductCard";
+import { getCategoryById } from "../service/categoryAPI";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const [category, setCategory] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,10 +43,15 @@ const ProductDetailPage = () => {
       try {
         setLoading(true);
         const data = await getProductById(id);
+
+        console.log("Dữ liệu sản phẩm:", data);
         setProduct(data);
+        const categoryData = await getCategoryById(data.category);
+        setCategory(categoryData);
         // Lấy sản phẩm liên quan sau khi có thông tin sản phẩm
         try {
           const relatedData = await getRelatedProducts(id);
+          console.log("Dữ liệu sản phẩm liên quan:", relatedData);
           setRelatedProducts(relatedData);
         } catch (err) {
           console.error("Lỗi khi lấy sản phẩm liên quan:", err);
@@ -219,7 +226,7 @@ const ProductDetailPage = () => {
   return (
     <div className="product-detail-container">
       <div className="breadcrumb">
-        <Link to="/">Trang chủ</Link> /<Link to="/products">Sản phẩm</Link> /
+        <Link to="/">Trang chủ</Link> <Link to="/products">Sản phẩm</Link>
         <span>{product.name}</span>
       </div>
 
@@ -266,23 +273,27 @@ const ProductDetailPage = () => {
           <div className="product-meta">
             <div className="product-rating">
               {[...Array(5)].map((_, i) => {
-                const ratingValue = i + 1;
+                const diff = product.rating - i;
+
+                let fillClass = "star-empty";
+                if (diff >= 1) fillClass = "star-100";
+                else if (diff >= 0.9) fillClass = "star-90";
+                else if (diff >= 0.8) fillClass = "star-80";
+                else if (diff >= 0.7) fillClass = "star-70";
+                else if (diff >= 0.6) fillClass = "star-60";
+                else if (diff >= 0.5) fillClass = "star-50";
+                else if (diff >= 0.4) fillClass = "star-40";
+                else if (diff >= 0.3) fillClass = "star-30";
+                else if (diff >= 0.2) fillClass = "star-20";
+                else if (diff >= 0.1) fillClass = "star-10";
+
                 return (
-                  <span key={i}>
-                    {ratingValue <= product.rating ? (
-                      <FontAwesomeIcon icon={faStar} className="star-filled" />
-                    ) : ratingValue - 0.5 <= product.rating ? (
-                      <FontAwesomeIcon
-                        icon={faStarHalfAlt}
-                        className="star-filled"
-                      />
-                    ) : (
-                      <FontAwesomeIcon icon={faStar} className="star-empty" />
-                    )}
+                  <span key={i} className={`star ${fillClass}`}>
+                    <FontAwesomeIcon icon={faStar} />
                   </span>
                 );
               })}
-              <span className="review-count">({product.reviews} đánh giá)</span>
+              <span className="review-count">({product.rating} đánh giá)</span>
             </div>
             <div className="product-sku">
               <span>Mã sản phẩm:</span> {product.sku}
@@ -290,15 +301,15 @@ const ProductDetailPage = () => {
           </div>
 
           <div className="product-price">
-            {product.salePrice ? (
+            {product.hasDiscount ? (
               <>
                 <span className="sale-price">
-                  {product.salePrice.toLocaleString()}đ
+                  {product.discountPrice.toLocaleString()}đ
                 </span>
                 <span className="original-price">
                   {product.price.toLocaleString()}đ
                 </span>
-                <span className="discount-badge">-{product.discount}%</span>
+                {/* <span className="discount-badge">-{product.discount}%</span> */}
               </>
             ) : (
               <span className="regular-price">
@@ -310,11 +321,11 @@ const ProductDetailPage = () => {
           <div className="product-status">
             <span
               className={`availability ${
-                product.inStock ? "in-stock" : "out-of-stock"
+                product.stock > 0 ? "in-stock" : "out-of-stock"
               }`}
             >
               <FontAwesomeIcon icon={faCheck} />
-              {product.inStock ? "Còn hàng" : "Hết hàng"}
+              {product.stockStatus}
             </span>
           </div>
 
@@ -379,7 +390,7 @@ const ProductDetailPage = () => {
               </div>
             </div>
           </div>
-          <div className="product-actions">
+          <div className="product-action">
             <button className="add-to-cart-btn" onClick={handleAddToCart}>
               <FontAwesomeIcon icon={faShoppingCart} /> Thêm vào giỏ hàng
             </button>
@@ -422,9 +433,7 @@ const ProductDetailPage = () => {
           <div className="product-meta-info">
             <div className="meta-item">
               <span className="meta-label">Danh mục:</span>
-              <span className="meta-value">
-                {product.category?.name || product.category}
-              </span>
+              <span className="meta-value">{category.name}</span>
             </div>
             {product.tags && (
               <div className="meta-item">
@@ -486,15 +495,15 @@ const ProductDetailPage = () => {
                 <tbody>
                   <tr>
                     <th>Chất liệu</th>
-                    <td>{product.material}</td>
+                    <td>{product.attributes[0].value}</td>
                   </tr>
                   <tr>
-                    <th>Hướng dẫn bảo quản</th>
-                    <td>{product.care}</td>
+                    <th>Kiểu dáng</th>
+                    <td>{product.attributes[1].value}</td>
                   </tr>
                   <tr>
                     <th>Tình trạng</th>
-                    <td>{product.inStock ? "Còn hàng" : "Hết hàng"}</td>
+                    <td>{product.stockStatus}</td>
                   </tr>
                 </tbody>
               </table>
@@ -509,30 +518,28 @@ const ProductDetailPage = () => {
                   <span className="rating-number">{product.rating}</span>
                   <div className="rating-stars">
                     {[...Array(5)].map((_, i) => {
-                      const ratingValue = i + 1;
+                      const diff = product.rating - i;
+
+                      let fillClass = "star-empty";
+                      if (diff >= 1) fillClass = "star-100";
+                      else if (diff >= 0.9) fillClass = "star-90";
+                      else if (diff >= 0.8) fillClass = "star-80";
+                      else if (diff >= 0.7) fillClass = "star-70";
+                      else if (diff >= 0.6) fillClass = "star-60";
+                      else if (diff >= 0.5) fillClass = "star-50";
+                      else if (diff >= 0.4) fillClass = "star-40";
+                      else if (diff >= 0.3) fillClass = "star-30";
+                      else if (diff >= 0.2) fillClass = "star-20";
+                      else if (diff >= 0.1) fillClass = "star-10";
+
                       return (
-                        <span key={i}>
-                          {ratingValue <= product.rating ? (
-                            <FontAwesomeIcon
-                              icon={faStar}
-                              className="star-filled"
-                            />
-                          ) : ratingValue - 0.5 <= product.rating ? (
-                            <FontAwesomeIcon
-                              icon={faStarHalfAlt}
-                              className="star-filled"
-                            />
-                          ) : (
-                            <FontAwesomeIcon
-                              icon={faStar}
-                              className="star-empty"
-                            />
-                          )}
+                        <span key={i} className={`star ${fillClass}`}>
+                          <FontAwesomeIcon icon={faStar} />
                         </span>
                       );
                     })}
                   </div>
-                  <p>Dựa trên {product.reviews} đánh giá</p>
+                  <p>Dựa trên {product.numReviews} đánh giá</p>
                 </div>
               </div>
 
@@ -572,12 +579,9 @@ const ProductDetailPage = () => {
                   name: relatedProduct.name,
                   price: relatedProduct.price,
                   images: relatedProduct.images,
-                  category: relatedProduct.category || "Thời trang",
-                  isNew: Math.random() > 0.7,
-                  discount:
-                    Math.random() > 0.7
-                      ? Math.floor(Math.random() * 30) + 10
-                      : 0,
+                  category: category || "Thời trang",
+                  isNewArrival: relatedProduct.isNewArrival,
+                  discount: relatedProduct.discountPercentage,
                 }}
               />
             ))}

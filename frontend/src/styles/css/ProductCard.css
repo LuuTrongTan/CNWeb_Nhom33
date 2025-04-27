@@ -8,7 +8,7 @@
   --light-gray: #f8f8f8;
   --border-color: #e5e5e5;
   --success-color: #4caf50;
-  --blue-color: #2196F3;
+  --blue-color: #2196f3;
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -88,7 +88,7 @@
 
 /* Badges */
 .product-badge {
-  position: absolute;
+  position: relative;
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -107,8 +107,10 @@
 }
 
 .discount-badge {
-  top: 12px;
-  right: 12px;
+  position: relative !important;
+  top: -48px !important;
+  left: 50% !important;
+  width: 46%;
   background-color: var(--primary-color);
   color: white;
 }
@@ -123,7 +125,12 @@
   justify-content: center;
   gap: 12px;
   padding: 15px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4), transparent);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8),
+    rgba(0, 0, 0, 0.4),
+    transparent
+  );
   opacity: 0;
   transform: translateY(20px);
   transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -167,7 +174,7 @@
 }
 
 .wishlist-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -381,29 +388,29 @@
     transform: translateY(0);
     padding: 10px;
   }
-  
+
   .action-button {
     width: 36px;
     height: 36px;
   }
-  
+
   .product-info {
     padding: 15px;
   }
-  
+
   .products-list .product-card {
     flex-direction: column;
   }
-  
+
   .products-list .product-image-container {
     flex: 0 0 auto;
     aspect-ratio: 3/4;
   }
-  
+
   .products-list .product-info {
     padding: 15px;
   }
-  
+
   .products-list .quick-add {
     max-width: 100%;
   }
@@ -432,4 +439,4 @@
   background-color: #eee;
   color: #999;
   box-shadow: none;
-} 
+}

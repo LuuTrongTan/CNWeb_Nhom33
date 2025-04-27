@@ -46,7 +46,7 @@ export const getProductsByCategory = async (
 };
 
 // Hàm lấy sản phẩm liên quan
-export const getRelatedProducts = async (productId, limit = 4) => {
+export const getRelatedProducts = async (productId, limit = 8) => {
   try {
     const response = await axios.get(`${API_URL}/product/getRelated`, {
       params: { productId, limit },

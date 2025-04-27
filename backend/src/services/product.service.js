@@ -360,7 +360,7 @@ const getProductBySlug = async (slug) => {
  * @param {number} limit - Số lượng sản phẩm liên quan
  * @returns {Promise<Product[]>} Danh sách sản phẩm liên quan
  */
-const getRelatedProducts = async (productId, limit = 4) => {
+const getRelatedProducts = async (productId, limit = 8) => {
   const product = await getProductById(productId);
 
   if (!product) {
@@ -376,7 +376,7 @@ const getRelatedProducts = async (productId, limit = 4) => {
   })
     .sort({ soldCount: -1, rating: -1 })
     .limit(limit)
-    .select('name price images slug hasDiscount discountPrice');
+    .select('name price images slug hasDiscount discountPrice tagCategory rating isNewArrival');
 
   return relatedProducts;
 };
@@ -394,8 +394,7 @@ const getFeaturedProducts = async (limit = 8) => {
   })
     .sort({ createdAt: -1 })
     .limit(limit)
-    .select('name price images slug hasDiscount discountPrice rating')
-    .populate('category', 'name slug');
+    .select('name price images slug hasDiscount discountPrice rating isNewArrival');
 };
 
 /**

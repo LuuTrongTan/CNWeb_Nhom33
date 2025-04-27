@@ -36,7 +36,7 @@ const getProductsByCategory = catchAsync(async (req, res) => {
 });
 
 const getRelatedProducts = catchAsync(async (req, res) => {
-  const { productId, limit = 4 } = req.query;
+  const { productId, limit = 8 } = req.query;
 
   if (!productId) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Product ID is required');
