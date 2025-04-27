@@ -14,6 +14,10 @@ const productSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  tagCategory: {
+    type: String,
+    required: true,
+  },
   images: [{ type: String }],
   mainImage: { type: String, default: '' },
   brand: { type: String },

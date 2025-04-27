@@ -10,5 +10,6 @@ router
   .delete(categoryController.deleteCategory);
 
 router.route('/getAllCategory').get(categoryController.getAllCategory);
+router.route('/getCategoriesByTagCategory').get(categoryController.getCategoriesByTagCategory);
 
 module.exports = router;

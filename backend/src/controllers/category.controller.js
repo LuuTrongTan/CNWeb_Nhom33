@@ -10,7 +10,7 @@ const createCategory = catchAsync(async (req, res) => {
 });
 
 const getAllCategory = catchAsync(async (req, res) => {
-  const category = await categoryService.getAllCategory();
+  const category = await categoryService.getAllCategories();
   if (!category) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
   }
@@ -47,10 +47,23 @@ const deleteCategory = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const getCategoriesByTagCategory = catchAsync(async (req, res) => {
+  const { tagCategory } = req.query;
+  if (!tagCategory) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'TagCategory is required');
+  }
+  const categories = await categoryService.getCategoriesByTagCategory(tagCategory);
+  if (!categories || categories.length === 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No categories found for the given TagCategory');
+  }
+  res.send(categories);
+});
+
 module.exports = {
   createCategory,
   getAllCategory,
   getCategory,
   updateCategory,
   deleteCategory,
+  getCategoriesByTagCategory,
 };
