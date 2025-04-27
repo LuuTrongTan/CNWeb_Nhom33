@@ -3,6 +3,7 @@ const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { userService } = require('../services');
+const { OAuth2Client } = require('google-auth-library');
 
 const createUser = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -34,10 +35,44 @@ const deleteUser = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const client = new OAuth2Client("GOOGLE_CLIENT_ID");
+
+const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: "GOOGLE_CLIENT_ID",
+    });
+
+    const payload = ticket.getPayload();
+    let user = await User.findOne({ email: payload.email });
+
+    if (!user) {
+      user = new User({
+        email: payload.email,
+        name: payload.name,
+        avatar: payload.picture,
+        googleId: payload.sub,
+        authType: 'google',
+        isVerified: true,
+      });
+      await user.save();
+    }
+
+    const token = jwt.sign({ id: user._id, role: user.role }, config.jwt.secret, { expiresIn: '7d' });
+
+    res.json({ user, token });
+  } catch (error) {
+    res.status(500).json({ message: 'Google login failed', error });
+  }
+};
+
 module.exports = {
   createUser,
   getUsers,
   getUser,
   updateUser,
   deleteUser,
+  googleLogin,
 };
