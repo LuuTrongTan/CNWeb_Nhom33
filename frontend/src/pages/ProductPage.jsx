@@ -11,12 +11,12 @@ import {
   faList,
 } from "@fortawesome/free-solid-svg-icons";
 import ProductCard from "../components/Product/ProductCard";
-import "../styles/css/ProductList.css";
+import "../styles/css/ProductPage.css";
 import { getProductFilter } from "../service/productAPI"; // Import hàm fetchProducts từ productAPI
 
 import { FilterContext } from "../context/FilterContext"; // Import context filter nếu cần
 
-const ProductPage = () => {
+const ProductPage = ({ tagCategory }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,6 +53,7 @@ const ProductPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        console.log(tagCategory);
 
         const categoryId =
           selectedFilter.category && selectedFilter.category._id
@@ -69,10 +70,10 @@ const ProductPage = () => {
           searchTerm,
           selectedFilter.sortBy,
           selectedFilter.sortOrder,
-          selectedFilter.isFeatured
+          selectedFilter.isFeatured,
+          tagCategory
         );
 
-        console.log("Dữ liệu sản phẩm:", response);
         setProducts(response.products);
         setTotalProduct(response.total);
         setTotalPage(response.totalPages);
@@ -94,6 +95,8 @@ const ProductPage = () => {
         console.error("Lỗi khi tải sản phẩm:", err);
       }
     };
+
+    window.scrollTo(0, 0);
     setCurrentPage(1);
 
     fetchProducts();
@@ -114,7 +117,8 @@ const ProductPage = () => {
         searchTerm,
         selectedFilter.sortBy,
         selectedFilter.sortOrder,
-        selectedFilter.isFeatured
+        selectedFilter.isFeatured,
+        tagCategory
       );
 
       console.log("Dữ liệu sản phẩm:", response);
@@ -230,10 +234,33 @@ const ProductPage = () => {
           <span className="breadcrumb-separator">
             <FontAwesomeIcon icon={faChevronRight} />
           </span>
-          <div className="breadcrumb-item active">Sản phẩm</div>
+          <div className="breadcrumb-item2">
+            {" "}
+            {tagCategory !== "" ? (
+              <div style={{ display: "flex" }}>
+                <Link to="/products">
+                  <p className="breadcrumb-item active">Sản phẩm</p>
+                </Link>
+                <div>
+                  {tagCategory === "Áo" && "Áo"}
+                  {tagCategory === "Quần" && "Quần"}
+                  {tagCategory === "Giày & Dép" && "Giày & Dép"}
+                  {tagCategory === "Phụ kiện" && "Giày & Dép"}
+                </div>
+              </div>
+            ) : (
+              <div> Sản phẩm </div>
+            )}
+          </div>
         </div>
 
-        <h1 className="products-title">Sản phẩm</h1>
+        <h1 className="products-title">
+          {tagCategory === "Áo" && "Áo"}
+          {tagCategory === "Quần" && "Quần"}
+          {tagCategory === "" && "Tất cả sản phẩm"}
+          {tagCategory === "Giày & Dép" && "Giày & Dép"}
+          {tagCategory === "Phụ kiện" && "Giày & Dép"}
+        </h1>
         <p className="products-description">
           Khám phá bộ sưu tập sản phẩm mới nhất với chất lượng và giá cả hợp lý
         </p>

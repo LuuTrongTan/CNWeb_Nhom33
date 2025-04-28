@@ -296,7 +296,8 @@ const ProductDetailPage = () => {
               <span className="review-count">({product.rating} đánh giá)</span>
             </div>
             <div className="product-sku">
-              <span>Mã sản phẩm:</span> {product.sku}
+              <span>Số lượng đã bán:</span>{" "}
+              {Math.floor(Math.random() * (1000 - 20 + 1)) + 20}
             </div>
           </div>
 

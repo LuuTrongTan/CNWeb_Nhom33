@@ -68,7 +68,8 @@ export const getProductFilter = async (
   searchTerm,
   sortBy,
   sortOrder,
-  isFeatured
+  isFeatured,
+  tagCategory
 ) => {
   try {
     const response = await axios.post(`${API_URL}/product/searchProducts`, {
@@ -82,6 +83,7 @@ export const getProductFilter = async (
       sortBy: sortBy ?? "createdAt",
       sortOrder: sortOrder ?? "desc",
       isFeatured: isFeatured ?? null,
+      tagCategory: tagCategory ?? "",
     });
     return response.data;
   } catch (error) {

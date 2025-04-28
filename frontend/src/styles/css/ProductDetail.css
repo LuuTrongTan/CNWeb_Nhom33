@@ -629,24 +629,25 @@ textarea {
 }
 
 .related-products-grid {
+  container: size !important;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
 
-@media (max-width: 1500px) {
+@media (max-width: 1100px) {
   .related-products-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   .related-products-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 500px) {
   .related-products-grid {
     grid-template-columns: 1fr;
   }

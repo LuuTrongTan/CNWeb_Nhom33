@@ -18,7 +18,7 @@ const MainLayout = () => {
     const isHomePage = location.pathname === "/";
 
     // Ẩn sidebar ở trang chủ, hiện ở trang sản phẩm (trên desktop)
-    if (window.innerWidth >= 992) {
+    if (window.innerWidth >= 1100) {
       if (isProductsPage) {
         setSidebarOpen(true);
       } else if (isHomePage) {
@@ -26,7 +26,7 @@ const MainLayout = () => {
       }
     } else {
       // Luôn đóng sidebar trên mobile khi thay đổi trang
-      setSidebarOpen(false);
+      false;
     }
   }, [location.pathname]);
 
@@ -36,7 +36,7 @@ const MainLayout = () => {
       const isProductsPage = location.pathname.includes("/products");
       const isHomePage = location.pathname === "/";
 
-      if (window.innerWidth >= 992) {
+      if (window.innerWidth >= 1100) {
         if (isProductsPage) {
           setSidebarOpen(true);
         } else if (isHomePage) {
@@ -58,7 +58,7 @@ const MainLayout = () => {
   };
 
   const handleOverlayClick = () => {
-    if (window.innerWidth < 992) {
+    if (window.innerWidth < 1100) {
       setSidebarOpen(false);
     }
   };
@@ -66,17 +66,18 @@ const MainLayout = () => {
   // Kiểm tra xem có phải đang ở trang chủ không
   const isHomePage = location.pathname === "/";
   const isProductsPage = location.pathname.includes("/products");
+  const isProductDetailPage = /^\/products\/[^/]+$/.test(location.pathname); // Kiểm tra nếu là trang chi tiết sản phẩm
 
   return (
     <div
       className={`layout ${sidebarOpen ? "sidebar-open" : "sidebar-closed"} ${
-        isHomePage ? "home-page" : ""
+        isHomePage || isProductDetailPage ? "home-page" : ""
       }`}
     >
       <Navbar />
 
       <div className="main-container" ref={mainContainerRef}>
-        {(!isHomePage || sidebarOpen) && (
+        {((!isHomePage && !isProductDetailPage) || sidebarOpen) && (
           <div className={`sidebar-container`}>
             <Sidebar toggleSidebar={toggleSidebar} />
           </div>
@@ -90,27 +91,19 @@ const MainLayout = () => {
       </div>
 
       {/* Nút hiện sidebar khi sidebar đang ẩn */}
-      {!isHomePage && !sidebarOpen && isProductsPage && (
-        <button
-          className="sidebar-show-btn"
-          onClick={toggleSidebar}
-          aria-label="Hiện bộ lọc"
-        >
-          <span>Bộ lọc</span>
-          <FontAwesomeIcon icon={faChevronRight} className="arrow-icon" />
-        </button>
-      )}
-
-      {/* Nút toggle sidebar cho mobile */}
-      {!isHomePage && window.innerWidth < 992 && (
-        <button
-          className="sidebar-toggle-btn-mobile"
-          onClick={toggleSidebar}
-          aria-label="Bộ lọc"
-        >
-          <span className="mobile-filter-text">Bộ lọc</span>
-        </button>
-      )}
+      {!isHomePage &&
+        !isProductDetailPage &&
+        !sidebarOpen &&
+        isProductsPage && (
+          <button
+            className="sidebar-show-btn"
+            onClick={toggleSidebar}
+            aria-label="Hiện bộ lọc"
+          >
+            {/* <span>Bộ lọc</span> */}
+            <FontAwesomeIcon icon={faChevronRight} className="arrow-icon" />
+          </button>
+        )}
 
       <Footer />
     </div>

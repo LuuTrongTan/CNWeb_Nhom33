@@ -46,14 +46,29 @@ const App = () => {
                 <Route index element={<Home />} />
 
                 {/* Sản phẩm */}
-                <Route path="products" element={<ProductPage />} />
+                <Route
+                  path="products"
+                  element={<ProductPage tagCategory="" />}
+                />
                 <Route path="products/:id" element={<ProductDetailPage />} />
 
                 {/* Danh mục */}
-                <Route path="nu/*" element={<CategoryPage />} />
-                <Route path="nam/*" element={<CategoryPage />} />
-                <Route path="tre-em/*" element={<CategoryPage />} />
-                <Route path="phu-kien/*" element={<CategoryPage />} />
+                <Route
+                  path="products/ao/*"
+                  element={<ProductPage tagCategory="Áo" />}
+                />
+                <Route
+                  path="products/quan/*"
+                  element={<ProductPage tagCategory="Quần" />}
+                />
+                <Route
+                  path="products/giayvadep/*"
+                  element={<ProductPage tagCategory="Giày & Dép" />}
+                />
+                <Route
+                  path="products/phukien/*"
+                  element={<ProductPage tagCategory="Phụ kiện" />}
+                />
                 <Route path="sale/*" element={<CategoryPage />} />
                 <Route path="moi/*" element={<CategoryPage />} />
 

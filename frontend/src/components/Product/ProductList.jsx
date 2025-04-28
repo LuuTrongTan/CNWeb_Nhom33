@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
-import { FilterContext } from '../../context/FilterContext';
-import '../../styles/css/ProductList.css';
+import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import { FilterContext } from "../../context/FilterContext";
+import "../../styles/css/ProductPage.css";
 
 const ProductList = () => {
   const { selectedFilter } = useContext(FilterContext);
@@ -10,17 +10,17 @@ const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [displayCount, setDisplayCount] = useState(8);
-  const [sortOption, setSortOption] = useState('newest');
+  const [sortOption, setSortOption] = useState("newest");
 
   // Lấy danh sách sản phẩm từ API
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/api/products');
+        const response = await axios.get("/api/products");
         setProducts(response.data);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
       } finally {
         setLoading(false);
       }
@@ -36,58 +36,71 @@ const ProductList = () => {
 
       // Lọc theo danh mục
       if (selectedFilter.category) {
-        const [mainCategory, subCategory] = selectedFilter.category.value.split('-');
+        const [mainCategory, subCategory] =
+          selectedFilter.category.value.split("-");
         if (subCategory) {
-          filtered = filtered.filter(product => 
-            product.category === mainCategory && product.subCategory === subCategory);
+          filtered = filtered.filter(
+            (product) =>
+              product.category === mainCategory &&
+              product.subCategory === subCategory
+          );
         } else {
-          filtered = filtered.filter(product => product.category === mainCategory);
+          filtered = filtered.filter(
+            (product) => product.category === mainCategory
+          );
         }
       }
 
       // Lọc theo kích thước
       if (selectedFilter.sizes.length > 0) {
-        filtered = filtered.filter(product => 
-          product.variants.some(variant => 
-            selectedFilter.sizes.includes(variant.size))
+        filtered = filtered.filter((product) =>
+          product.variants.some((variant) =>
+            selectedFilter.sizes.includes(variant.size)
+          )
         );
       }
 
       // Lọc theo màu sắc
       if (selectedFilter.color) {
-        filtered = filtered.filter(product => 
-          product.variants.some(variant => 
-            variant.color.toLowerCase() === selectedFilter.color.toLowerCase())
+        filtered = filtered.filter((product) =>
+          product.variants.some(
+            (variant) =>
+              variant.color.toLowerCase() === selectedFilter.color.toLowerCase()
+          )
         );
       }
 
       // Lọc theo khoảng giá
       if (selectedFilter.price) {
-        filtered = filtered.filter(product => 
-          product.price >= selectedFilter.price.min && product.price <= selectedFilter.price.max
+        filtered = filtered.filter(
+          (product) =>
+            product.price >= selectedFilter.price.min &&
+            product.price <= selectedFilter.price.max
         );
       }
 
       // Áp dụng sắp xếp
       switch (sortOption) {
-        case 'price-asc':
+        case "price-asc":
           filtered.sort((a, b) => a.price - b.price);
           break;
-        case 'price-desc':
+        case "price-desc":
           filtered.sort((a, b) => b.price - a.price);
           break;
-        case 'name-asc':
+        case "name-asc":
           filtered.sort((a, b) => a.name.localeCompare(b.name));
           break;
-        case 'name-desc':
+        case "name-desc":
           filtered.sort((a, b) => b.name.localeCompare(a.name));
           break;
-        case 'rating':
+        case "rating":
           filtered.sort((a, b) => b.rating - a.rating);
           break;
-        case 'newest':
+        case "newest":
         default:
-          filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          filtered.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
           break;
       }
 
@@ -97,7 +110,7 @@ const ProductList = () => {
 
   // Tăng số lượng sản phẩm hiển thị khi nhấn "Xem thêm"
   const handleLoadMore = () => {
-    setDisplayCount(prev => prev + 8);
+    setDisplayCount((prev) => prev + 8);
   };
 
   // Xử lý thay đổi tùy chọn sắp xếp
@@ -107,16 +120,18 @@ const ProductList = () => {
 
   // Hiển thị placeholder khi đang tải
   const renderSkeleton = () => {
-    return Array(8).fill().map((_, index) => (
-      <div key={index} className="product-card skeleton">
-        <div className="product-image skeleton-image"></div>
-        <div className="product-info">
-          <div className="skeleton-title"></div>
-          <div className="skeleton-price"></div>
-          <div className="skeleton-rating"></div>
+    return Array(8)
+      .fill()
+      .map((_, index) => (
+        <div key={index} className="product-card skeleton">
+          <div className="product-image skeleton-image"></div>
+          <div className="product-info">
+            <div className="skeleton-title"></div>
+            <div className="skeleton-price"></div>
+            <div className="skeleton-rating"></div>
+          </div>
         </div>
-      </div>
-    ));
+      ));
   };
 
   return (
@@ -146,7 +161,7 @@ const ProductList = () => {
         {loading ? (
           renderSkeleton()
         ) : filteredProducts.length > 0 ? (
-          filteredProducts.slice(0, displayCount).map(product => (
+          filteredProducts.slice(0, displayCount).map((product) => (
             <div key={product._id} className="product-card">
               <Link to={`/product/${product._id}`} className="product-link">
                 <div className="product-image">
@@ -172,26 +187,30 @@ const ProductList = () => {
                     {product.discount > 0 ? (
                       <>
                         <span className="original-price">
-                          {product.originalPrice.toLocaleString('vi-VN')}đ
+                          {product.originalPrice.toLocaleString("vi-VN")}đ
                         </span>
                         <span className="current-price">
-                          {product.price.toLocaleString('vi-VN')}đ
+                          {product.price.toLocaleString("vi-VN")}đ
                         </span>
                       </>
                     ) : (
                       <span className="current-price">
-                        {product.price.toLocaleString('vi-VN')}đ
+                        {product.price.toLocaleString("vi-VN")}đ
                       </span>
                     )}
                   </div>
                   <div className="product-rating">
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <i 
-                        key={star} 
-                        className={`fa-${star <= product.rating ? 'solid' : 'regular'} fa-star`}
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <i
+                        key={star}
+                        className={`fa-${
+                          star <= product.rating ? "solid" : "regular"
+                        } fa-star`}
                       ></i>
                     ))}
-                    <span className="review-count">({product.reviewCount})</span>
+                    <span className="review-count">
+                      ({product.reviewCount})
+                    </span>
                   </div>
                 </div>
               </Link>

@@ -167,9 +167,9 @@ const Sidebar = ({ toggleSidebar }) => {
     });
   };
 
-  useEffect(() => {
-    console.log("Updated selectedFilter:", selectedFilter);
-  }, [selectedFilter]);
+  // useEffect(() => {
+  //   console.log("Updated selectedFilter:", selectedFilter);
+  // }, [selectedFilter]);
 
   // Xử lý khi chọn màu sắc
   const handleColorChange = (color) => {
