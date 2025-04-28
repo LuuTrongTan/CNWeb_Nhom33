@@ -18,7 +18,8 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 // Import providers
 import { CartProvider } from "./context/CartContext";
 import { AxiosProvider } from "./context/AxiosContext";
-import { AuthProvider } from "./context/AuthContext";
+// import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

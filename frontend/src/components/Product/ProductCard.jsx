@@ -19,7 +19,7 @@ const ProductCard = ({ product }) => {
   useEffect(() => {
     const checkWishlistStatus = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem('token');
         if (!token || !_id) return;
         
         setIsLoadingWishlist(true);
@@ -44,7 +44,7 @@ const ProductCard = ({ product }) => {
     e.stopPropagation();
     
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       if (!token) {
         alert('Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích');
         return;

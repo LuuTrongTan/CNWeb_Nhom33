@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 // Create axios instance
 const apiClient = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -29,7 +27,39 @@ apiClient.interceptors.response.use(
   (response) => {
     return response.data;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If error is 401 and we haven't tried to refresh token yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // Try to refresh token
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh-tokens`, {
+            refreshToken
+          });
+
+          if (response.data.tokens) {
+            localStorage.setItem('token', response.data.tokens.access.token);
+            localStorage.setItem('refreshToken', response.data.tokens.refresh.token);
+            
+            // Retry original request with new token
+            originalRequest.headers['Authorization'] = `Bearer ${response.data.tokens.access.token}`;
+            return axios(originalRequest);
+          }
+        }
+      } catch (refreshError) {
+        // If refresh token fails, logout user
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+    }
+
     let errorMessage = 'Something went wrong';
     
     if (error.response) {
@@ -40,6 +70,8 @@ apiClient.interceptors.response.use(
       if (status === 401) {
         // If token expired or invalid, clear local storage
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
       }
       
       errorMessage = data.message || `Error: ${status}`;

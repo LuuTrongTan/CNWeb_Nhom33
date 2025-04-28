@@ -1,6 +1,6 @@
 import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 const GoogleLoginButton = () => {
   const { handleGoogleLogin } = useAuth();

@@ -1,40 +1,29 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config/config');
-const User = require('../models/user.model');
+const passport = require('passport');
+const { validationResult } = require('express-validator');
 
-const verifyToken = async (req, res, next) => {
-  try {
-    const authHeader = req.header('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Authentication required' });
+// JWT authentication middleware
+exports.authenticateJWT = (req, res, next) => {
+  passport.authenticate('jwt', { session: false }, (err, user, info) => {
+    if (err) {
+      return next(err);
     }
     
-    const token = authHeader.replace('Bearer ', '');
-    const decoded = jwt.verify(token, config.jwt.secret);
-    
-    const user = await User.findById(decoded.id);
     if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(401).json({
+        message: 'Unauthorized: Invalid or expired token'
+      });
     }
-
-    req.user = user;
     
-    next();
-  } catch (error) {
-    res.status(401).json({ message: 'Invalid token' });
-  }
+    req.user = user;
+    return next();
+  })(req, res, next);
 };
 
-// Middleware kiểm tra admin
-const isAdmin = (req, res, next) => {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Bạn không có quyền truy cập' });
+// Validation handler middleware
+exports.validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
   next();
-};
-
-// Xuất tất cả middleware
-module.exports = {
-  verifyToken,
-  isAdmin,
-};
+}; 

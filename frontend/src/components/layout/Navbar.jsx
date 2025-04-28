@@ -15,7 +15,8 @@ import {
   faCog,
   faShieldAlt,
 } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../../context/AuthContext';
+// import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import '../../../src/styles/css/Navbar.css';
 import logoImage from '../../assets/images/logo.png';  // Import logo
 

@@ -6,6 +6,12 @@ const userController = require('../controllers/user.controller');
 
 const router = express.Router();
 
+// Profile routes - phải đặt trước route /:userId để tránh conflict
+router
+  .route('/profile')
+  .get(auth(), userController.getProfile)
+  .patch(auth(), validate(userValidation.updateProfile), userController.updateProfile);
+
 router
   .route('/')
   .post(auth('manageUsers'), validate(userValidation.createUser), userController.createUser)

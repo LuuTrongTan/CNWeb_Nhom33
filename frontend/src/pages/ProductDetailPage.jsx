@@ -76,24 +76,23 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const checkWishlistStatus = async () => {
       try {
-        const token = localStorage.getItem("accessToken");
-        if (!token || !id) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-        setIsLoadingWishlist(true);
-        const response = await axios.get(`/wishlist/${id}`, {
+        const response = await axios.get(`/wishlist/check/${id}`, {
           headers: {
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         });
-
         setIsInWishlist(response.data.isInWishlist);
-      } catch (err) {
-        console.error("Lỗi khi kiểm tra trạng thái yêu thích:", err);
-      } finally {
-        setIsLoadingWishlist(false);
+      } catch (error) {
+        console.error('Error checking wishlist status:', error);
       }
     };
-    checkWishlistStatus();
+
+    if (id) {
+      checkWishlistStatus();
+    }
   }, [id]);
 
   const handleQuantityChange = (action) => {
@@ -147,7 +146,7 @@ const ProductDetailPage = () => {
 
   const handleToggleWishlist = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('token');
       if (!token) {
         alert("Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích");
         return;
@@ -159,25 +158,24 @@ const ProductDetailPage = () => {
         // Xóa khỏi wishlist
         await axios.delete(`/wishlist/${id}`, {
           headers: {
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         });
         setIsInWishlist(false);
       } else {
         // Thêm vào wishlist
-        await axios.post(
-          "/wishlist",
+        await axios.post('/wishlist', 
           { productId: id },
           {
             headers: {
-              Authorization: `Bearer ${token}`,
-            },
+              Authorization: `Bearer ${token}`
+            }
           }
         );
         setIsInWishlist(true);
       }
-    } catch (err) {
-      console.error("Lỗi khi cập nhật danh sách yêu thích:", err);
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
     } finally {
       setIsLoadingWishlist(false);
     }

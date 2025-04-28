@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../../contexts/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faPhone, faShoppingBag, faEdit, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { updateProfile } from '../../api/user.api';
 import '../../styles/css/Auth/Profile.css';
 
 const ProfilePage = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { currentUser, updateUserInfo, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [orders, setOrders] = useState([]);
   const [editMode, setEditMode] = useState(false);
@@ -21,50 +22,21 @@ const ProfilePage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Kiểm tra xem người dùng đã đăng nhập chưa
-    const userInfo = localStorage.getItem('user');
-    const token = localStorage.getItem('accessToken');
-
-    if (!userInfo || !token) {
+    if (!authLoading && !currentUser) {
       navigate('/login');
       return;
     }
-
-    const fetchUserData = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/users/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        setUser(response.data);
-        setFormData({
-          name: response.data.name || '',
-          phone: response.data.phone || '',
-          address: response.data.address || '',
-          avatar: null
-        });
-
-        // Lấy danh sách đơn hàng của người dùng
-        const ordersResponse = await axios.get('/orders/user', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        setOrders(ordersResponse.data.results || []);
-      } catch (err) {
-        console.error('Lỗi khi lấy thông tin người dùng:', err);
-        setError('Không thể tải thông tin người dùng. Vui lòng thử lại sau.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [navigate]);
+    if (currentUser) {
+      setFormData({
+        name: currentUser.name || '',
+        phone: currentUser.phone || '',
+        address: currentUser.address || '',
+        avatar: null
+      });
+      // TODO: Lấy danh sách đơn hàng từ API
+      // fetchOrders();
+    }
+  }, [currentUser, authLoading, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -100,58 +72,35 @@ const ProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
-      const token = localStorage.getItem('accessToken');
+      // Gọi API cập nhật thông tin người dùng
+      const response = await updateProfile({
+        name: formData.name,
+        phone: formData.phone,
+        address: formData.address,
+      });
       
-      // Tạo FormData để gửi dữ liệu và file
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('phone', formData.phone);
-      formDataToSend.append('address', formData.address);
-
-      // Nếu có avatar mới, upload file trước
-      if (formData.avatar) {
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', formData.avatar);
-        
-        const uploadResponse = await axios.post('/upload', uploadFormData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        // Lấy URL avatar đã upload
-        const avatarUrl = uploadResponse.data.url;
-        formDataToSend.append('avatar', avatarUrl);
-      }
-      
-      // Cập nhật thông tin người dùng
-      const response = await axios.patch('/users/profile', formDataToSend, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+      // Cập nhật thông tin trong AuthContext và localStorage
+      updateUserInfo({
+        name: response.name,
+        phone: response.phone,
+        address: response.address,
       });
 
-      // Cập nhật thông tin trong localStorage
-      const updatedUser = response.data;
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-
-      // Cập nhật state
-      setUser(updatedUser);
       setEditMode(false);
-      
-      // Hiển thị thông báo thành công
       alert('Cập nhật thông tin thành công!');
     } catch (err) {
       console.error('Lỗi khi cập nhật thông tin:', err);
       setError(err.response?.data?.message || 'Không thể cập nhật thông tin. Vui lòng thử lại sau.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'Chưa cập nhật';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -184,7 +133,7 @@ const ProfilePage = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="profile-loading">
         <div className="spinner"></div>
@@ -192,14 +141,8 @@ const ProfilePage = () => {
       </div>
     );
   }
-
-  if (error && !user) {
-    return (
-      <div className="profile-error">
-        <p>{error}</p>
-        <button onClick={() => navigate('/login')}>Quay lại đăng nhập</button>
-      </div>
-    );
+  if (!currentUser) {
+    return null;
   }
 
   return (
@@ -213,11 +156,11 @@ const ProfilePage = () => {
           <div className="profile-avatar">
             {editMode ? (
               <div className="avatar-upload">
-                {avatarPreview || user.avatar ? (
-                  <img src={avatarPreview || user.avatar} alt={user.name} />
+                {avatarPreview || currentUser.avatar ? (
+                  <img src={avatarPreview || currentUser.avatar} alt={currentUser.name} />
                 ) : (
                   <div className="avatar-placeholder">
-                    {user.name.charAt(0).toUpperCase()}
+                    {currentUser.name.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <label htmlFor="avatar-input" className="avatar-edit-button">
@@ -233,11 +176,11 @@ const ProfilePage = () => {
               </div>
             ) : (
               <>
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} />
+                {currentUser.avatar ? (
+                  <img src={currentUser.avatar} alt={currentUser.name} />
                 ) : (
                   <div className="avatar-placeholder">
-                    {user.name.charAt(0).toUpperCase()}
+                    {currentUser.name.charAt(0).toUpperCase()}
                   </div>
                 )}
               </>
@@ -245,9 +188,9 @@ const ProfilePage = () => {
           </div>
 
           <div className="profile-info">
-            <h2>{user.name}</h2>
-            <p><FontAwesomeIcon icon={faEnvelope} /> {user.email}</p>
-            {user.phone && <p><FontAwesomeIcon icon={faPhone} /> {user.phone}</p>}
+            <h2>{currentUser.name}</h2>
+            <p><FontAwesomeIcon icon={faEnvelope} /> {currentUser.email}</p>
+            {currentUser.phone && <p><FontAwesomeIcon icon={faPhone} /> {currentUser.phone}</p>}
             
             {!editMode ? (
               <button 
@@ -262,9 +205,9 @@ const ProfilePage = () => {
                 onClick={() => {
                   setEditMode(false);
                   setFormData({
-                    name: user.name || '',
-                    phone: user.phone || '',
-                    address: user.address || '',
+                    name: currentUser.name || '',
+                    phone: currentUser.phone || '',
+                    address: currentUser.address || '',
                     avatar: null
                   });
                   setAvatarPreview('');
@@ -319,8 +262,8 @@ const ProfilePage = () => {
                   ></textarea>
                 </div>
                 
-                <button type="submit" className="save-profile-button">
-                  Lưu thay đổi
+                <button type="submit" className="save-profile-button" disabled={loading}>
+                  {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </button>
               </form>
             </div>
@@ -330,11 +273,7 @@ const ProfilePage = () => {
                 <h2>Thông tin chi tiết</h2>
                 <div className="profile-detail-item">
                   <span className="detail-label">Địa chỉ:</span>
-                  <span className="detail-value">{user.address || 'Chưa cập nhật'}</span>
-                </div>
-                <div className="profile-detail-item">
-                  <span className="detail-label">Ngày tham gia:</span>
-                  <span className="detail-value">{formatDate(user.createdAt)}</span>
+                  <span className="detail-value">{currentUser.address || 'Chưa cập nhật'}</span>
                 </div>
               </div>
               

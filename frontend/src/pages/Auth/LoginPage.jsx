@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '../../contexts/AuthContext';
 import '../../styles/css/Auth/Auth.css';
 
 const LoginPage = () => {
@@ -12,6 +12,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -28,21 +29,17 @@ const LoginPage = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post('/auth/login', {
-        email,
-        password
-      });
-
-      // Lưu thông tin đăng nhập và token vào localStorage
-      localStorage.setItem('accessToken', response.data.tokens.access.token);
-      localStorage.setItem('refreshToken', response.data.tokens.refresh.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      // Chuyển hướng đến trang chủ
-      navigate('/');
+      const result = await login({ email, password });
+      
+      if (result.success) {
+        // Chuyển hướng đến trang chủ
+        navigate('/');
+      } else {
+        setError(result.error?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      }
     } catch (err) {
       console.error('Lỗi đăng nhập:', err);
-      setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      setError(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
     } finally {
       setLoading(false);
     }

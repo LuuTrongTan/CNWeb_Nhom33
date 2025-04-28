@@ -27,64 +27,78 @@ import BannerManagementPage from './pages/Admin/BannerManagementPage';
 import AddEditBannerPage from './pages/Admin/AddEditBannerPage';
 import AdminLayout from './components/Layout/AdminLayout';
 
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
+import RedirectIfAuthenticated from './components/RedirectIfAuthenticated';
+
 // Styles
 import './styles/css/App.css';
 
 // Context Providers
 import { CartProvider } from './context/CartContext';
 import { FilterProvider } from './context/FilterContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 const App = () => {
   return (
     <Router>
-      <CartProvider>
-        <FilterProvider>
-          <div className="App">
-            <Routes>
-              <Route path="/" element={<MainLayout />}>
-                {/* Trang chính */}
-                <Route index element={<Home />} />
-                
-                {/* Sản phẩm */}
-                <Route path="products" element={<ProductPage />} />
-                <Route path="products/:id" element={<ProductDetailPage />} />
-                
-                {/* Danh mục */}
-                <Route path="nu/*" element={<CategoryPage />} />
-                <Route path="nam/*" element={<CategoryPage />} />
-                <Route path="tre-em/*" element={<CategoryPage />} />
-                <Route path="phu-kien/*" element={<CategoryPage />} />
-                <Route path="sale/*" element={<CategoryPage />} />
-                <Route path="moi/*" element={<CategoryPage />} />
-                
-                {/* Giỏ hàng và Thanh toán */}
-                <Route path="gio-hang" element={<CartPage />} />
-                <Route path="thanh-toan" element={<CheckoutPage />} />
-                
-                {/* Tài khoản */}
-                <Route path="login" element={<LoginPage />} />
-                <Route path="register" element={<RegisterPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="yeu-thich" element={<WishlistPage />} />
-                <Route path="don-hang" element={<OrderHistoryPage />} />
-                <Route path="don-hang/:orderId" element={<OrderDetailPage />} />
-              </Route>
+      <AuthProvider>
+        <CartProvider>
+          <FilterProvider>
+            <div className="App">
+              <Routes>
+                <Route path="/" element={<MainLayout />}>
+                  {/* Trang chính */}
+                  <Route index element={<Home />} />
+                  
+                  {/* Sản phẩm */}
+                  <Route path="products" element={<ProductPage />} />
+                  <Route path="products/:id" element={<ProductDetailPage />} />
+                  
+                  {/* Danh mục */}
+                  <Route path="nu/*" element={<CategoryPage />} />
+                  <Route path="nam/*" element={<CategoryPage />} />
+                  <Route path="tre-em/*" element={<CategoryPage />} />
+                  <Route path="phu-kien/*" element={<CategoryPage />} />
+                  <Route path="sale/*" element={<CategoryPage />} />
+                  <Route path="moi/*" element={<CategoryPage />} />
+                  
+                  {/* Giỏ hàng và Thanh toán */}
+                  <Route path="gio-hang" element={<CartPage />} />
+                  <Route path="thanh-toan" element={<CheckoutPage />} />
+                  
+                  {/* Auth Routes */}
+                  <Route element={<RedirectIfAuthenticated />}>
+                    <Route path="login" element={<LoginPage />} />
+                    <Route path="register" element={<RegisterPage />} />
+                  </Route>
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="dashboard" element={<AdminDashboard />} />
-                <Route path="products" element={<ProductManagement />} />
-                <Route path="banners" element={<BannerManagementPage />} />
-                <Route path="banners/add" element={<AddEditBannerPage />} />
-                <Route path="banners/edit/:id" element={<AddEditBannerPage />} />
-                {/* Thêm các route Admin khác ở đây */}
-              </Route>
-            </Routes>
-          </div>
-        </FilterProvider>
-      </CartProvider>
+                  {/* Protected Routes */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="wishlist" element={<WishlistPage />} />
+                    <Route path="don-hang" element={<OrderHistoryPage />} />
+                    <Route path="don-hang/:orderId" element={<OrderDetailPage />} />
+                  </Route>
+                </Route>
+
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route element={<ProtectedRoute />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="products" element={<ProductManagement />} />
+                    <Route path="banners" element={<BannerManagementPage />} />
+                    <Route path="banners/add" element={<AddEditBannerPage />} />
+                    <Route path="banners/edit/:id" element={<AddEditBannerPage />} />
+                  </Route>
+                </Route>
+              </Routes>
+            </div>
+          </FilterProvider>
+        </CartProvider>
+      </AuthProvider>
     </Router>
   );
 };

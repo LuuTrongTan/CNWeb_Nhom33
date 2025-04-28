@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserProfile, addAddress, updateAddress, deleteAddress } from '../api/user.api';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 const AddressesPage = () => {
   const [addresses, setAddresses] = useState([]);

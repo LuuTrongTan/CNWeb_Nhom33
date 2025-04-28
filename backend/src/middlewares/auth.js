@@ -12,6 +12,13 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
   if (requiredRights.length) {
     const userRights = roleRights.get(user.role);
     const hasRequiredRights = requiredRights.every((requiredRight) => userRights.includes(requiredRight));
+    
+    // Cho phép người dùng cập nhật thông tin cá nhân của mình
+    if (req.path === '/profile' && req.method === 'PATCH') {
+      resolve();
+      return;
+    }
+    
     if (!hasRequiredRights && req.params.userId !== user.id) {
       return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faShoppingCart, faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -11,6 +11,7 @@ const WishlistPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchWishlist();
@@ -18,15 +19,12 @@ const WishlistPage = () => {
 
   const fetchWishlist = async () => {
     try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      
+      const token = localStorage.getItem('token');
       if (!token) {
-        setError('Vui lòng đăng nhập để xem danh sách yêu thích');
-        setLoading(false);
+        navigate('/login');
         return;
       }
-      
+
       const response = await axios.get('/wishlist', {
         headers: {
           Authorization: `Bearer ${token}`

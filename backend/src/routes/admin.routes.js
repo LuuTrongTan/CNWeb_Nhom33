@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { adminAuth } = require('../middleware/auth.middleware');
+// const { adminAuth } = require('../middleware/auth.middleware');
+const { adminAuth } = require('../middlewares/auth.middleware');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const cloudinary = require('cloudinary').v2;

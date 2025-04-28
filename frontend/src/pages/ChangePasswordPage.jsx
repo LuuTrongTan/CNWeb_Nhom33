@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { changePassword } from '../api/user.api';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 const ChangePasswordPage = () => {
   const { user } = useAuth();

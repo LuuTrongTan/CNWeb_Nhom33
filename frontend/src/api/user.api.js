@@ -1,136 +1,144 @@
-import axios from 'axios';
-
-// Sử dụng đúng VITE_API_URL và thêm /api vào baseURL
-const API_URL = `${import.meta.env.VITE_API_URL}/api/users`;
-
-// Tạo axios instance với baseURL
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Thêm interceptor để tự động thêm token vào header
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+import apiClient from '../services/api.service';
 
 // Auth APIs
 export const register = async (userData) => {
   try {
-    const response = await api.post('/register', userData);
+    const response = await apiClient.post('/auth/register', userData);
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
 export const login = async (email, password) => {
   try {
-    const response = await api.post('/login', { email, password });
+    const response = await apiClient.post('/auth/login', { email, password });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
 // Profile APIs
 export const getUserProfile = async () => {
   try {
-    const response = await api.get('/profile');
-    return response.data;
+    const token = localStorage.getItem('token');
+    console.log('Token for getUserProfile:', token);
+    const response = await apiClient.get('/users/profile');
+    return response;
   } catch (error) {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    throw error.response.data;
+    console.error('Get profile error:', error);
+    throw error.response?.data || error;
   }
 };
 
 export const updateProfile = async (userData) => {
   try {
-    const response = await api.put('/profile', userData);
-    return response.data;
+    const token = localStorage.getItem('token');
+    console.log('Token for updateProfile:', token);
+    console.log('Sending update profile request:', userData);
+    const response = await apiClient.patch('/users/profile', userData);
+    console.log('Update profile response:', response);
+    return response;
   } catch (error) {
-    throw error.response.data;
+    console.error('Update profile error details:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const updateProfileWithFormData = async (userData) => {
+  try {
+    const token = localStorage.getItem('token');
+    console.log('Token for updateProfileWithFormData:', token);
+    console.log('Sending update profile request with FormData:', userData);
+    
+    const formData = new FormData();
+    Object.keys(userData).forEach(key => {
+      if (userData[key]) {
+        formData.append(key, userData[key]);
+      }
+    });
+    
+    const response = await apiClient.patch('/users/profile', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    console.log('Update profile response:', response);
+    return response;
+  } catch (error) {
+    console.error('Update profile error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.response?.headers
+    });
+    throw error.response?.data || { message: 'Lỗi không xác định khi cập nhật profile' };
   }
 };
 
 // Address APIs
 export const addAddress = async (addressData) => {
   try {
-    const response = await api.post('/addresses', addressData);
+    const response = await apiClient.post('/users/addresses', addressData);
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
 export const updateAddress = async (addressId, addressData) => {
   try {
-    const response = await api.put(`/addresses/${addressId}`, addressData);
+    const response = await apiClient.put(`/users/addresses/${addressId}`, addressData);
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
 export const deleteAddress = async (addressId) => {
   try {
-    const response = await api.delete(`/addresses/${addressId}`);
+    const response = await apiClient.delete(`/users/addresses/${addressId}`);
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
 export const getWishlist = async () => {
   try {
-    const response = await api.get('/wishlist');
+    const response = await apiClient.get('/users/wishlist');
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
 export const addToWishlist = async (productId) => {
   try {
-    const response = await api.post('/wishlist', { productId });
+    const response = await apiClient.post('/users/wishlist', { productId });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
 export const removeFromWishlist = async (productId) => {
   try {
-    const response = await api.delete(`/wishlist/${productId}`);
+    const response = await apiClient.delete(`/users/wishlist/${productId}`);
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
 // Password API
 export const changePassword = async (currentPassword, newPassword) => {
   try {
-    const response = await api.post('/change-password', {
+    const response = await apiClient.put('/users/password', {
       currentPassword,
       newPassword,
-    }, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
     });
     return response.data;
   } catch (error) {
@@ -140,38 +148,10 @@ export const changePassword = async (currentPassword, newPassword) => {
 
 export const getOrderHistory = async () => {
   try {
-    const response = await api.get('/orders');
+    const response = await apiClient.get('/users/orders');
     return response.data;
   } catch (error) {
-    throw error.response.data;
-  }
-};
-
-// Product API: Tạo instance riêng để gọi /api/products
-const productApi = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-productApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-export const getAllProducts = async () => {
-  try {
-    const response = await productApi.get('/products');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -179,14 +159,14 @@ export const uploadAvatar = async (file) => {
   try {
     const formData = new FormData();
     formData.append('avatar', file);
-    const response = await api.post('/avatar', formData, {
+    const response = await apiClient.post('/users/avatar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    throw error.response?.data || error;
   }
 };
 
@@ -195,6 +175,7 @@ export default {
   login,
   getUserProfile,
   updateProfile,
+  updateProfileWithFormData,
   addAddress,
   updateAddress,
   deleteAddress,
@@ -203,6 +184,5 @@ export default {
   removeFromWishlist,
   changePassword,
   getOrderHistory,
-  getAllProducts,
   uploadAvatar,
 };

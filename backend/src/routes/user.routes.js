@@ -1,30 +1,27 @@
 const express = require('express');
 const { check } = require('express-validator');
+const auth = require('../middlewares/auth');
 const userController = require('../controllers/user.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+const validate = require('../middlewares/validate');
+const userValidation = require('../validations/user.validation');
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(authMiddleware.authenticateJWT);
-
 // Get user profile
-router.get('/profile', userController.getProfile);
+router.get('/profile', auth('getProfile'), userController.getProfile);
 
 // Update user profile
-router.put(
+router.patch(
   '/profile',
-  [
-    check('name', 'Name cannot be empty if provided').optional().notEmpty(),
-    check('phone', 'Invalid phone number').optional().isMobilePhone(),
-    check('bio', 'Bio cannot be empty if provided').optional().notEmpty()
-  ],
+  auth('updateProfile'),
+  validate(userValidation.updateProfile),
   userController.updateProfile
 );
 
 // Update password
 router.put(
   '/password',
+  auth('updatePassword'),
   [
     check('currentPassword', 'Current password is required').not().isEmpty(),
     check('newPassword', 'New password must be at least 6 characters').isLength({ min: 6 })
@@ -35,6 +32,7 @@ router.put(
 // Address management
 router.post(
   '/addresses',
+  auth('manageAddresses'),
   [
     check('street', 'Street address is required').not().isEmpty(),
     check('city', 'City is required').not().isEmpty(),
@@ -48,6 +46,7 @@ router.post(
 
 router.put(
   '/addresses/:addressId',
+  auth('manageAddresses'),
   [
     check('street', 'Street cannot be empty if provided').optional().notEmpty(),
     check('city', 'City cannot be empty if provided').optional().notEmpty(),
@@ -59,6 +58,6 @@ router.put(
   userController.updateAddress
 );
 
-router.delete('/addresses/:addressId', userController.deleteAddress);
+router.delete('/addresses/:addressId', auth('manageAddresses'), userController.deleteAddress);
 
 module.exports = router; 

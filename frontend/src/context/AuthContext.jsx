@@ -1,129 +1,181 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import authAPI from '../api/authAPI';
+import {
+  loginUser,
+  registerUser,
+  verifyTwoFactor,
+  getUserProfile
+} from '../services/auth.service';
 
-// Khởi tạo context
 const AuthContext = createContext();
 
-// Custom hook để sử dụng context
 export const useAuth = () => useContext(AuthContext);
 
-// Provider component
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Kiểm tra token và lấy thông tin người dùng khi khởi tạo
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const userStr = localStorage.getItem('user');
-        if (userStr && userStr !== 'undefined' && userStr !== 'null') {
-          try {
-            const user = JSON.parse(userStr);
-            setCurrentUser(user);
-          } catch (e) {
-            console.error("Lỗi parse user JSON:", e);
-            // Xóa user không hợp lệ
-            localStorage.removeItem('user');
+        const token = localStorage.getItem('token');
+        if (token) {
+          const user = await getUserProfile();
+          setCurrentUser(user);
+          setIsAuthenticated(true);
+          localStorage.setItem('user', JSON.stringify(user));
+        } else {
+          const userStr = localStorage.getItem('user');
+          if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+            const parsedUser = JSON.parse(userStr);
+            setCurrentUser(parsedUser);
+            setIsAuthenticated(true);
           }
         }
       } catch (err) {
-        console.error("Khởi tạo auth lỗi:", err);
-        setError(err);
+        console.error('Auth init error:', err);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       } finally {
         setLoading(false);
       }
     };
-    
+
     initializeAuth();
   }, []);
 
-  // Đăng nhập
-  const login = async (email, password) => {
-    setLoading(true);
-    setError(null);
-    
+  const updateUserInfo = (updatedFields) => {
+    setCurrentUser(prev => ({ ...prev, ...updatedFields }));
     try {
-      const data = await authAPI.login(email, password);
-      setCurrentUser(data.user);
-      return data;
-    } catch (err) {
-      setError(err.response?.data?.message || "Đăng nhập thất bại");
-      throw err;
-    } finally {
-      setLoading(false);
+      const stored = localStorage.getItem('user');
+      const base = stored && stored !== 'undefined' && stored !== 'null'
+        ? JSON.parse(stored)
+        : {};
+      const merged = { ...base, ...updatedFields };
+      localStorage.setItem('user', JSON.stringify(merged));
+    } catch {
+      localStorage.setItem('user', JSON.stringify(updatedFields));
     }
   };
 
-  // Đăng ký
   const register = async (userData) => {
     setLoading(true);
     setError(null);
-    
     try {
-      const data = await authAPI.register(userData);
-      setCurrentUser(data.user);
-      return data;
+      // call whichever registration service you use
+      let resp;
+      if (registerUser) {
+        resp = await registerUser(userData);
+        const { token, user } = resp;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+      } else {
+        const data = await authAPI.register(userData);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setCurrentUser(data.user);
+        setIsAuthenticated(true);
+      }
+      toast.success('Registration successful!');
+      return { success: true };
     } catch (err) {
-      setError(err.response?.data?.message || "Đăng ký thất bại");
-      throw err;
+      console.error('Register error:', err);
+      const msg = err.response?.data?.message || err.message || 'Registration failed';
+      setError(msg);
+      toast.error(msg);
+      return { success: false, error: err };
     } finally {
       setLoading(false);
     }
   };
 
-  // Đăng xuất
+  const login = async (credentials) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // call whichever login service you use
+      let resp;
+      if (loginUser) {
+        resp = await loginUser(credentials);
+        if (resp.requireTwoFactor) {
+          return { success: true, requireTwoFactor: true, userId: resp.userId };
+        }
+        const { token, user } = resp;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+      } else {
+        const data = await authAPI.login(credentials.email, credentials.password);
+        setCurrentUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setIsAuthenticated(true);
+      }
+      toast.success('Login successful!');
+      return { success: true };
+    } catch (err) {
+      console.error('Login error:', err);
+      const msg = err.response?.data?.message || err.message || 'Login failed';
+      setError(msg);
+      toast.error(msg);
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verify2FA = async (userId, token2fa) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await verifyTwoFactor(userId, token2fa);
+      const { token, user } = resp;
+      localStorage.setItem('token', token);
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+      toast.success('2FA verification successful!');
+      return { success: true };
+    } catch (err) {
+      console.error('2FA error:', err);
+      const msg = err.response?.data?.message || err.message || 'Verification failed';
+      setError(msg);
+      toast.error(msg);
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setLoading(true);
-    
     try {
       await authAPI.logout();
-      setCurrentUser(null);
     } catch (err) {
-      console.error("Đăng xuất lỗi:", err);
-      // Vẫn xóa dữ liệu người dùng ở client ngay cả khi API lỗi
-      setCurrentUser(null);
+      console.error('Logout API error:', err);
     } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+      toast.info('You have been logged out');
       setLoading(false);
     }
   };
 
-  // Cập nhật thông tin người dùng
-  const updateUserInfo = (updatedUser) => {
-    setCurrentUser(prev => ({
-      ...prev,
-      ...updatedUser
-    }));
-    
-    // Cập nhật trong localStorage
-    const userStr = localStorage.getItem('user');
-    if (userStr && userStr !== 'undefined' && userStr !== 'null') {
-      try {
-        const user = JSON.parse(userStr);
-        localStorage.setItem('user', JSON.stringify({
-          ...user,
-          ...updatedUser
-        }));
-      } catch (e) {
-        console.error("Lỗi parse user JSON khi cập nhật:", e);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      }
-    } else {
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-    }
-  };
-
-  // Các giá trị được chia sẻ qua context
   const value = {
     currentUser,
+    isAuthenticated,
     loading,
     error,
-    login,
     register,
+    login,
+    verify2FA,
     logout,
     updateUserInfo,
-    isAuthenticated: !!currentUser
   };
 
   return (
@@ -133,4 +185,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthContext; 
+export default AuthContext;
