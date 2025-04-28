@@ -1,6 +1,12 @@
 // export default App
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import ResetFilterOnRouteChange from "./context/ResetFilterOnRouteChange";
 
 // Layouts
 import MainLayout from "./components/Layout/MainLayout";
@@ -39,6 +45,7 @@ const App = () => {
     <Router>
       <CartProvider>
         <FilterProvider>
+          <ResetFilterOnRouteChange />
           <div className="App">
             <Routes>
               <Route path="/" element={<MainLayout />}>
@@ -50,7 +57,26 @@ const App = () => {
                   path="products"
                   element={<ProductPage tagCategory="" />}
                 />
-                <Route path="products/:id" element={<ProductDetailPage />} />
+                <Route
+                  path="products/:id"
+                  element={<ProductDetailPage tagCategory="" />}
+                />
+                <Route
+                  path="products/ao/:id"
+                  element={<ProductDetailPage tagCategory="Áo" />}
+                />
+                <Route
+                  path="products/quan/:id"
+                  element={<ProductDetailPage tagCategory="Quần" />}
+                />
+                <Route
+                  path="products/giayvadep/:id"
+                  element={<ProductDetailPage tagCategory="Giày & Dép" />}
+                />
+                <Route
+                  path="products/phukien/:id"
+                  element={<ProductDetailPage tagCategory="Phụ kiện" />}
+                />
 
                 {/* Danh mục */}
                 <Route

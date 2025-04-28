@@ -11,6 +11,8 @@ const MainLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const mainContainerRef = useRef(null);
+  const path = location.pathname;
+  const pathParts = path.split("/").filter(Boolean);
 
   useEffect(() => {
     // Kiểm tra đường dẫn hiện tại
@@ -66,7 +68,18 @@ const MainLayout = () => {
   // Kiểm tra xem có phải đang ở trang chủ không
   const isHomePage = location.pathname === "/";
   const isProductsPage = location.pathname.includes("/products");
-  const isProductDetailPage = /^\/products\/[^/]+$/.test(location.pathname); // Kiểm tra nếu là trang chi tiết sản phẩm
+  const isProductDetailPage =
+    pathParts[0] === "products" &&
+    pathParts[1] &&
+    /^[0-9a-fA-F]{24}$/.test(pathParts[1]);
+  const isCategoryPage = pathParts[1];
+
+  const categoryMap = {
+    ao: "Áo",
+    quan: "Quần",
+    giayvadep: "Giày & Dép",
+    phukien: "Phụ Kiện",
+  };
 
   return (
     <div
@@ -79,7 +92,10 @@ const MainLayout = () => {
       <div className="main-container" ref={mainContainerRef}>
         {((!isHomePage && !isProductDetailPage) || sidebarOpen) && (
           <div className={`sidebar-container`}>
-            <Sidebar toggleSidebar={toggleSidebar} />
+            <Sidebar
+              toggleSidebar={toggleSidebar}
+              tagCategory={categoryMap[isCategoryPage] ?? ""}
+            />
           </div>
         )}
 

@@ -139,22 +139,6 @@ const Navbar = ({ toggleSidebar }) => {
         </div>
 
         <div className="navbar-right">
-          <div className={`search-box ${searchFocused ? "focused" : ""}`}>
-            <form onSubmit={handleSearchSubmit}>
-              <input
-                type="text"
-                placeholder="Tìm kiếm sản phẩm..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-              />
-              <button type="submit" aria-label="Search">
-                <FontAwesomeIcon icon={faSearch} />
-              </button>
-            </form>
-          </div>
-
           <div className="navbar-actions">
             <Link to="/wishlist" className="nav-icon-link">
               <FontAwesomeIcon icon={faHeart} />
@@ -237,13 +221,13 @@ const Navbar = ({ toggleSidebar }) => {
             <FontAwesomeIcon icon={faBars} />
           </button>
 
-          <button
+          {/* <button
             className="mobile-search-toggle"
             onClick={() => setMobileSearchOpen(true)}
             aria-label="Search"
           >
             <FontAwesomeIcon icon={faSearch} />
-          </button>
+          </button> */}
         </div>
       </div>
 

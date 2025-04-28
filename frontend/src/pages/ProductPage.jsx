@@ -27,9 +27,9 @@ const ProductPage = ({ tagCategory }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [totalProduct, setTotalProduct] = useState(0);
   const [totalPage, setTotalPage] = useState(1);
-  const [pageNumbers, setPageNumbers] = useState([]);
   const { selectedFilter, setSelectedFilter, resetFilters } =
     useContext(FilterContext);
+  // const location = useLocation();
 
   const sortOptions = [
     { id: "all", name: "Tất cả", sortBy: "createdAt", sortOrder: "desc" },
@@ -53,8 +53,6 @@ const ProductPage = ({ tagCategory }) => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        console.log(tagCategory);
-
         const categoryId =
           selectedFilter.category && selectedFilter.category._id
             ? selectedFilter.category._id
@@ -73,22 +71,13 @@ const ProductPage = ({ tagCategory }) => {
           selectedFilter.isFeatured,
           tagCategory
         );
-
         setProducts(response.products);
-        setTotalProduct(response.total);
+        setTotalProduct(response.totalItems);
         setTotalPage(response.totalPages);
-
-        if (totalPage && totalPage > 0) {
-          const initialPages = [];
-          for (let i = 1; i <= totalPage; i++) {
-            initialPages.push({ index: i, wasClicked: i === 1 });
-          }
-          setPageNumbers(initialPages);
-        }
 
         setTimeout(() => {
           setLoading(false);
-        }, 500); // Giả lập thời gian tải
+        }, 500); // Giả ập thời gian tải
       } catch (err) {
         setError("Có lỗi xảy ra khi tải dữ liệu sản phẩm");
         setLoading(false);
@@ -100,20 +89,24 @@ const ProductPage = ({ tagCategory }) => {
     setCurrentPage(1);
 
     fetchProducts();
-  }, [totalPage, selectedFilter, searchTerm]);
+  }, [totalPage, selectedFilter, searchTerm, tagCategory]);
+
+  const pageNumbers = [];
+
+  for (let i = 1; i <= totalPage; i++) {
+    pageNumbers.push(i);
+  }
 
   // //Lấy thêm sản phẩm
   const handleClickMoreProduct = async (pageNumber) => {
     try {
-      // if (pageNumber.wasClicked) return;
-
       const response = await getProductFilter(
         selectedFilter.color,
         selectedFilter.category._id,
         selectedFilter.sizes,
         selectedFilter.price.min,
         selectedFilter.price.max,
-        pageNumber.index,
+        pageNumber,
         searchTerm,
         selectedFilter.sortBy,
         selectedFilter.sortOrder,
@@ -125,13 +118,7 @@ const ProductPage = ({ tagCategory }) => {
 
       setProducts(response.products);
 
-      setCurrentPage(pageNumber.index);
-
-      setPageNumbers((prevPageNumbers) =>
-        prevPageNumbers.map((page) =>
-          page.index === pageNumber.index ? { ...page, wasClicked: true } : page
-        )
-      );
+      setCurrentPage(pageNumber);
     } catch (error) {
       console.error("Lỗi khi lấy thêm sản phẩm:", error);
     }
@@ -427,6 +414,7 @@ const ProductPage = ({ tagCategory }) => {
                       category: product.tagCategory,
                       isNew: product.id % 3 === 0,
                       discount: product.id % 2 === 0 ? 20 : 0,
+                      tagCategory: tagCategory,
                     }}
                   />
                 ))}
@@ -436,18 +424,18 @@ const ProductPage = ({ tagCategory }) => {
                 <div className="pagination">
                   <ul className="pagination-list">
                     {pageNumbers.map((number) => (
-                      <li key={number.index} className="pagination-item">
+                      <li key={number} className="pagination-item">
                         <button
                           className={`pagination-button ${
-                            currentPage === number.index ? "active" : ""
+                            currentPage === number ? "active" : ""
                           }`}
                           onClick={() => {
-                            setCurrentPage(number.index);
+                            setCurrentPage(number);
                             handleClickMoreProduct(number);
                             window.scrollTo({ top: 0, behavior: "smooth" });
                           }}
                         >
-                          {number.index}
+                          {number}
                         </button>
                       </li>
                     ))}

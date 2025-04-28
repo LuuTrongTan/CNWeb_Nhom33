@@ -10,7 +10,7 @@ import {
 import "../../styles/css/Sidebar.css";
 import { getCategoryByTagName } from "../../service/categoryAPI";
 
-const Sidebar = ({ toggleSidebar }) => {
+const Sidebar = ({ toggleSidebar, tagCategory }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedFilter, setSelectedFilter, resetFilters } =
@@ -77,50 +77,88 @@ const Sidebar = ({ toggleSidebar }) => {
     },
   ];
 
-  const [categories, setCategories] = useState([
-    {
-      name: "Áo",
-      subcategories: [],
-    },
-    {
-      name: "Quần",
-      subcategories: [],
-    },
-    {
-      name: "Giày & Dép",
-      subcategories: [],
-    },
-    {
-      name: "Phụ kiện",
-      subcategories: [],
-    },
-  ]);
+  const [categories, setCategories] = useState(() => {
+    if (tagCategory === "") {
+      return [
+        {
+          name: "Áo",
+          subcategories: [],
+        },
+        {
+          name: "Quần",
+          subcategories: [],
+        },
+        {
+          name: "Giày & Dép",
+          subcategories: [],
+        },
+        {
+          name: "Phụ kiện",
+          subcategories: [],
+        },
+      ];
+    } else if (tagCategory === "Áo") {
+      return [
+        {
+          name: "Áo",
+          subcategories: [],
+        },
+      ];
+    } else if (tagCategory === "Quần") {
+      return [
+        {
+          name: "Quần",
+          subcategories: [],
+        },
+      ];
+    } else if (tagCategory === "Giày & Dép") {
+      return [
+        {
+          name: "Giày & Dép",
+          subcategories: [],
+        },
+      ];
+    } else if (tagCategory === "Phụ kiện") {
+      return [
+        {
+          name: "Phụ kiện",
+          subcategories: [],
+        },
+      ];
+    }
+  });
 
   useEffect(() => {
     const getCategory = async () => {
       try {
-        categories.map(async (category) => {
-          const response = await getCategoryByTagName(category.name);
-          setCategories((prevCategories) =>
-            prevCategories.map((cat) => {
-              if (cat.name === category.name) {
-                return { ...cat, subcategories: response };
-              }
-              return cat;
-            })
-          );
-        });
+        // Kiểm tra xem tagCategory có giá trị gì và cập nhật danh mục phù hợp
+        const categoryNames =
+          tagCategory === ""
+            ? ["Áo", "Quần", "Giày & Dép", "Phụ kiện"]
+            : [tagCategory];
 
-        // console.log("Dữ liệu sản phẩm:", response);
+        // Thực hiện gọi API để lấy dữ liệu subcategories cho từng category
+        const categoryResponses = await Promise.all(
+          categoryNames.map((name) => getCategoryByTagName(name))
+        );
+
+        // Cập nhật lại categories state
+        setCategories(
+          categoryNames.map((name, index) => ({
+            name: name,
+            subcategories: categoryResponses[index] || [], // Nếu không có subcategories, trả về mảng rỗng
+          }))
+        );
       } catch (err) {
+        console.error("Lỗi khi tải sản phẩm:", err);
         setError("Có lỗi xảy ra khi tải dữ liệu sản phẩm");
         setLoading(false);
-        console.error("Lỗi khi tải sản phẩm:", err);
       }
     };
 
+    // Gọi API khi tagCategory thay đổi
     getCategory();
-  }, []);
+  }, [tagCategory]); // Thêm tagCategory vào dependency array
 
   // Mở rộng hoặc thu gọn phần lọc
   const toggleFilter = (filterId) => {
@@ -167,9 +205,10 @@ const Sidebar = ({ toggleSidebar }) => {
     });
   };
 
-  // useEffect(() => {
-  //   console.log("Updated selectedFilter:", selectedFilter);
-  // }, [selectedFilter]);
+  useEffect(() => {
+    // Reset expandedCategories khi tagCategory thay đổi
+    setExpandedCategories([]);
+  }, [tagCategory]);
 
   // Xử lý khi chọn màu sắc
   const handleColorChange = (color) => {
@@ -239,17 +278,19 @@ const Sidebar = ({ toggleSidebar }) => {
           expandedFilters["categories"] ? "expanded" : ""
         }`}
       >
-        <div
-          className="section-title"
-          onClick={() => toggleFilter("categories")}
-        >
-          Danh mục sản phẩm
-          <i
-            className={`fa-solid fa-chevron-${
-              expandedFilters["categories"] ? "up" : "down"
-            } icon`}
-          ></i>
-        </div>
+        {tagCategory === "" && (
+          <div
+            className="section-title"
+            onClick={() => toggleFilter("categories")}
+          >
+            Danh mục sản phẩm
+            <i
+              className={`fa-solid fa-chevron-${
+                expandedFilters["categories"] ? "up" : "down"
+              } icon`}
+            ></i>
+          </div>
+        )}
         <div className="section-content">
           <ul className="category-list">
             {categories.map((category, index) => (

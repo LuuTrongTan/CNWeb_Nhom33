@@ -21,7 +21,7 @@ import axios from "axios";
 import ProductCard from "../components/Product/ProductCard";
 import { getCategoryById } from "../service/categoryAPI";
 
-const ProductDetailPage = () => {
+const ProductDetailPage = ({ tagCategory }) => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [category, setCategory] = useState(null);
@@ -37,6 +37,12 @@ const ProductDetailPage = () => {
   const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
+  const linkNav = {
+    Áo: "ao",
+    Quần: "quan",
+    "Giày & Dép": "giayvadep",
+    "Phụ kiện": "phukien",
+  };
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -227,6 +233,9 @@ const ProductDetailPage = () => {
     <div className="product-detail-container">
       <div className="breadcrumb">
         <Link to="/">Trang chủ</Link> <Link to="/products">Sản phẩm</Link>
+        {tagCategory !== "" && (
+          <Link to={`/products/${linkNav[tagCategory]}`}>{tagCategory}</Link>
+        )}
         <span>{product.name}</span>
       </div>
 

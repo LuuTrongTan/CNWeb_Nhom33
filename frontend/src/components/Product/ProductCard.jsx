@@ -13,7 +13,15 @@ import { useCart } from "../../context/CartContext";
 import "../../styles/css/ProductCard.css";
 
 const ProductCard = ({ product }) => {
-  const { _id, name, price, images, category, discount = 0 } = product;
+  const {
+    _id,
+    name,
+    price,
+    images,
+    category,
+    discount = 0,
+    tagCategory,
+  } = product;
   const discountedPrice =
     discount > 0 ? price - (price * discount) / 100 : price;
 
@@ -104,7 +112,17 @@ const ProductCard = ({ product }) => {
   };
 
   const navigateToProductDetail = () => {
-    navigate(`/products/${_id}`);
+    if (tagCategory === "") {
+      navigate(`/products/${_id}`);
+    } else if (tagCategory === "Áo") {
+      navigate(`/products/ao/${_id}`);
+    } else if (tagCategory === "Quần") {
+      navigate(`/products/quan/${_id}`);
+    } else if (tagCategory === "Giày & Dép") {
+      navigate(`/products/giayvadep/${_id}`);
+    } else if (tagCategory === "Phụ kiện") {
+      navigate(`/products/phukien/${_id}`);
+    }
   };
 
   return (
