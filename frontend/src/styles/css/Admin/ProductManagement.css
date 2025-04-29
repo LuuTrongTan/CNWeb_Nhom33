@@ -96,23 +96,26 @@
   flex-wrap: wrap;
 }
 
-.search-box, .filter-box {
+.search-box,
+.filter-box {
   flex: 1;
   min-width: 200px;
   position: relative;
 }
 
-.search-box input, .filter-box select {
+.search-box input,
+.filter-box select {
   width: 100%;
   padding: 12px 16px 12px 40px;
   border-radius: 8px;
   border: 1px solid #ddd;
   font-size: 0.95rem;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.search-box svg, .filter-box svg {
+.search-box svg,
+.filter-box svg {
   position: absolute;
   left: 14px;
   top: 14px;
@@ -131,7 +134,7 @@
   background-color: white;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   text-align: center;
 }
 
@@ -152,7 +155,7 @@
   overflow-x: auto;
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 24px;
 }
 
@@ -193,7 +196,6 @@
 
 .products-table td {
   padding: 16px 20px;
-  border-bottom: 1px solid #e9ecef;
   color: #212529;
 }
 
@@ -203,6 +205,19 @@
 
 .products-table tr:hover td {
   background-color: #f8f9fa;
+}
+
+.products-table .product-row {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.products-table .product-row .price-column {
+  display: flex;
+  flex-direction: column;
+  align-content: flex-end;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .product-image {
@@ -383,8 +398,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error state */
@@ -413,11 +432,12 @@
   .product-management {
     padding: 16px;
   }
-  
-  .search-box, .filter-box {
+
+  .search-box,
+  .filter-box {
     flex-basis: 100%;
   }
-  
+
   .actions-column {
     flex-direction: column;
     align-items: flex-start;
@@ -430,12 +450,13 @@
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .stats-cards {
     grid-template-columns: 1fr;
   }
-  
-  .products-table th, .products-table td {
+
+  .products-table th,
+  .products-table td {
     padding: 12px 16px;
   }
-} 
+}

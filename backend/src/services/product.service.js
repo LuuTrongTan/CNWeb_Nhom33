@@ -284,25 +284,13 @@ const searchProducts = async (options = {}) => {
  * @param {number} limit - Số lượng mỗi trang
  * @returns {Promise<Object>} Danh sách sản phẩm và thông tin phân trang
  */
-const getAllProducts = async (page = 1, limit = 12) => {
-  page = parseInt(page);
-  limit = parseInt(limit);
-
-  if (page < 1) page = 1;
-
-  const products = await Product.find({ isActive: true })
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .populate('category', 'name slug');
+const getAllProducts = async () => {
+  const products = await Product.find({ isActive: true }).sort({ createdAt: -1 });
 
   const total = await Product.countDocuments({ isActive: true });
 
   return {
-    page,
-    limit,
     total,
-    totalPages: Math.ceil(total / limit),
     data: products,
   };
 };

@@ -36,7 +36,7 @@ const productSchema = new mongoose.Schema({
   numReviews: { type: Number, default: 0 },
   isFeatured: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
-  isNewArrival: { type: Boolean, default: false },
+  isNewArrival: { type: Boolean, default: true },
   isBestSeller: { type: Boolean, default: false },
   weight: { type: Number, default: 0 }, // weight in grams
   dimensions: {
