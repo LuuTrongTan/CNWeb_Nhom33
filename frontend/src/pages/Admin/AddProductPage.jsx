@@ -28,8 +28,8 @@ const AddProductPage = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    price: "",
     discountPrice: "",
+    price: "",
     discountPercentage: "",
     category: "",
     tagCategory: "",
@@ -67,7 +67,7 @@ const AddProductPage = () => {
           setFormData({
             name: data.name || "",
             description: data.description || "",
-            price: data.price || "",
+            discountPrice: data.discountPrice || "",
             category: data.category || "",
             brand: data.brand || "",
             colors: data.colors || [],
@@ -75,7 +75,7 @@ const AddProductPage = () => {
             stock: data.stock || "",
             images: data.images || [],
             attributes: data.attributes || [],
-            discountPrice: data.discountPrice || "",
+            price: data.price || "",
             discountPercentage: data.discountPercentage || "",
             tagCategory: data.tagCategory || "",
             isPublished: data.isPublished || true,
@@ -105,8 +105,8 @@ const AddProductPage = () => {
         tagCategory: selectedCategory ? selectedCategory.tagCategory : "",
       });
     } else if (
-      name === "price" ||
       name === "discountPrice" ||
+      name === "price" ||
       name === "stock" ||
       name === "discountPercentage"
     ) {
@@ -186,16 +186,17 @@ const AddProductPage = () => {
     if (!formData.name.trim()) errors.name = "Tên sản phẩm là bắt buộc";
     if (!formData.description.trim())
       errors.description = "Mô tả sản phẩm là bắt buộc";
-    if (!formData.price) errors.price = "Giá sản phẩm là bắt buộc";
+    if (!formData.discountPrice)
+      errors.discountPrice = "Giá sản phẩm là bắt buộc";
     if (!formData.category) errors.category = "Danh mục sản phẩm là bắt buộc";
     if (!formData.stock) errors.stock = "Số lượng tồn kho là bắt buộc";
-    if (Number(formData.price) <= 0)
-      errors.price = "Giá sản phẩm phải lớn hơn 0";
+    if (Number(formData.discountPrice) <= 0)
+      errors.discountPrice = "Giá sản phẩm phải lớn hơn 0";
     if (
-      formData.discountPrice &&
-      Number(formData.discountPrice) <= Number(formData.price)
+      formData.price &&
+      Number(formData.price) <= Number(formData.discountPrice)
     ) {
-      errors.discountPrice = "Giá gốc phải lớn hơn giá bán";
+      errors.price = "Giá gốc phải lớn hơn giá bán";
     }
     if (
       formData.discountPercentage &&
@@ -271,10 +272,10 @@ const AddProductPage = () => {
     }
   };
 
-  // Calculate discount if original price and discount percentage are provided
+  // Calculate discount if original discountPrice and discount percentage are provided
   useEffect(() => {
-    if (formData.discountPrice && formData.discountPercentage) {
-      const original = parseFloat(formData.discountPrice);
+    if (formData.price && formData.discountPercentage) {
+      const original = parseFloat(formData.price);
       const discount = parseFloat(formData.discountPercentage);
 
       if (
@@ -284,10 +285,10 @@ const AddProductPage = () => {
         discount > 0
       ) {
         const calculatedPrice = original - (original * discount) / 100;
-        setFormData({ ...formData, price: calculatedPrice.toFixed(2) });
+        setFormData({ ...formData, discountPrice: calculatedPrice.toFixed(2) });
       }
     }
-  }, [formData.discountPrice, formData.discountPercentage]);
+  }, [formData.price, formData.discountPercentage]);
 
   return (
     <div className="add-product-page">
@@ -453,22 +454,20 @@ const AddProductPage = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="discountPrice">Giá gốc</label>
+                  <label htmlFor="price">Giá gốc</label>
                   <div className="input-with-prefix">
                     <span className="input-prefix">₫</span>
                     <input
                       type="text"
-                      id="discountPrice"
-                      name="discountPrice"
-                      value={formData.discountPrice}
+                      id="price"
+                      name="price"
+                      value={formData.price}
                       onChange={handleInputChange}
-                      className={formErrors.discountPrice ? "error" : ""}
+                      className={formErrors.price ? "error" : ""}
                     />
                   </div>
-                  {formErrors.discountPrice && (
-                    <div className="error-message">
-                      {formErrors.discountPrice}
-                    </div>
+                  {formErrors.price && (
+                    <div className="error-message">{formErrors.price}</div>
                   )}
                 </div>
 
@@ -494,29 +493,31 @@ const AddProductPage = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="price">
+                <label htmlFor="discountPrice">
                   Giá bán <span className="required">*</span>
                 </label>
                 <div className="input-with-prefix">
                   <span className="input-prefix">₫</span>
                   <input
                     type="text"
-                    id="price"
-                    name="price"
-                    value={formData.price}
+                    id="discountPrice"
+                    name="discountPrice"
+                    value={formData.discountPrice}
                     onChange={handleInputChange}
-                    className={formErrors.price ? "error" : ""}
+                    className={formErrors.discountPrice ? "error" : ""}
                   />
                 </div>
-                {formErrors.price && (
-                  <div className="error-message">{formErrors.price}</div>
+                {formErrors.discountPrice && (
+                  <div className="error-message">
+                    {formErrors.discountPrice}
+                  </div>
                 )}
-                {formData.discountPrice && formData.price && (
+                {formData.price && formData.discountPrice && (
                   <div className="info-message">
                     Giảm{" "}
                     {(
-                      ((formData.discountPrice - formData.price) /
-                        formData.discountPrice) *
+                      ((formData.price - formData.discountPrice) /
+                        formData.price) *
                       100
                     ).toFixed(0)}
                     %
