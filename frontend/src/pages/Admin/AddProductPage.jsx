@@ -17,6 +17,12 @@ import {
   updateProduct,
 } from "../../service/productAPI";
 
+import {
+  uploadPictures,
+  deletePicture,
+  getPictureByLink,
+} from "../../service/PictureAPI";
+
 const AddProductPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -37,6 +43,7 @@ const AddProductPage = () => {
     colors: [],
     sizes: [],
     attributes: [],
+    images: [], // Trường lưu link ảnh
     brand: "",
     isPublished: true,
   });
@@ -62,8 +69,15 @@ const AddProductPage = () => {
   useEffect(() => {
     if (id) {
       getProductById(id)
-        .then((data) => {
-          console.log(data);
+        .then(async (data) => {
+          const URLreview = await Promise.all(
+            data.images.map((image) => getPictureByLink(image))
+          );
+          const URLreviewList = URLreview.map((item) => {
+            return item[0];
+          });
+          console.log("URLreview", URLreviewList);
+          setImagePreviewUrls(URLreviewList); // Các URL thực tế sau khi gọi API
           setFormData({
             name: data.name || "",
             description: data.description || "",
@@ -78,11 +92,8 @@ const AddProductPage = () => {
             price: data.price || "",
             discountPercentage: data.discountPercentage || "",
             tagCategory: data.tagCategory || "",
-            isPublished: data.isPublished || true,
+            isPublished: data.isPublished ?? true, // nên dùng ?? thay vì ||
           });
-
-          // Hiển thị ảnh preview từ URL
-          // setImagePreview(data.images || []);
         })
         .catch((error) => {
           console.error("Lỗi khi tải sản phẩm:", error);
@@ -129,26 +140,48 @@ const AddProductPage = () => {
   };
 
   // Handle image upload
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     e.preventDefault();
     const files = Array.from(e.target.files);
-    const newFiles = [...imageFiles, ...files].slice(0, 5); // Maximum 5 images
+    const newFiles = [...imageFiles, ...files].slice(0, 5); // Tối đa 5 ảnh
+    const responsePicture = await uploadPictures(newFiles); // Gửi ảnh lên server và nhận link ảnh
 
-    setImageFiles(newFiles);
+    // Cập nhật danh sách file ảnh
+    setImageFiles(responsePicture);
 
-    // Create previews
-    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-    setImagePreviewUrls(newPreviews);
+    // Cập nhật danh sách URL xem trước
+    setImagePreviewUrls((prev) => [...prev, ...responsePicture]);
+
+    // Thêm link ảnh vào trường images trong formData
+    const newImageLinks = responsePicture.map((picture) => picture.link);
+    setFormData({
+      ...formData,
+      images: [...formData.images, ...newImageLinks],
+    });
   };
 
   // Remove an image from the list
-  const removeImage = (index) => {
+  const removeImage = async (index, picture) => {
+    console.log(picture);
+
+    // Xóa file ảnh khỏi danh sách file
     const newFiles = [...imageFiles];
     newFiles.splice(index, 1);
     setImageFiles(newFiles);
 
+    // Xóa link ảnh khỏi trường images trong formData
+    const newImageLinks = [...formData.images];
+    newImageLinks.splice(index, 1);
+    setFormData({
+      ...formData,
+      images: newImageLinks,
+    });
+
+    // Xóa ảnh khỏi server
+    await deletePicture(picture.id);
+
+    // Xóa URL xem trước
     const newPreviews = [...imagePreviewUrls];
-    URL.revokeObjectURL(newPreviews[index]); // Free up memory
     newPreviews.splice(index, 1);
     setImagePreviewUrls(newPreviews);
   };
@@ -549,13 +582,13 @@ const AddProductPage = () => {
 
               <div className="image-upload-container">
                 <div className="image-preview-grid">
-                  {imagePreviewUrls.map((url, index) => (
+                  {imagePreviewUrls.map((picture, index) => (
                     <div key={index} className="image-preview-item">
-                      <img src={url} alt={`Preview ${index + 1}`} />
+                      <img src={picture.link} alt={`Preview ${index + 1}`} />
                       <button
                         type="button"
                         className="remove-image-btn"
-                        onClick={() => removeImage(index)}
+                        onClick={() => removeImage(index, picture)}
                       >
                         {" "}
                         <FontAwesomeIcon icon={faTimes} />

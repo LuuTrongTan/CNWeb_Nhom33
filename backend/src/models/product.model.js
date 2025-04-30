@@ -70,6 +70,14 @@ productSchema.pre('save', function (next) {
   next();
 });
 
+// Middleware để cập nhật mainImage khi cập nhật sản phẩm
+productSchema.pre('save', function (next) {
+  if (!this.mainImage && this.images && this.images.length > 0) {
+    this.mainImage = this.images[0];
+  }
+  next();
+});
+
 // Middleware để cập nhật updatedAt khi cập nhật sản phẩm
 productSchema.pre('findOneAndUpdate', function (next) {
   this.set({ updatedAt: Date.now() });

@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getProductFilter, fetchProductsAPI } from "../../service/productAPI";
+import {
+  getProductFilter,
+  fetchProductsAPI,
+  deleteProduct,
+} from "../../service/productAPI";
 import { getAllCategory, getCategoryById } from "../../service/categoryAPI";
 import {
   faPlus,
@@ -78,10 +82,8 @@ const ProductManagement = () => {
 
     // Apply search filter
     if (searchTerm) {
-      result = result.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      result = result.filter((product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -136,7 +138,7 @@ const ProductManagement = () => {
     if (!productToDelete) return;
 
     try {
-      await axios.delete(`/api/products/${productToDelete._id}`);
+      await deleteProduct(productToDelete._id);
       setProducts(products.filter((p) => p._id !== productToDelete._id));
       toast.success("Sản phẩm đã được xóa thành công");
       setShowDeleteModal(false);
@@ -173,7 +175,7 @@ const ProductManagement = () => {
         <h1>
           <FontAwesomeIcon icon={faBoxOpen} /> Quản lý Sản phẩm
         </h1>
-        <Link to="/admin/products/new" className="btn btn-primary">
+        <Link to="/admin/products/add" className="btn btn-primary">
           <FontAwesomeIcon icon={faPlus} /> Thêm sản phẩm mới
         </Link>
       </div>
@@ -183,7 +185,7 @@ const ProductManagement = () => {
           <FontAwesomeIcon icon={faSearch} />
           <input
             type="text"
-            placeholder="Tìm theo tên sản phẩm hoặc SKU"
+            placeholder="Tìm theo tên sản phẩm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -281,9 +283,13 @@ const ProductManagement = () => {
             {totalProduct > 0 ? (
               currentItems.map((product) => (
                 <tr key={product._id} className="product-row">
-                  <td className="product-image">
+                  <td>
                     {product.images && product.images.length > 0 ? (
-                      <img src={product.images[0]} alt={product.name} />
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="image"
+                      />
                     ) : (
                       <div className="no-image">
                         <FontAwesomeIcon icon={faImage} />
@@ -323,12 +329,6 @@ const ProductManagement = () => {
                   </td>
                   <td>
                     <div className="actions-column">
-                      <Link
-                        to={`/admin/products/${product._id}`}
-                        className="btn btn-view"
-                      >
-                        Xem
-                      </Link>
                       <Link
                         to={`/admin/products/edit/${product._id}`}
                         onClick={() => {
