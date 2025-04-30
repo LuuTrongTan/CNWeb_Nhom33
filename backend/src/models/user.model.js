@@ -25,15 +25,22 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: function() {
+        return this.authType === 'local';
+      },
       trim: true,
       minlength: 8,
       validate(value) {
-        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
+        if (value && (!value.match(/\d/) || !value.match(/[a-zA-Z]/))) {
           throw new Error('Password must contain at least one letter and one number');
         }
       },
       private: true, // used by the toJSON plugin
+    },
+    authType: {
+      type: String,
+      enum: ['local', 'google', 'facebook'],
+      default: 'local'
     },
     role: {
       type: String,
@@ -52,6 +59,12 @@ const userSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
+    avatar: {
+      url: {
+        type: String,
+        trim: true,
+      }
+    }
   },
   {
     timestamps: true,
