@@ -8,6 +8,11 @@ const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
 
+const getMe = catchAsync(async (req, res) => {
+  const user = await userService.getUserById(req.user.id);
+  res.send(user);
+});
+
 const googleAuth = async (req, res) => {
   try {
     const { token } = req.body;
@@ -45,11 +50,8 @@ const googleAuth = async (req, res) => {
       });
     }
 
-    const authToken = jwt.sign(
-      { id: user._id, role: user.role }, 
-      config.jwt.secret, 
-      { expiresIn: '7d' }
-    );
+    // Sử dụng cùng hệ thống token với local account
+    const tokens = await tokenService.generateAuthTokens(user);
 
     res.json({ 
       user: {
@@ -62,7 +64,7 @@ const googleAuth = async (req, res) => {
         phone: user.phone,
         avatar: user.avatar
       }, 
-      token: authToken 
+      tokens 
     });
   } catch (error) {
     console.error('Lỗi đăng nhập Google:', error);
@@ -126,4 +128,5 @@ module.exports = {
   sendVerificationEmail,
   verifyEmail,
   googleAuth,
+  getMe,
 };

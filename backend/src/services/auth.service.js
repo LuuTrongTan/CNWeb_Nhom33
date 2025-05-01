@@ -42,12 +42,13 @@ const refreshAuth = async (refreshToken) => {
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
     const user = await userService.getUserById(refreshTokenDoc.user);
     if (!user) {
-      throw new Error();
+      throw new Error('User not found');
     }
-    await refreshTokenDoc.remove();
+    await Token.deleteOne({ _id: refreshTokenDoc._id });
     return tokenService.generateAuthTokens(user);
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
+    console.error('Refresh token error:', error);
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid refresh token');
   }
 };
 
