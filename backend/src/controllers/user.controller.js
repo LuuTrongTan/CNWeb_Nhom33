@@ -75,7 +75,8 @@ const getProfile = catchAsync(async (req, res) => {
 
 const updateProfile = catchAsync(async (req, res) => {
   const user = await userService.updateUserById(req.user.id, req.body);
-  res.send(user);
+  const userResponse = user.toJSON();
+  res.status(httpStatus.OK).send({ user: userResponse });
 });
 
 module.exports = {

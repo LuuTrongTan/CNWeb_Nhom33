@@ -15,13 +15,13 @@ const getMe = catchAsync(async (req, res) => {
 
 const googleAuth = async (req, res) => {
   try {
-    const { token } = req.body;
-    if (!token) {
-      return res.status(400).json({ message: 'Không có token' });
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ message: 'Không có credential' });
     }
 
     const ticket = await client.verifyIdToken({
-      idToken: token,
+      idToken: credential,
       audience: CLIENT_ID
     });
 

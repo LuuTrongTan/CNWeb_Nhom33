@@ -37,12 +37,23 @@ export const updateProfile = async (userData) => {
     const token = localStorage.getItem('token');
     console.log('Token for updateProfile:', token);
     console.log('Sending update profile request:', userData);
-    const response = await apiClient.patch('/users/profile', userData);
+    
+    const response = await apiClient.patch('/users/profile', userData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
     console.log('Update profile response:', response);
-    return response;
+    return response.data;
   } catch (error) {
-    console.error('Update profile error details:', error);
-    throw error.response?.data || error;
+    console.error('Update profile error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    throw error.response?.data || { message: 'Lỗi không xác định khi cập nhật profile' };
   }
 };
 

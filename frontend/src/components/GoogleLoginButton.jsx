@@ -1,31 +1,37 @@
 import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const GoogleLoginButton = () => {
   const { handleGoogleLogin } = useAuth();
+  const navigate = useNavigate();
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      await handleGoogleLogin(credentialResponse.credential); // Gọi hàm từ useAuth
+      const result = await handleGoogleLogin(credentialResponse.credential);
+      if (result.success) {
+        navigate('/');
+      }
     } catch (error) {
-      console.error('Lỗi đăng nhập Google:', error.message);
-      alert('Đăng nhập Google thất bại. Vui lòng thử lại.');
+      console.error('Lỗi đăng nhập Google:', error);
     }
   };
 
   const handleGoogleError = () => {
     console.error('Đăng nhập Google thất bại');
-    alert('Đăng nhập Google thất bại. Vui lòng thử lại.');
   };
 
   return (
-    <div className="flex justify-center">
+    <div className="google-login-container">
       <GoogleLogin
         onSuccess={handleGoogleSuccess}
         onError={handleGoogleError}
-        shape="circle"
-        size="large"
+        useOneTap
+        theme="filled_blue"
+        shape="rectangular"
+        text="signin_with"
+        locale="vi"
       />
     </div>
   );

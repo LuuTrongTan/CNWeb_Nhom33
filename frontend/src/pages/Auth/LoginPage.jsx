@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import GoogleLoginButton from '../../components/GoogleLoginButton';
 import '../../styles/css/Auth/Auth.css';
 
 const LoginPage = () => {
@@ -21,25 +22,18 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    if (!email || !password) {
-      setError('Vui lòng nhập đầy đủ thông tin đăng nhập.');
-      return;
-    }
+    setLoading(true);
 
     try {
-      setLoading(true);
       const result = await login({ email, password });
-      
       if (result.success) {
-        // Chuyển hướng đến trang chủ
         navigate('/');
-      } else {
-        setError(result.error?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      } else if (result.requireTwoFactor) {
+        navigate(`/verify-2fa/${result.userId}`);
       }
     } catch (err) {
-      console.error('Lỗi đăng nhập:', err);
-      setError(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      console.error('Login error:', err);
+      setError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -108,6 +102,14 @@ const LoginPage = () => {
           </button>
         </form>
 
+        <div className="auth-divider">
+          <span>Hoặc</span>
+        </div>
+
+        <div className="social-login">
+          <GoogleLoginButton />
+        </div>
+
         <div className="auth-footer">
           <p>
             Bạn chưa có tài khoản?{' '}
@@ -121,4 +123,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage; 
+export default LoginPage;

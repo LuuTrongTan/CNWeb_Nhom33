@@ -83,17 +83,21 @@ const ProfilePage = () => {
       });
       
       // Cập nhật thông tin trong AuthContext và localStorage
-      updateUserInfo({
-        name: response.name,
-        phone: response.phone,
-        address: response.address,
-      });
+      if (response && response.user) {
+        updateUserInfo(response.user);
+      } else {
+        updateUserInfo({
+          name: formData.name,
+          phone: formData.phone,
+          address: formData.address,
+        });
+      }
 
       setEditMode(false);
       alert('Cập nhật thông tin thành công!');
     } catch (err) {
       console.error('Lỗi khi cập nhật thông tin:', err);
-      setError(err.response?.data?.message || 'Không thể cập nhật thông tin. Vui lòng thử lại sau.');
+      setError(err.message || 'Không thể cập nhật thông tin. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
     }

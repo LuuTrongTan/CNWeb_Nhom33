@@ -128,7 +128,30 @@ const authAPI = {
     } catch (error) {
       throw error;
     }
-  }
+  },
+
+  googleLogin: async (credential) => {
+    try {
+      console.log('Sending Google login request with credential:', credential);
+      const response = await axios.post('/auth/google-login', { credential }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true
+      });
+      
+      if (response.data.tokens) {
+        localStorage.setItem('token', response.data.tokens.access.token);
+        localStorage.setItem('refreshToken', response.data.tokens.refresh.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Google login error:', error);
+      throw error;
+    }
+  },
 };
 
 export default authAPI; 

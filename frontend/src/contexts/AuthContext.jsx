@@ -179,6 +179,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const handleGoogleLogin = async (credential) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authAPI.googleLogin(credential);
+      const { tokens, user } = response;
+      
+      localStorage.setItem('token', tokens.access.token);
+      localStorage.setItem('refreshToken', tokens.refresh.token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+      toast.success('Đăng nhập Google thành công!');
+      return { success: true };
+    } catch (err) {
+      console.error('Google login error:', err);
+      const msg = err.response?.data?.message || err.message || 'Đăng nhập Google thất bại';
+      setError(msg);
+      toast.error(msg);
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     currentUser,
     isAuthenticated,
@@ -189,6 +215,7 @@ export const AuthProvider = ({ children }) => {
     verify2FA,
     logout,
     updateUserInfo,
+    handleGoogleLogin,
   };
 
   return (

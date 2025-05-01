@@ -8,6 +8,7 @@ export const AxiosProvider = ({ children }) => {
   useEffect(() => {
     // Cấu hình axios
     axios.defaults.baseURL = 'http://localhost:4000';
+    axios.defaults.withCredentials = true;
     
     // Thêm interceptor cho request
     axios.interceptors.request.use(
