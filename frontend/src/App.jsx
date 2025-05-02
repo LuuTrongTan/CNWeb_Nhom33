@@ -33,6 +33,7 @@ import BannerManagementPage from "./pages/Admin/BannerManagementPage";
 import AddEditBannerPage from "./pages/Admin/AddEditBannerPage";
 import AdminLayout from "./components/Layout/AdminLayout";
 import AddProductPage from "./pages/Admin/AddProductPage";
+import CategoryManagementPage from "./pages/Admin/CategoryManagementPage";
 
 // Styles
 import "./styles/css/App.css";
@@ -120,6 +121,8 @@ const App = () => {
                 <Route path="products" element={<ProductManagement />} />
                 <Route path="products/add" element={<AddProductPage />} />
                 <Route path="products/edit/:id" element={<AddProductPage />} />
+
+                <Route path="categories" element={<CategoryManagementPage />} />
 
                 <Route path="banners" element={<BannerManagementPage />} />
                 <Route path="banners/add" element={<AddEditBannerPage />} />

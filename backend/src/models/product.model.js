@@ -34,7 +34,7 @@ const productSchema = new mongoose.Schema({
   lowStockThreshold: { type: Number, default: 10 },
   rating: { type: Number, default: 0 },
   numReviews: { type: Number, default: 0 },
-  isFeatured: { type: Boolean, default: false },
+  isFeatured: { type: Boolean, default: true },
   isActive: { type: Boolean, default: true },
   isNewArrival: { type: Boolean, default: true },
   isBestSeller: { type: Boolean, default: false },

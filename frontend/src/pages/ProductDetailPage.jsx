@@ -503,18 +503,13 @@ const ProductDetailPage = ({ tagCategory }) => {
               <h3>Thông tin thêm</h3>
               <table className="additional-info-table">
                 <tbody>
-                  <tr>
-                    <th>Chất liệu</th>
-                    <td>{product.attributes[0].value}</td>
-                  </tr>
-                  <tr>
-                    <th>Kiểu dáng</th>
-                    <td>{product.attributes[1].value}</td>
-                  </tr>
-                  <tr>
-                    <th>Tình trạng</th>
-                    <td>{product.stockStatus}</td>
-                  </tr>
+                  {product.attributes &&
+                    product.attributes.map((attribute) => (
+                      <tr key={attribute.name}>
+                        <th>{attribute.name}</th>
+                        <td>{attribute.value}</td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>

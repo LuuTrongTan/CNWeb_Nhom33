@@ -29,7 +29,7 @@ const createCategory = async (categoryBody) => {
  * @returns {Promise<Object>} Danh sách danh mục và thông tin phân trang
  */
 const getAllCategories = async (options = {}) => {
-  const { page = 1, limit = 30, searchTerm = '', isActive, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+  const { searchTerm = '', isActive, sortBy = 'createdAt', sortOrder = 'desc' } = options;
 
   // Xây dựng điều kiện truy vấn
   const query = {};
@@ -48,20 +48,14 @@ const getAllCategories = async (options = {}) => {
   const sort = {};
   sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
-  // Tính toán bỏ qua
-  const skip = (page - 1) * limit;
-
   // Thực hiện tìm kiếm với phân trang
-  const categories = await Category.find(query).sort(sort).skip(skip).limit(limit);
+  const categories = await Category.find(query).sort(sort);
 
   // Đếm tổng số danh mục phù hợp với điều kiện truy vấn
   const total = await Category.countDocuments(query);
 
   return {
     categories,
-    page: parseInt(page),
-    limit: parseInt(limit),
-    totalPages: Math.ceil(total / limit),
     totalItems: total,
   };
 };
@@ -117,10 +111,6 @@ const deleteCategoryById = async (categoryId) => {
   if (!category) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy danh mục');
   }
-
-  // Thay vì xóa vĩnh viễn, có thể đánh dấu danh mục là không hoạt động
-  // category.isActive = false;
-  // await category.save();
 
   // Hoặc xóa vĩnh viễn nếu cần
   await category.deleteOne();

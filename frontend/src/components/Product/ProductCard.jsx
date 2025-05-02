@@ -21,6 +21,7 @@ const ProductCard = ({ product }) => {
     category,
     discount = 0,
     tagCategory,
+    mainImage,
   } = product;
   const discountedPrice =
     discount > 0 ? price - (price * discount) / 100 : price;
@@ -131,11 +132,7 @@ const ProductCard = ({ product }) => {
         <div className="product-image-container">
           {!imageLoaded && <div className="image-placeholder"></div>}
           <img
-            src={
-              images && images.length > 0
-                ? images[0]
-                : "/images/placeholder.png"
-            }
+            src={mainImage ? mainImage : "/images/placeholder.png"}
             alt={name}
             className={`product-image ${imageLoaded ? "loaded" : ""}`}
             onLoad={handleImageLoad}
