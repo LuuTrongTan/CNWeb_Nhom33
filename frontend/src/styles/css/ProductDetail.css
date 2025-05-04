@@ -3,7 +3,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 /* Breadcrumb */
@@ -30,7 +30,7 @@
 }
 
 .breadcrumb a:after {
-  content: ' / ';
+  content: " / ";
   margin: 0 5px;
   color: #999;
 }
@@ -55,7 +55,7 @@
   .product-detail-content {
     flex-direction: column;
   }
-  
+
   .product-images {
     max-width: 100%;
   }
@@ -431,7 +431,7 @@
 }
 
 .tab-header.active:after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -585,7 +585,7 @@ textarea {
   gap: 20px;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1080px) {
   .related-products-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -597,7 +597,7 @@ textarea {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   .related-products-grid {
     grid-template-columns: 1fr;
   }
@@ -827,15 +827,15 @@ textarea {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .benefit {
     width: 100%;
   }
-  
+
   .added-to-cart-notification {
     top: 80px;
     left: 20px;
     right: 20px;
     width: auto;
   }
-} 
+}

@@ -59,7 +59,7 @@
 }
 
 .footer-column h3::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   bottom: -8px;
@@ -197,7 +197,7 @@
   .footer-top {
     grid-template-columns: 1fr 2fr;
   }
-  
+
   .footer-newsletter {
     grid-column: span 2;
     margin-top: 30px;
@@ -208,22 +208,22 @@
   .footer-top {
     grid-template-columns: 1fr;
   }
-  
+
   .footer-links {
     margin-top: 30px;
   }
-  
+
   .footer-newsletter {
     grid-column: auto;
   }
-  
+
   .footer-bottom {
     flex-direction: column;
     gap: 15px;
     text-align: center;
   }
-  
+
   .footer {
     padding: 40px 0 20px;
   }
-} 
+}

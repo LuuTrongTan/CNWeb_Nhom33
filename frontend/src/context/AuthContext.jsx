@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }) => {
 
   // Đăng nhập
   const login = async (email, password) => {
+    console.log("context: Đăng nhập với email:", email);
     setLoading(true);
     setError(null);
     

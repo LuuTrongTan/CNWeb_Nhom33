@@ -1,12 +1,12 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState } from "react";
 
 export const FilterContext = createContext();
 
 export const FilterProvider = ({ children }) => {
   const [selectedFilter, setSelectedFilter] = useState({
-    category: null,
+    category: {},
     sizes: [],
-    color: '',
+    color: "",
     price: { min: 0, max: 10000000 }, // Giá mặc định từ 0 đến 10 triệu VND
   });
 
@@ -14,46 +14,59 @@ export const FilterProvider = ({ children }) => {
     setSelectedFilter({
       category: null,
       sizes: [],
-      color: '',
+      color: "",
       price: { min: 0, max: 10000000 },
     });
   };
 
   const addSizeFilter = (size) => {
-    setSelectedFilter(prev => {
+    setSelectedFilter((prev) => {
       if (prev.sizes.includes(size)) {
         return {
           ...prev,
-          sizes: prev.sizes.filter(s => s !== size)
+          sizes: prev.sizes.filter((s) => s !== size),
         };
       } else {
         return {
           ...prev,
-          sizes: [...prev.sizes, size]
+          sizes: [...prev.sizes, size],
         };
       }
     });
   };
 
   const setCategoryFilter = (category) => {
-    setSelectedFilter(prev => ({
+    setSelectedFilter((prev) => ({
       ...prev,
-      category
+      category,
     }));
   };
 
   const setColorFilter = (color) => {
-    setSelectedFilter(prev => ({
+    setSelectedFilter((prev) => ({
       ...prev,
-      color
+      color,
     }));
   };
 
   const setPriceFilter = (min, max) => {
-    setSelectedFilter(prev => ({
-      ...prev,
-      price: { min, max }
-    }));
+    setSelectedFilter((prev) => {
+      // Nếu cả min và max đều null/undefined => xóa luôn `price`
+      if (min == null && max == null) {
+        const { price, ...rest } = prev;
+        return rest;
+      }
+
+      // Tạo mới hoàn toàn price (không giữ lại cái cũ)
+      const newPrice = {};
+      if (min != null) newPrice.min = min;
+      if (max != null) newPrice.max = max;
+
+      return {
+        ...prev,
+        price: newPrice,
+      };
+    });
   };
 
   return (
@@ -65,7 +78,7 @@ export const FilterProvider = ({ children }) => {
         addSizeFilter,
         setCategoryFilter,
         setColorFilter,
-        setPriceFilter
+        setPriceFilter,
       }}
     >
       {children}

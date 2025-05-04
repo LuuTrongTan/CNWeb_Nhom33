@@ -5,6 +5,7 @@ const authController = require('../controllers/auth.controller');
 const auth = require('../middlewares/auth');
 
 const router = express.Router();
+console.log("Auth routes loaded auth.route.js");
 
 router.post('/register', validate(authValidation.register), authController.register);
 router.post('/login', validate(authValidation.login), authController.login);
@@ -15,7 +16,6 @@ router.post('/reset-password', validate(authValidation.resetPassword), authContr
 router.post('/send-verification-email', auth(), authController.sendVerificationEmail);
 router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
 router.post('/google-login', validate(authValidation.googleLoginSchema) ,authController.googleAuth);
-
 
 
 module.exports = router;

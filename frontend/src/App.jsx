@@ -66,7 +66,7 @@ const App = () => {
                 <Route path="register" element={<RegisterPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />
-                <Route path="yeu-thich" element={<WishlistPage />} />
+                <Route path="wishlist" element={<WishlistPage />} />
                 <Route path="don-hang" element={<OrderHistoryPage />} />
                 <Route path="don-hang/:orderId" element={<OrderDetailPage />} />
               </Route>
