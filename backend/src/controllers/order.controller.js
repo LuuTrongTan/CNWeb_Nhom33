@@ -108,6 +108,49 @@ const cancelOrder = catchAsync(async (req, res) => {
 });
 
 /**
+ * Cập nhật trạng thái đơn hàng
+ */
+const updateOrderStatus = catchAsync(async (req, res) => {
+  const { status } = req.body;
+  
+  if (!status) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Trạng thái đơn hàng không được để trống');
+  }
+  
+  const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+  if (!validStatuses.includes(status)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Trạng thái đơn hàng không hợp lệ');
+  }
+  
+  const order = await orderService.getOrderById(req.params.orderId);
+  
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đơn hàng');
+  }
+  
+  // Chỉ admin mới có quyền cập nhật trạng thái
+  if (req.user.role !== 'admin') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền cập nhật trạng thái đơn hàng');
+  }
+  
+  // Xử lý các trường hợp cập nhật đặc biệt
+  let updateData = { status };
+  
+  if (status === 'delivered' && !order.isDelivered) {
+    updateData.isDelivered = true;
+    updateData.deliveredAt = new Date();
+  }
+  
+  if (status === 'cancelled' && !order.cancelledAt) {
+    updateData.cancelledAt = new Date();
+  }
+  
+  const updatedOrder = await orderService.updateOrderById(req.params.orderId, updateData);
+  
+  res.send(updatedOrder);
+});
+
+/**
  * Lấy số liệu thống kê đơn hàng của người dùng
  */
 const getOrderStats = catchAsync(async (req, res) => {
@@ -121,4 +164,5 @@ module.exports = {
   getOrderById,
   cancelOrder,
   getOrderStats,
+  updateOrderStatus,
 }; 

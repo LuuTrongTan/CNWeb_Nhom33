@@ -1,184 +1,187 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { getOrderHistory } from '../api/user.api';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import OrderStatus from '../components/Order/OrderStatus';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+
+// Tạo instance axios với headers authorization
+const api = axios.create({
+  baseURL: `${import.meta.env.VITE_API_URL || ''}/api`,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const OrderHistoryPage = () => {
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
+    fetchOrders();
+  }, [page]);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/orders?page=${page}&limit=10`);
+      setOrders(response.data.results);
+      setTotalPages(response.data.totalPages || 1);
+    } catch (err) {
+      console.error('Lỗi khi tải lịch sử đơn hàng:', err);
+      setError(err.response?.data?.message || 'Không thể tải lịch sử đơn hàng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
       return;
     }
-
-    const fetchOrderHistory = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const response = await getOrderHistory();
-        console.log('Orders từ API:', response);
-        setOrders(response);
-      } catch (err) {
-        console.error('Lỗi API:', err);
-        setError('Không thể tải lịch sử đơn hàng');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrderHistory();
-  }, [isAuthenticated, navigate]);
-
-  const handleViewDetails = (order) => {
-    setSelectedOrder(order);
+    
+    try {
+      await api.patch(`/orders/${orderId}/cancel`);
+      // Cập nhật lại danh sách đơn hàng
+      fetchOrders();
+      alert('Đã hủy đơn hàng thành công!');
+    } catch (err) {
+      console.error('Lỗi khi hủy đơn hàng:', err);
+      alert('Lỗi khi hủy đơn hàng: ' + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleCloseDetails = () => {
-    setSelectedOrder(null);
+  const formatDate = (dateString) => {
+    return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: vi });
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p>Đang tải...</p>
+  if (loading && orders.length === 0) return (
+    <div className="order-history p-6 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Lịch sử đơn hàng</h1>
+      <div className="text-center py-10">Đang tải dữ liệu...</div>
+    </div>
+  );
+
+  if (error && orders.length === 0) return (
+    <div className="order-history p-6 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Lịch sử đơn hàng</h1>
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        {error}
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Lịch sử mua hàng</h1>
-        <button
-          onClick={() => navigate('/profile')}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-        >
-          Quay lại hồ sơ
-        </button>
-      </div>
-
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+    <div className="order-history p-6 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Lịch sử đơn hàng</h1>
 
       {orders.length === 0 ? (
-        <p className="text-gray-500">Bạn chưa có đơn hàng nào.</p>
+        <div className="bg-white p-6 rounded-lg shadow-md text-center">
+          <p className="text-gray-600 mb-4">Bạn chưa có đơn hàng nào.</p>
+          <Link to="/" className="inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Tiếp tục mua sắm
+          </Link>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white shadow rounded-lg">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Mã đơn hàng
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày đặt
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Trạng thái
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tổng tiền
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hành động
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {orders.map((order) => (
-                <tr key={order._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{order._id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {new Date(order.orderDate).toLocaleDateString('vi-VN')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        order.status === 'Delivered'
-                          ? 'bg-green-100 text-green-800'
-                          : order.status === 'Processing'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {order.totalAmount.toLocaleString('vi-VN')} VNĐ
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => handleViewDetails(order)}
-                      className="text-blue-500 hover:underline"
-                    >
-                      Xem chi tiết
-                    </button>
-                  </td>
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mã đơn hàng
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ngày đặt
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tổng tiền
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trạng thái
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Thao tác
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {orders.map((order) => (
+                  <tr key={order._id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">#{order._id.substring(0, 8)}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{formatDate(order.createdAt)}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{order.totalPrice.toLocaleString()} VND</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <OrderStatus status={order.status} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Link to={`/orders/${order._id}`} className="text-indigo-600 hover:text-indigo-900">
+                        Xem chi tiết
+                      </Link>
+                      {order.status === 'pending' && (
+                        <button 
+                          className="ml-4 text-red-600 hover:text-red-900"
+                          onClick={() => handleCancelOrder(order._id)}
+                        >
+                          Hủy đơn
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-            <h2 className="text-xl font-bold mb-4">Chi tiết đơn hàng #{selectedOrder._id}</h2>
-            <div className="space-y-4">
-              <p>
-                <strong>Ngày đặt:</strong>{' '}
-                {new Date(selectedOrder.orderDate).toLocaleString('vi-VN')}
-              </p>
-              <p>
-                <strong>Trạng thái:</strong> {selectedOrder.status}
-              </p>
-              <p>
-                <strong>Tổng tiền:</strong>{' '}
-                {selectedOrder.totalAmount.toLocaleString('vi-VN')} VNĐ
-              </p>
-              <p>
-                <strong>Địa chỉ giao hàng:</strong>{' '}
-                {`${selectedOrder.shippingAddress.street}, ${selectedOrder.shippingAddress.city}, ${selectedOrder.shippingAddress.country}`}
-              </p>
-              <div>
-                <strong>Sản phẩm:</strong>
-                <ul className="mt-2 space-y-2">
-                  {selectedOrder.products.map((product, index) => (
-                    <li key={index} className="border-b py-2 flex items-center">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="h-16 w-16 object-cover rounded mr-4"
-                      />
-                      <div>
-                        <p>
-                          {product.name} - Số lượng: {product.quantity} - Giá:{' '}
-                          {(product.price * product.quantity).toLocaleString('vi-VN')} VNĐ
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <button
-              onClick={handleCloseDetails}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-            >
-              Đóng
-            </button>
+      {totalPages > 1 && (
+        <div className="pagination flex justify-center mt-6">
+          <button 
+            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+            disabled={page === 1}
+            className={`mx-1 px-4 py-2 rounded ${
+              page === 1 
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
+          >
+            Trước
+          </button>
+          
+          <div className="mx-4 flex items-center">
+            Trang {page} / {totalPages}
           </div>
+          
+          <button 
+            onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={page === totalPages}
+            className={`mx-1 px-4 py-2 rounded ${
+              page === totalPages 
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
+          >
+            Sau
+          </button>
         </div>
       )}
     </div>

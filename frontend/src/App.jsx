@@ -19,6 +19,7 @@ import SettingsPage from './pages/Auth/SettingsPage';
 import WishlistPage from './pages/WishlistPage';
 import OrderHistoryPage from './pages/User/OrderHistoryPage';
 import OrderDetailPage from './pages/User/OrderDetailPage';
+import OrderManagementPage from './pages/Admin/OrderManagementPage';
 
 // Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -29,6 +30,7 @@ import AdminLayout from './components/Layout/AdminLayout';
 
 // Styles
 import './styles/css/App.css';
+import "./styles/css/Order/order.css";
 
 // Context Providers
 import { CartProvider } from './context/CartContext';
@@ -79,8 +81,11 @@ const App = () => {
                 <Route path="banners" element={<BannerManagementPage />} />
                 <Route path="banners/add" element={<AddEditBannerPage />} />
                 <Route path="banners/edit/:id" element={<AddEditBannerPage />} />
-                {/* Thêm các route Admin khác ở đây */}
+                <Route path="orders" element={<OrderManagementPage />} />
               </Route>
+
+              {/* User Routes */}
+              <Route path="/orders" element={<OrderHistoryPage />} />
             </Routes>
           </div>
         </FilterProvider>
