@@ -68,6 +68,16 @@ const googleLogin = async (req, res) => {
   }
 };
 
+const getProfile = catchAsync(async (req, res) => {
+  const user = await userService.getUserById(req.user.id);
+  res.send(user);
+});
+
+const updateProfile = catchAsync(async (req, res) => {
+  const user = await userService.updateUserById(req.user.id, req.body);
+  res.send(user);
+});
+
 module.exports = {
   createUser,
   getUsers,
@@ -75,4 +85,6 @@ module.exports = {
   updateUser,
   deleteUser,
   googleLogin,
+  getProfile,
+  updateProfile,
 };

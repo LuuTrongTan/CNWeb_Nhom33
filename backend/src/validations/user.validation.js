@@ -45,10 +45,19 @@ const deleteUser = {
   }),
 };
 
+const updateProfile = {
+  body: Joi.object().keys({
+    name: Joi.string(),
+    phone: Joi.string(),
+    address: Joi.string()
+  })
+};
+
 module.exports = {
   createUser,
   getUsers,
   getUser,
   updateUser,
   deleteUser,
+  updateProfile,
 };

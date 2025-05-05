@@ -76,7 +76,7 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const checkWishlistStatus = async () => {
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem("token");
         if (!token || !id) return;
 
         setIsLoadingWishlist(true);
@@ -147,7 +147,7 @@ const ProductDetailPage = () => {
 
   const handleToggleWishlist = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem("token");
       if (!token) {
         alert("Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích");
         return;

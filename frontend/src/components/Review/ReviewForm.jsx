@@ -85,7 +85,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
       formData.append('file', file);
       
       try {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem('token');
         const response = await axios.post('/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -133,7 +133,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
       }
       
       // Gửi đánh giá
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       const reviewData = {
         product: productId,
         rating,

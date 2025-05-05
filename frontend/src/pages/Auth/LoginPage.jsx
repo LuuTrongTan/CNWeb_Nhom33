@@ -34,7 +34,7 @@ const LoginPage = () => {
       });
 
       // Lưu thông tin đăng nhập và token vào localStorage
-      localStorage.setItem('accessToken', response.data.tokens.access.token);
+      localStorage.setItem('token', response.data.tokens.access.token);
       localStorage.setItem('refreshToken', response.data.tokens.refresh.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 

@@ -37,9 +37,12 @@ apiClient.interceptors.response.use(
       const { status, data } = error.response;
       
       // Handle authentication errors
-      if (status === 401) {
+      if (status === 401 || status === 403) {
         // If token expired or invalid, clear local storage
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        // Redirect to login page
+        window.location.href = '/login';
       }
       
       errorMessage = data.message || `Error: ${status}`;

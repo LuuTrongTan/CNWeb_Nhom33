@@ -23,7 +23,7 @@ const ProfilePage = () => {
   useEffect(() => {
     // Kiểm tra xem người dùng đã đăng nhập chưa
     const userInfo = localStorage.getItem('user');
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
 
     if (!userInfo || !token) {
       navigate('/login');
@@ -48,7 +48,7 @@ const ProfilePage = () => {
         });
 
         // Lấy danh sách đơn hàng của người dùng
-        const ordersResponse = await axios.get('/orders/user', {
+        const ordersResponse = await axios.get('/orders', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -102,13 +102,14 @@ const ProfilePage = () => {
     setError('');
 
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       
-      // Tạo FormData để gửi dữ liệu và file
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('phone', formData.phone);
-      formDataToSend.append('address', formData.address);
+      // Tạo object chứa thông tin cập nhật
+      const updateData = {
+        name: formData.name,
+        phone: formData.phone,
+        address: formData.address
+      };
 
       // Nếu có avatar mới, upload file trước
       if (formData.avatar) {
@@ -123,15 +124,14 @@ const ProfilePage = () => {
         });
         
         // Lấy URL avatar đã upload
-        const avatarUrl = uploadResponse.data.url;
-        formDataToSend.append('avatar', avatarUrl);
+        updateData.avatar = uploadResponse.data.url;
       }
       
       // Cập nhật thông tin người dùng
-      const response = await axios.patch('/users/profile', formDataToSend, {
+      const response = await axios.patch('/users/profile', updateData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'application/json'
         }
       });
 
