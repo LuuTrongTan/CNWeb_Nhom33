@@ -20,12 +20,12 @@ router.route('/product/:productId').get(reviewController.getProductReviews);
 // Thêm route lấy đánh giá của người dùng
 router.route('/user/:userId').get(auth(), reviewController.getUserReviews);
 
-router.route('/:reviewId/feedback').post(reviewController.addFeedbackToReview);
+// router.route('/:reviewId/feedback').post(reviewController.addFeedbackToReview);
 
-router
-  .route('/:reviewId/feedback/:feedbackId')
-  .patch(reviewController.updateFeedbackInReview)
-  .delete(reviewController.deleteFeedbackFromReview);
+// router
+//   .route('/:reviewId/feedback/:feedbackId')
+//   .patch(reviewController.updateFeedbackInReview)
+//   .delete(reviewController.deleteFeedbackFromReview);
 
 // Thêm routes thích và bỏ thích đánh giá
 router.route('/:reviewId/like').post(auth(), reviewController.likeReview);

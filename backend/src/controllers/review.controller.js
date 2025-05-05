@@ -106,23 +106,23 @@ const deleteReview = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
-const addFeedbackToReview = catchAsync(async (req, res) => {
-  const review = await reviewService.addFeedbackToReview(req.params.reviewId, req.body);
-  res.status(httpStatus.OK).send(review);
-});
+// const addFeedbackToReview = catchAsync(async (req, res) => {
+//   const review = await reviewService.addFeedbackToReview(req.params.reviewId, req.body);
+//   res.status(httpStatus.OK).send(review);
+// });
 
-const updateFeedbackInReview = catchAsync(async (req, res) => {
-  const { reviewId, feedbackId } = req.params;
-  const feedbackBody = req.body;
+// const updateFeedbackInReview = catchAsync(async (req, res) => {
+//   const { reviewId, feedbackId } = req.params;
+//   const feedbackBody = req.body;
 
-  const updatedReview = await reviewService.updateFeedbackInReview(reviewId, feedbackId, feedbackBody);
-  res.status(httpStatus.OK).send(updatedReview);
-});
+//   const updatedReview = await reviewService.updateFeedbackInReview(reviewId, feedbackId, feedbackBody);
+//   res.status(httpStatus.OK).send(updatedReview);
+// });
 
-const deleteFeedbackFromReview = catchAsync(async (req, res) => {
-  const review = await reviewService.deleteFeedbackFromReview(req.params.reviewId, req.params.feedbackId);
-  res.status(httpStatus.OK).send(review);
-});
+// const deleteFeedbackFromReview = catchAsync(async (req, res) => {
+//   const review = await reviewService.deleteFeedbackFromReview(req.params.reviewId, req.params.feedbackId);
+//   res.status(httpStatus.OK).send(review);
+// });
 
 /**
  * Thích đánh giá
@@ -155,9 +155,9 @@ module.exports = {
   getUserReviews,
   updateReview,
   deleteReview,
-  addFeedbackToReview,
-  updateFeedbackInReview,
-  deleteFeedbackFromReview,
+  // addFeedbackToReview,
+  // updateFeedbackInReview,
+  // deleteFeedbackFromReview,
   likeReview,
   unlikeReview,
 };

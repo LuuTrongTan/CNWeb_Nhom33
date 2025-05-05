@@ -57,7 +57,7 @@ const App = () => {
                 {/* Sản phẩm */}
                 <Route
                   path="products"
-                  element={<ProductPage tagCategory="" />}
+                  element={<ProductPage key="products" tagCategory="" />}
                 />
                 <Route
                   path="products/:id"
@@ -83,19 +83,21 @@ const App = () => {
                 {/* Danh mục */}
                 <Route
                   path="products/ao/*"
-                  element={<ProductPage tagCategory="Áo" />}
+                  element={<ProductPage key="ao" tagCategory="Áo" />}
                 />
                 <Route
                   path="products/quan/*"
-                  element={<ProductPage tagCategory="Quần" />}
+                  element={<ProductPage key="quan" tagCategory="Quần" />}
                 />
                 <Route
                   path="products/giayvadep/*"
-                  element={<ProductPage tagCategory="Giày & Dép" />}
+                  element={
+                    <ProductPage key="giayvadep" tagCategory="Giày & Dép" />
+                  }
                 />
                 <Route
                   path="products/phukien/*"
-                  element={<ProductPage tagCategory="Phụ kiện" />}
+                  element={<ProductPage key="phukien" tagCategory="Phụ kiện" />}
                 />
                 <Route path="sale/*" element={<CategoryPage />} />
                 <Route path="moi/*" element={<CategoryPage />} />

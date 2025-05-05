@@ -71,7 +71,6 @@ const ProductPage = ({ tagCategory }) => {
           selectedFilter.isFeatured,
           tagCategory
         );
-        console.log("Dữ liệu sản phẩm:", response.products); // Log dữ liệu sản phẩm
         setProducts(response.products);
         setTotalProduct(response.totalItems);
         setTotalPage(response.totalPages);
@@ -226,14 +225,19 @@ const ProductPage = ({ tagCategory }) => {
             {" "}
             {tagCategory !== "" ? (
               <div style={{ display: "flex" }}>
-                <Link to="/products">
+                <Link
+                  to="/products"
+                  onChange={() => {
+                    tagCategory = "";
+                  }}
+                >
                   <p className="breadcrumb-item active">Sản phẩm</p>
                 </Link>
                 <div>
                   {tagCategory === "Áo" && "Áo"}
                   {tagCategory === "Quần" && "Quần"}
                   {tagCategory === "Giày & Dép" && "Giày & Dép"}
-                  {tagCategory === "Phụ kiện" && "Giày & Dép"}
+                  {tagCategory === "Phụ kiện" && "Phụ kiện"}
                 </div>
               </div>
             ) : (
@@ -247,7 +251,7 @@ const ProductPage = ({ tagCategory }) => {
           {tagCategory === "Quần" && "Quần"}
           {tagCategory === "" && "Tất cả sản phẩm"}
           {tagCategory === "Giày & Dép" && "Giày & Dép"}
-          {tagCategory === "Phụ kiện" && "Giày & Dép"}
+          {tagCategory === "Phụ kiện" && "Phụ kiện"}
         </h1>
         <p className="products-description">
           Khám phá bộ sưu tập sản phẩm mới nhất với chất lượng và giá cả hợp lý

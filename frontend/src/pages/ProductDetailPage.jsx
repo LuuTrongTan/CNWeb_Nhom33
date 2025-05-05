@@ -49,15 +49,13 @@ const ProductDetailPage = ({ tagCategory }) => {
       try {
         setLoading(true);
         const data = await getProductById(id);
-
-        console.log("Dữ liệu sản phẩm:", data);
         setProduct(data);
         const categoryData = await getCategoryById(data.category);
         setCategory(categoryData);
         // Lấy sản phẩm liên quan sau khi có thông tin sản phẩm
         try {
           const relatedData = await getRelatedProducts(id);
-          console.log("Dữ liệu sản phẩm liên quan:", relatedData);
+          // console.log("Dữ liệu sản phẩm liên quan:", relatedData);
           setRelatedProducts(relatedData);
         } catch (err) {
           console.error("Lỗi khi lấy sản phẩm liên quan:", err);

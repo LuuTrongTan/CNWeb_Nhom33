@@ -293,38 +293,41 @@ const Sidebar = ({ toggleSidebar, tagCategory }) => {
         )}
         <div className="section-content">
           <ul className="category-list">
-            {categories.map((category, index) => (
-              <li
-                key={index}
-                className={`category-item ${
-                  expandedCategories.includes(category.name) ? "expanded" : ""
-                }`}
-              >
-                <div
-                  className="category-link"
-                  onClick={() => toggleCategory(category.name)}
+            {categories &&
+              categories.map((category, index) => (
+                <li
+                  key={index}
+                  className={`category-item ${
+                    expandedCategories.includes(category.name) ? "expanded" : ""
+                  }`}
                 >
-                  {category.name}
-                  <i
-                    className={`fa-solid fa-chevron-${
-                      expandedCategories.includes(category.name) ? "up" : "down"
-                    }`}
-                  ></i>
-                </div>
-                <ul className="subcategory-list">
-                  {category.subcategories.map((subcategory, subIndex) => (
-                    <li key={subIndex} className="subcategory-item">
-                      <div
-                        className="subcategory-link"
-                        onClick={() => handleSubcategoryClick(subcategory)}
-                      >
-                        {subcategory.name}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
+                  <div
+                    className="category-link"
+                    onClick={() => toggleCategory(category.name)}
+                  >
+                    {category.name}
+                    <i
+                      className={`fa-solid fa-chevron-${
+                        expandedCategories.includes(category.name)
+                          ? "up"
+                          : "down"
+                      }`}
+                    ></i>
+                  </div>
+                  <ul className="subcategory-list">
+                    {category.subcategories.map((subcategory, subIndex) => (
+                      <li key={subIndex} className="subcategory-item">
+                        <div
+                          className="subcategory-link"
+                          onClick={() => handleSubcategoryClick(subcategory)}
+                        >
+                          {subcategory.name}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
           </ul>
         </div>
       </div>
