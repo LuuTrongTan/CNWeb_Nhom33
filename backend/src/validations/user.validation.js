@@ -49,7 +49,8 @@ const updateProfile = {
   body: Joi.object().keys({
     name: Joi.string(),
     phone: Joi.string(),
-    address: Joi.string()
+    address: Joi.string(),
+    avatar: Joi.string().uri()
   })
 };
 
