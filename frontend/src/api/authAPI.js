@@ -43,7 +43,12 @@ const authAPI = {
       const refreshToken = localStorage.getItem('refreshToken');
       
       if (refreshToken) {
-        await axios.post('/auth/logout', { refreshToken });
+        try {
+          await axios.post('/auth/logout', { refreshToken });
+        } catch (error) {
+          console.error("Lỗi khi gọi API đăng xuất:", error);
+          // Không throw error ở đây vì chúng ta vẫn muốn xóa dữ liệu local
+        }
       }
       
       // Xóa thông tin người dùng khỏi localStorage
@@ -53,12 +58,12 @@ const authAPI = {
       
       return true;
     } catch (error) {
-      // Đảm bảo xóa dữ liệu local ngay cả khi API lỗi
+      // Đảm bảo xóa dữ liệu local ngay cả khi có lỗi khác
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       
-      throw error;
+      return true; // Trả về true vì chúng ta đã xóa dữ liệu local thành công
     }
   },
 

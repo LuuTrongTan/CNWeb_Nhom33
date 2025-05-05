@@ -23,36 +23,50 @@ const ProfilePage = () => {
   const { currentUser, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
-    const fetchUserData = async () => {
+    const checkAuth = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem('token');
-        const response = await axios.get('/users/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`
+        
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
+        // Kiểm tra token còn hợp lệ không
+        try {
+          const response = await axios.get('/users/profile', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          setUser(response.data);
+          setFormData({
+            name: response.data.name || '',
+            phone: response.data.phone || '',
+            address: response.data.address || ''
+          });
+
+          // Lấy danh sách đơn hàng của người dùng
+          const ordersResponse = await axios.get('/orders', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          setOrders(ordersResponse.data.results || []);
+        } catch (err) {
+          if (err.response?.status === 401) {
+            // Token không hợp lệ, đăng xuất và chuyển hướng
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            navigate('/login');
+            return;
           }
-        });
-
-        setUser(response.data);
-        setFormData({
-          name: response.data.name || '',
-          phone: response.data.phone || '',
-          address: response.data.address || ''
-        });
-
-        // Lấy danh sách đơn hàng của người dùng
-        const ordersResponse = await axios.get('/orders', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        setOrders(ordersResponse.data.results || []);
+          throw err;
+        }
       } catch (err) {
         console.error('Lỗi khi lấy thông tin người dùng:', err);
         setError('Không thể tải thông tin người dùng. Vui lòng thử lại sau.');
@@ -61,8 +75,8 @@ const ProfilePage = () => {
       }
     };
 
-    fetchUserData();
-  }, [navigate, isAuthenticated]);
+    checkAuth();
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

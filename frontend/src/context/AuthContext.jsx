@@ -79,11 +79,24 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     
     try {
-      await authAPI.logout();
+      // Xóa dữ liệu local trước khi gọi API
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
       setCurrentUser(null);
+      
+      // Gọi API đăng xuất sau khi đã xóa dữ liệu local
+      try {
+        await authAPI.logout();
+      } catch (err) {
+        console.error("Lỗi khi gọi API đăng xuất:", err);
+        // Không cần xử lý gì thêm vì đã xóa dữ liệu local
+      }
+      
+      // Chuyển hướng về trang chủ
+      window.location.href = '/';
     } catch (err) {
       console.error("Đăng xuất lỗi:", err);
-      // Vẫn xóa dữ liệu người dùng ở client ngay cả khi API lỗi
       setCurrentUser(null);
     } finally {
       setLoading(false);
