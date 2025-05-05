@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/css/Auth/Auth.css';
 
 const LoginPage = () => {
@@ -12,6 +12,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -28,17 +29,7 @@ const LoginPage = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post('/auth/login', {
-        email,
-        password
-      });
-
-      // Lưu thông tin đăng nhập và token vào localStorage
-      localStorage.setItem('token', response.data.tokens.access.token);
-      localStorage.setItem('refreshToken', response.data.tokens.refresh.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      // Chuyển hướng đến trang chủ
+      await login(email, password);
       navigate('/');
     } catch (err) {
       console.error('Lỗi đăng nhập:', err);

@@ -25,15 +25,14 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
       trim: true,
       minlength: 8,
       validate(value) {
-        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
+        if (value && (!value.match(/\d/) || !value.match(/[a-zA-Z]/))) {
           throw new Error('Password must contain at least one letter and one number');
         }
       },
-      private: true, // used by the toJSON plugin
+      private: true,
     },
     role: {
       type: String,
@@ -44,6 +43,11 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    authType: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
     phone: {
       type: String,
       trim: true,
@@ -53,8 +57,8 @@ const userSchema = mongoose.Schema(
       trim: true,
     },
     avatar: {
-      type: String,
-      trim: true,
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
     },
   },
   {
@@ -84,12 +88,13 @@ userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
  */
 userSchema.methods.isPasswordMatch = async function (password) {
   const user = this;
+  if (!user.password) return false;
   return bcrypt.compare(password, user.password);
 };
 
 userSchema.pre('save', async function (next) {
   const user = this;
-  if (user.isModified('password')) {
+  if (user.isModified('password') && user.password) {
     user.password = await bcrypt.hash(user.password, 8);
   }
   next();

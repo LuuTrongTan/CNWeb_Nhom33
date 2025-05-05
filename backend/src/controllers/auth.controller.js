@@ -7,46 +7,40 @@ const User = require('../models/user.model');
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
+const ApiError = require('../utils/ApiError');
 
-const googleAuth = async (req, res) => {
-  try {
-    const { token } = req.body;
-    if (!token) {
-      return res.status(400).json({ message: 'Không có token' });
-    }
-
-    const decoded = jwt.decode(token);
-    if (!decoded || !decoded.email) {
-      return res.status(400).json({ message: 'Token không hợp lệ' });
-    }
-
-    let user = await User.findOne({ email: decoded.email });
-
-    if (!user) {
-      const existingLocalUser = await User.findOne({ email: decoded.email, authType: 'local' });
-      if (existingLocalUser) {
-        return res.status(400).json({ message: 'Email này đã đăng ký với tài khoản local' });
-      }
-
-      user = new User({
-        email: decoded.email,
-        name: decoded.name || 'Google User',
-        avatar: { url: decoded.picture || '' },
-        isVerified: true,
-        authType: 'google',
-        role: 'user',
-      });
-      await user.save();
-    }
-
-    const authToken = jwt.sign({ id: user._id, role: user.role }, config.jwt.secret, { expiresIn: '7d' });
-    res.json({ user, token: authToken });
-  } catch (error) {
-    console.error('Lỗi đăng nhập Google:', error);
-    res.status(500).json({ message: 'Lỗi server', error });
+const googleAuth = catchAsync(async (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Không có token');
   }
-};
 
+  const decoded = jwt.decode(token);
+  if (!decoded || !decoded.email) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Token không hợp lệ');
+  }
+
+  let user = await User.findOne({ email: decoded.email });
+
+  if (!user) {
+    const existingLocalUser = await User.findOne({ email: decoded.email, authType: 'local' });
+    if (existingLocalUser) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email này đã đăng ký với tài khoản local');
+    }
+
+    user = await userService.createUser({
+      email: decoded.email,
+      name: decoded.name || 'Google User',
+      avatar: decoded.picture || null,
+      isEmailVerified: true,
+      authType: 'google',
+      role: 'user',
+    });
+  }
+
+  const tokens = await tokenService.generateAuthTokens(user);
+  res.send({ user, tokens });
+});
 
 const register = catchAsync(async (req, res) => {
   const userData = { ...req.body, role: 'user' };

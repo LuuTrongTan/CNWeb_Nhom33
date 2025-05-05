@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faPhone, faShoppingBag, faEdit, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '../../context/AuthContext';
 import AvatarModal from '../../components/AvatarModal';
 import '../../styles/css/Auth/Profile.css';
 
@@ -19,13 +20,10 @@ const ProfilePage = () => {
   });
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { currentUser, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    // Kiểm tra xem người dùng đã đăng nhập chưa
-    const userInfo = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-
-    if (!userInfo || !token) {
+    if (!isAuthenticated) {
       navigate('/login');
       return;
     }
@@ -33,6 +31,7 @@ const ProfilePage = () => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
+        const token = localStorage.getItem('token');
         const response = await axios.get('/users/profile', {
           headers: {
             Authorization: `Bearer ${token}`
@@ -63,7 +62,7 @@ const ProfilePage = () => {
     };
 
     fetchUserData();
-  }, [navigate]);
+  }, [navigate, isAuthenticated]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
