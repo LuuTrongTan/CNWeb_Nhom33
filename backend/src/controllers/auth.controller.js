@@ -1,3 +1,4 @@
+const fetch = require('node-fetch');
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');
@@ -15,31 +16,48 @@ const googleAuth = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Không có token');
   }
 
-  const decoded = jwt.decode(token);
-  if (!decoded || !decoded.email) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Token không hợp lệ');
-  }
+  try {
+    // Sử dụng access token để lấy thông tin user
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  let user = await User.findOne({ email: decoded.email });
-
-  if (!user) {
-    const existingLocalUser = await User.findOne({ email: decoded.email, authType: 'local' });
-    if (existingLocalUser) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Email này đã đăng ký với tài khoản local');
+    if (!response.ok) {
+      throw new Error('Không thể lấy thông tin user từ Google');
     }
 
-    user = await userService.createUser({
-      email: decoded.email,
-      name: decoded.name || 'Google User',
-      avatar: decoded.picture || null,
-      isEmailVerified: true,
-      authType: 'google',
-      role: 'user',
-    });
-  }
+    const userInfo = await response.json();
+    
+    if (!userInfo || !userInfo.email) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Token không hợp lệ');
+    }
 
-  const tokens = await tokenService.generateAuthTokens(user);
-  res.send({ user, tokens });
+    let user = await User.findOne({ email: userInfo.email });
+
+    if (!user) {
+      const existingLocalUser = await User.findOne({ email: userInfo.email, authType: 'local' });
+      if (existingLocalUser) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Email này đã đăng ký với tài khoản local');
+      }
+
+      user = await userService.createUser({
+        email: userInfo.email,
+        name: userInfo.name || 'Google User',
+        avatar: userInfo.picture || null,
+        isEmailVerified: true,
+        authType: 'google',
+        role: 'user',
+      });
+    }
+
+    const tokens = await tokenService.generateAuthTokens(user);
+    res.send({ user, tokens });
+  } catch (error) {
+    console.error('Lỗi xác thực Google:', error);
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Token không hợp lệ');
+  }
 });
 
 const register = catchAsync(async (req, res) => {

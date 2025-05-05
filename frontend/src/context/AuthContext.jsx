@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authAPI from '../api/authAPI';
+import { googleLogin } from '../services/auth.service';
 
 // Khởi tạo context
 const AuthContext = createContext();
@@ -128,6 +129,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Đăng nhập bằng Google
+  const loginWithGoogle = async (token) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const data = await googleLogin(token);
+      setCurrentUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.tokens.access.token);
+      localStorage.setItem('refreshToken', data.tokens.refresh.token);
+      return data;
+    } catch (err) {
+      setError(err.response?.data?.message || "Đăng nhập Google thất bại");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Các giá trị được chia sẻ qua context
   const value = {
     currentUser,
@@ -137,6 +158,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUserInfo,
+    loginWithGoogle,
     isAuthenticated: !!currentUser
   };
 

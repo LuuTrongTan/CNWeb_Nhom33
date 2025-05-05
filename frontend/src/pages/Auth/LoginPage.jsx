@@ -12,7 +12,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -34,6 +34,40 @@ const LoginPage = () => {
     } catch (err) {
       console.error('Lỗi đăng nhập:', err);
       setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Khởi tạo Google OAuth2 client
+      const client = window.google.accounts.oauth2.initTokenClient({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+        callback: async (response) => {
+          if (response.access_token) {
+            try {
+              // Gửi token trực tiếp từ Google
+              await loginWithGoogle(response.access_token);
+              navigate('/');
+            } catch (err) {
+              console.error('Lỗi đăng nhập Google:', err);
+              setError(err.response?.data?.message || 'Đăng nhập Google thất bại');
+            }
+          } else {
+            setError('Không thể lấy token từ Google');
+          }
+        },
+      });
+      
+      client.requestAccessToken();
+    } catch (err) {
+      console.error('Lỗi khởi tạo Google OAuth:', err);
+      setError('Không thể kết nối với Google');
     } finally {
       setLoading(false);
     }
@@ -99,6 +133,24 @@ const LoginPage = () => {
 
           <button type="submit" className="auth-button" disabled={loading}>
             {loading ? 'Đang xử lý...' : 'Đăng nhập'}
+          </button>
+
+          <div className="auth-divider">
+            <span>Hoặc đăng nhập với</span>
+          </div>
+
+          <button 
+            type="button" 
+            className="google-login-button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+          >
+            <img 
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+              alt="Google logo" 
+              className="google-logo"
+            />
+            Đăng nhập với Google
           </button>
         </form>
 

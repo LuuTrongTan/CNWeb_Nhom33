@@ -10,6 +10,11 @@ export const loginUser = async (credentials) => {
   return await apiClient.post('/auth/login', credentials);
 };
 
+// Google login
+export const googleLogin = async (token) => {
+  return await apiClient.post('/auth/google-login', { token });
+};
+
 // Verify two-factor authentication
 export const verifyTwoFactor = async (userId, token) => {
   return await apiClient.post('/auth/verify-2fa', { userId, token });
