@@ -1,4 +1,3 @@
-// components/ResetFilterOnRouteChange.js
 import { useEffect, useContext } from "react";
 import { useLocation } from "react-router-dom";
 import { FilterContext } from "./FilterContext";
