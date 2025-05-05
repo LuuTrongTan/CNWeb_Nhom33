@@ -2,6 +2,7 @@ const express = require('express');
 const validate = require('../middlewares/validate');
 const authValidation = require('../validations/auth.validation');
 const authController = require('../controllers/auth.controller');
+const userController = require('../controllers/user.controller');
 const auth = require('../middlewares/auth');
 
 const router = express.Router();
@@ -11,8 +12,12 @@ router.post('/register', validate(authValidation.register), authController.regis
 router.post('/login', validate(authValidation.login), authController.login);
 router.post('/logout', validate(authValidation.logout), authController.logout);
 router.post('/refresh-tokens', validate(authValidation.refreshTokens), authController.refreshTokens);
-router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);
-router.post('/reset-password', validate(authValidation.resetPassword), authController.resetPassword);
+/*router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);*/
+
+router.post('/forgot-password', userController.requestPasswordReset);
+router.post('/verify-reset-code', userController.verifyResetCode); 
+router.post('/reset-password', userController.resetPassword);
+/*router.post('/reset-password', validate(authValidation.resetPassword), authController.resetPassword);*/
 router.post('/send-verification-email', auth(), authController.sendVerificationEmail);
 router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
 router.post('/google-login', validate(authValidation.googleLoginSchema) ,authController.googleAuth);

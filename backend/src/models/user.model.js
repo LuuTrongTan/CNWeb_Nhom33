@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const { toJSON, paginate } = require('./plugins');
 const { roles } = require('../config/roles');
 
@@ -60,6 +60,8 @@ const userSchema = mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: null,
     },
+    resetPasswordCode: { type: String, select: false },
+    resetPasswordCodeExpires: { type: Date, select: false },
   },
   {
     timestamps: true,
