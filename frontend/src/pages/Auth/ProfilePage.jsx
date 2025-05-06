@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faPhone, faShoppingBag, faEdit, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '../../context/AuthContext';
+import AvatarModal from '../../components/AvatarModal';
 import '../../styles/css/Auth/Profile.css';
 
 const ProfilePage = () => {
@@ -14,47 +16,57 @@ const ProfilePage = () => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    address: '',
-    avatar: null
+    address: ''
   });
-  const [avatarPreview, setAvatarPreview] = useState('');
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { currentUser, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    // Kiểm tra xem người dùng đã đăng nhập chưa
-    const userInfo = localStorage.getItem('user');
-    const token = localStorage.getItem('accessToken');
-
-    if (!userInfo || !token) {
-      navigate('/login');
-      return;
-    }
-
-    const fetchUserData = async () => {
+    const checkAuth = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/users/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
+        // Kiểm tra token còn hợp lệ không
+        try {
+          const response = await axios.get('/users/profile', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          setUser(response.data);
+          setFormData({
+            name: response.data.name || '',
+            phone: response.data.phone || '',
+            address: response.data.address || ''
+          });
+
+          // Lấy danh sách đơn hàng của người dùng
+          const ordersResponse = await axios.get('/orders', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          setOrders(ordersResponse.data.results || []);
+        } catch (err) {
+          if (err.response?.status === 401) {
+            // Token không hợp lệ, đăng xuất và chuyển hướng
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            navigate('/login');
+            return;
           }
-        });
-
-        setUser(response.data);
-        setFormData({
-          name: response.data.name || '',
-          phone: response.data.phone || '',
-          address: response.data.address || '',
-          avatar: null
-        });
-
-        // Lấy danh sách đơn hàng của người dùng
-        const ordersResponse = await axios.get('/orders/user', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        setOrders(ordersResponse.data.results || []);
+          throw err;
+        }
       } catch (err) {
         console.error('Lỗi khi lấy thông tin người dùng:', err);
         setError('Không thể tải thông tin người dùng. Vui lòng thử lại sau.');
@@ -63,7 +75,7 @@ const ProfilePage = () => {
       }
     };
 
-    fetchUserData();
+    checkAuth();
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -71,67 +83,17 @@ const ProfilePage = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Kiểm tra kích thước file (tối đa 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      setError('Kích thước ảnh đại diện không được vượt quá 2MB.');
-      return;
-    }
-
-    // Kiểm tra loại file
-    if (!file.type.startsWith('image/')) {
-      setError('Vui lòng chọn file hình ảnh.');
-      return;
-    }
-
-    setFormData({ ...formData, avatar: file });
-    
-    // Hiển thị ảnh xem trước
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatarPreview(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       
-      // Tạo FormData để gửi dữ liệu và file
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('phone', formData.phone);
-      formDataToSend.append('address', formData.address);
-
-      // Nếu có avatar mới, upload file trước
-      if (formData.avatar) {
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', formData.avatar);
-        
-        const uploadResponse = await axios.post('/upload', uploadFormData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        // Lấy URL avatar đã upload
-        const avatarUrl = uploadResponse.data.url;
-        formDataToSend.append('avatar', avatarUrl);
-      }
-      
-      // Cập nhật thông tin người dùng
-      const response = await axios.patch('/users/profile', formDataToSend, {
+      const response = await axios.patch('/users/profile', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'application/json'
         }
       });
 
@@ -149,6 +111,12 @@ const ProfilePage = () => {
       console.error('Lỗi khi cập nhật thông tin:', err);
       setError(err.response?.data?.message || 'Không thể cập nhật thông tin. Vui lòng thử lại sau.');
     }
+  };
+
+  const handleAvatarUpdate = (newAvatarUrl) => {
+    setUser(prev => ({ ...prev, avatar: newAvatarUrl }));
+    const updatedUser = { ...user, avatar: newAvatarUrl };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   const formatDate = (dateString) => {
@@ -211,37 +179,19 @@ const ProfilePage = () => {
       <div className="profile-content">
         <div className="profile-sidebar">
           <div className="profile-avatar">
-            {editMode ? (
-              <div className="avatar-upload">
-                {avatarPreview || user.avatar ? (
-                  <img src={avatarPreview || user.avatar} alt={user.name} />
-                ) : (
-                  <div className="avatar-placeholder">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <label htmlFor="avatar-input" className="avatar-edit-button">
-                  <FontAwesomeIcon icon={faCamera} />
-                </label>
-                <input
-                  type="file"
-                  id="avatar-input"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  style={{ display: 'none' }}
-                />
-              </div>
+            {user.avatar ? (
+              <img src={user.avatar} alt={user.name} />
             ) : (
-              <>
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} />
-                ) : (
-                  <div className="avatar-placeholder">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </>
+              <div className="avatar-placeholder">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
             )}
+            <button 
+              className="avatar-edit-button"
+              onClick={() => setIsAvatarModalOpen(true)}
+            >
+              <FontAwesomeIcon icon={faCamera} />
+            </button>
           </div>
 
           <div className="profile-info">
@@ -264,10 +214,8 @@ const ProfilePage = () => {
                   setFormData({
                     name: user.name || '',
                     phone: user.phone || '',
-                    address: user.address || '',
-                    avatar: null
+                    address: user.address || ''
                   });
-                  setAvatarPreview('');
                   setError('');
                 }}
               >
@@ -332,10 +280,6 @@ const ProfilePage = () => {
                   <span className="detail-label">Địa chỉ:</span>
                   <span className="detail-value">{user.address || 'Chưa cập nhật'}</span>
                 </div>
-                <div className="profile-detail-item">
-                  <span className="detail-label">Ngày tham gia:</span>
-                  <span className="detail-value">{formatDate(user.createdAt)}</span>
-                </div>
               </div>
               
               <div className="profile-section">
@@ -384,6 +328,12 @@ const ProfilePage = () => {
           )}
         </div>
       </div>
+
+      <AvatarModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        onSuccess={handleAvatarUpdate}
+      />
     </div>
   );
 };

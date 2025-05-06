@@ -5,7 +5,7 @@ const API_URL = "http://localhost:4000";
 // Lấy danh sách đơn hàng của người dùng đăng nhập
 export const getUserOrders = async (page = 1, limit = 10) => {
   try {
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("token");
     if (!token) {
       throw new Error("Bạn cần đăng nhập để xem lịch sử đơn hàng");
     }

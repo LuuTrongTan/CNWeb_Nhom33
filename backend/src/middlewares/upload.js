@@ -18,6 +18,28 @@ const storage = new CloudinaryStorage({
 const uploadAvatar = multer({
   storage,
   limits: { fileSize: 1000000 }, // Giới hạn kích thước file (1MB)
+  fileFilter: (req, file, cb) => {
+    console.log('Uploading file:', {
+      fieldname: file.fieldname,
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size
+    });
+
+    // Kiểm tra định dạng file
+    if (!file.mimetype.startsWith('image/')) {
+      console.error('Invalid file type:', file.mimetype);
+      return cb(new Error('Chỉ chấp nhận file hình ảnh'), false);
+    }
+
+    // Kiểm tra kích thước file
+    if (file.size > 1000000) {
+      console.error('File too large:', file.size);
+      return cb(new Error('Kích thước file không được vượt quá 1MB'), false);
+    }
+
+    cb(null, true);
+  }
 }).single('avatar'); // 'avatar' là tên field trong form
 
 // Middleware cho pictures (multiple uploads)

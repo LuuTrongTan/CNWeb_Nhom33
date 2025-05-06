@@ -30,7 +30,7 @@ const SettingsPage = () => {
   useEffect(() => {
     // Kiểm tra đăng nhập
     const userInfo = localStorage.getItem('user');
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
 
     if (!userInfo || !token) {
       navigate('/login');
@@ -120,7 +120,7 @@ const SettingsPage = () => {
     }
 
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       
       await axios.post('/auth/change-password', {
         currentPassword: passwordForm.currentPassword,
@@ -152,7 +152,7 @@ const SettingsPage = () => {
     setSuccessMessage('');
 
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       
       await axios.patch('/users/notifications', notificationSettings, {
         headers: {
@@ -170,7 +170,7 @@ const SettingsPage = () => {
 
   const handleLogout = () => {
     // Xóa thông tin đăng nhập trong localStorage
-    localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     
@@ -181,7 +181,7 @@ const SettingsPage = () => {
   const handleDeleteAccount = async () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác!')) {
       try {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem('token');
         
         await axios.delete('/users/me', {
           headers: {
@@ -190,7 +190,7 @@ const SettingsPage = () => {
         });
 
         // Xóa thông tin đăng nhập trong localStorage
-        localStorage.removeItem('accessToken');
+        localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         

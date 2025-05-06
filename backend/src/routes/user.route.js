@@ -6,6 +6,10 @@ const userController = require('../controllers/user.controller');
 
 const router = express.Router();
 
+// Thêm route mới để lấy thông tin profile của người dùng hiện tại
+router.get('/profile', auth(), userController.getProfile);
+router.patch('/profile', auth(), validate(userValidation.updateProfile), userController.updateProfile);
+
 router
   .route('/')
   .post(auth('manageUsers'), validate(userValidation.createUser), userController.createUser)

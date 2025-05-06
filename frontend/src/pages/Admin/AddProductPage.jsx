@@ -128,7 +128,7 @@ const AddProductPage = () => {
     }
 
     // Xóa lỗi khi người dùng chỉnh sửa
-    if (formErrors[name]) {
+    if (!id && formErrors[name]) {
       setFormErrors({ ...formErrors, [name]: null });
     }
   };
@@ -238,7 +238,7 @@ const AddProductPage = () => {
     ) {
       errors.discountPercentage = "Phần trăm giảm giá phải từ 1-100%";
     }
-    if (imageFiles.length === 0)
+    if (!id && imageFiles.length === 0)
       errors.images = "Cần ít nhất một hình ảnh cho sản phẩm";
     if (formData.colors.length === 0) {
       errors.colors = "Vui lòng nhập ít nhất một màu sắc";
@@ -618,7 +618,7 @@ const AddProductPage = () => {
                   <p>Ảnh đầu tiên sẽ là ảnh chính của sản phẩm</p>
                 </div>
 
-                {formErrors.images && (
+                {!id && formErrors.images && (
                   <div className="error-message with-icon">
                     <FontAwesomeIcon icon={faExclamationTriangle} />
                     {formErrors.images}

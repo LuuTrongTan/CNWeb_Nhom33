@@ -46,8 +46,8 @@ const OrderHistoryPage = () => {
     }
     
     // Lưu token vào localStorage nếu chưa có
-    if (currentUser.token && !localStorage.getItem('accessToken')) {
-      localStorage.setItem('accessToken', currentUser.token);
+    if (currentUser.token && !localStorage.getItem('token')) {
+      localStorage.setItem('token', currentUser.token);
     }
     
     fetchOrders();

@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const { Review, Picture } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { productService } = require('./index');
+const productService = require('./product.service');
 const pictureService = require('./picture.service');
 
 /**

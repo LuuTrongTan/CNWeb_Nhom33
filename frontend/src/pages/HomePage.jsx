@@ -64,7 +64,7 @@ const Home = () => {
         <div className="hero-content">
           <h1>Xu hướng thời trang mới nhất</h1>
           <p>Khám phá bộ sưu tập mùa hè 2023 với nhiều ưu đãi hấp dẫn</p>
-          <Link to="/moi" className="btn-primary">
+          <Link to="/products" className="btn-primary">
             Mua ngay
           </Link>
         </div>

@@ -29,8 +29,6 @@ import OrderDetailPage from "./pages/User/OrderDetailPage";
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import ProductManagement from "./pages/Admin/ProductManagement";
-import BannerManagementPage from "./pages/Admin/BannerManagementPage";
-import AddEditBannerPage from "./pages/Admin/AddEditBannerPage";
 import AdminLayout from "./components/Layout/AdminLayout";
 import AddProductPage from "./pages/Admin/AddProductPage";
 import CategoryManagementPage from "./pages/Admin/CategoryManagementPage";
@@ -41,103 +39,114 @@ import "./styles/css/App.css";
 // Context Providers
 import { CartProvider } from "./context/CartContext";
 import { FilterProvider } from "./context/FilterContext";
+import { AxiosProvider } from "./context/AxiosContext";
+import { AuthProvider } from "./context/AuthContext";
 
 const App = () => {
   return (
     <Router>
-      <CartProvider>
-        <FilterProvider>
-          <ResetFilterOnRouteChange />
-          <div className="App">
-            <Routes>
-              <Route path="/" element={<MainLayout />}>
-                {/* Trang chính */}
-                <Route index element={<Home />} />
+      <AxiosProvider>
+        <AuthProvider>
+          <CartProvider>
+            <FilterProvider>
+              <ResetFilterOnRouteChange />
+              <div className="App">
+                <Routes>
+                  <Route path="/" element={<MainLayout />}>
+                    {/* Trang chính */}
+                    <Route index element={<Home />} />
 
-                {/* Sản phẩm */}
-                <Route
-                  path="products"
-                  element={<ProductPage key="products" tagCategory="" />}
-                />
-                <Route
-                  path="products/:id"
-                  element={<ProductDetailPage tagCategory="" />}
-                />
-                <Route
-                  path="products/ao/:id"
-                  element={<ProductDetailPage tagCategory="Áo" />}
-                />
-                <Route
-                  path="products/quan/:id"
-                  element={<ProductDetailPage tagCategory="Quần" />}
-                />
-                <Route
-                  path="products/giayvadep/:id"
-                  element={<ProductDetailPage tagCategory="Giày & Dép" />}
-                />
-                <Route
-                  path="products/phukien/:id"
-                  element={<ProductDetailPage tagCategory="Phụ kiện" />}
-                />
+                    {/* Sản phẩm */}
+                    <Route
+                      path="products"
+                      element={<ProductPage key="products" tagCategory="" />}
+                    />
+                    <Route
+                      path="products/:id"
+                      element={<ProductDetailPage tagCategory="" />}
+                    />
+                    <Route
+                      path="products/ao/:id"
+                      element={<ProductDetailPage tagCategory="Áo" />}
+                    />
+                    <Route
+                      path="products/quan/:id"
+                      element={<ProductDetailPage tagCategory="Quần" />}
+                    />
+                    <Route
+                      path="products/giayvadep/:id"
+                      element={<ProductDetailPage tagCategory="Giày & Dép" />}
+                    />
+                    <Route
+                      path="products/phukien/:id"
+                      element={<ProductDetailPage tagCategory="Phụ kiện" />}
+                    />
 
-                {/* Danh mục */}
-                <Route
-                  path="products/ao/*"
-                  element={<ProductPage key="ao" tagCategory="Áo" />}
-                />
-                <Route
-                  path="products/quan/*"
-                  element={<ProductPage key="quan" tagCategory="Quần" />}
-                />
-                <Route
-                  path="products/giayvadep/*"
-                  element={
-                    <ProductPage key="giayvadep" tagCategory="Giày & Dép" />
-                  }
-                />
-                <Route
-                  path="products/phukien/*"
-                  element={<ProductPage key="phukien" tagCategory="Phụ kiện" />}
-                />
-                <Route path="sale/*" element={<CategoryPage />} />
-                <Route path="moi/*" element={<CategoryPage />} />
+                    {/* Danh mục */}
+                    <Route
+                      path="products/ao/*"
+                      element={<ProductPage key="ao" tagCategory="Áo" />}
+                    />
+                    <Route
+                      path="products/quan/*"
+                      element={<ProductPage key="quan" tagCategory="Quần" />}
+                    />
+                    <Route
+                      path="products/giayvadep/*"
+                      element={
+                        <ProductPage key="giayvadep" tagCategory="Giày & Dép" />
+                      }
+                    />
+                    <Route
+                      path="products/phukien/*"
+                      element={
+                        <ProductPage key="phukien" tagCategory="Phụ kiện" />
+                      }
+                    />
+                    <Route path="sale/*" element={<CategoryPage />} />
+                    <Route path="moi/*" element={<CategoryPage />} />
 
-                {/* Giỏ hàng và Thanh toán */}
-                <Route path="cart" element={<CartPage />} />
-                <Route path="thanh-toan" element={<CheckoutPage />} />
+                    {/* Giỏ hàng và Thanh toán */}
+                    <Route path="cart" element={<CartPage />} />
+                    <Route path="thanh-toan" element={<CheckoutPage />} />
 
-                {/* Tài khoản */}
-                <Route path="login" element={<LoginPage />} />
-                <Route path="register" element={<RegisterPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="wishlist" element={<WishlistPage />} />
-                <Route path="don-hang" element={<OrderHistoryPage />} />
-                <Route path="don-hang/:orderId" element={<OrderDetailPage />} />
-              </Route>
+                    {/* Tài khoản */}
+                    <Route path="login" element={<LoginPage />} />
+                    <Route path="register" element={<RegisterPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="wishlist" element={<WishlistPage />} />
+                    <Route path="don-hang" element={<OrderHistoryPage />} />
+                    <Route
+                      path="don-hang/:orderId"
+                      element={<OrderDetailPage />}
+                    />
+                  </Route>
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="dashboard" element={<AdminDashboard />} />
-                <Route path="products" element={<ProductManagement />} />
-                <Route path="products/add" element={<AddProductPage />} />
-                <Route path="products/edit/:id" element={<AddProductPage />} />
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="products" element={<ProductManagement />} />
+                    <Route path="products/add" element={<AddProductPage />} />
+                    <Route
+                      path="products/edit/:id"
+                      element={<AddProductPage />}
+                    />
 
-                <Route path="categories" element={<CategoryManagementPage />} />
+                    <Route
+                      path="categories"
+                      element={<CategoryManagementPage />}
+                    />
 
-                <Route path="banners" element={<BannerManagementPage />} />
-                <Route path="banners/add" element={<AddEditBannerPage />} />
-                <Route
-                  path="banners/edit/:id"
-                  element={<AddEditBannerPage />}
-                />
-                {/* Thêm các route Admin khác ở đây */}
-              </Route>
-            </Routes>
-          </div>
-        </FilterProvider>
-      </CartProvider>
+                    {/* Thêm các route Admin khác ở đây */}
+                  </Route>
+                </Routes>
+              </div>
+            </FilterProvider>
+          </CartProvider>
+        </AuthProvider>
+      </AxiosProvider>
     </Router>
   );
 };
