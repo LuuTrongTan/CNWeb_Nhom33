@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authAPI from '../api/authAPI';
+import { googleLogin } from '../services/auth.service';
 
 // Khởi tạo context
 const AuthContext = createContext();
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }) => {
 
   // Đăng nhập
   const login = async (email, password) => {
+    console.log("context: Đăng nhập với email:", email);
     setLoading(true);
     setError(null);
     
@@ -78,11 +80,24 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     
     try {
-      await authAPI.logout();
+      // Xóa dữ liệu local trước khi gọi API
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
       setCurrentUser(null);
+      
+      // Gọi API đăng xuất sau khi đã xóa dữ liệu local
+      try {
+        await authAPI.logout();
+      } catch (err) {
+        console.error("Lỗi khi gọi API đăng xuất:", err);
+        // Không cần xử lý gì thêm vì đã xóa dữ liệu local
+      }
+      
+      // Chuyển hướng về trang chủ
+      window.location.href = '/';
     } catch (err) {
       console.error("Đăng xuất lỗi:", err);
-      // Vẫn xóa dữ liệu người dùng ở client ngay cả khi API lỗi
       setCurrentUser(null);
     } finally {
       setLoading(false);
@@ -114,6 +129,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Đăng nhập bằng Google
+  const loginWithGoogle = async (token) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const data = await googleLogin(token);
+      setCurrentUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.tokens.access.token);
+      localStorage.setItem('refreshToken', data.tokens.refresh.token);
+      return data;
+    } catch (err) {
+      setError(err.response?.data?.message || "Đăng nhập Google thất bại");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Các giá trị được chia sẻ qua context
   const value = {
     currentUser,
@@ -123,6 +158,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUserInfo,
+    loginWithGoogle,
     isAuthenticated: !!currentUser
   };
 

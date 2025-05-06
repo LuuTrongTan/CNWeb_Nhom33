@@ -61,7 +61,7 @@ const ReviewList = ({ productId }) => {
     }
 
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       
       // Kiểm tra xem user đã thích review này chưa
       const review = reviews.find((r) => r._id === reviewId);

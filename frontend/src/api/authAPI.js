@@ -1,11 +1,10 @@
 import axios from 'axios';
-import { API_URL } from '../config/constants';
 
 const authAPI = {
   // Đăng ký tài khoản mới
   register: async (userData) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
+      const response = await axios.post('/auth/register', userData);
       
       if (response.data && response.data.tokens && response.data.user) {
         // Lưu token và thông tin người dùng vào localStorage
@@ -23,7 +22,7 @@ const authAPI = {
   // Đăng nhập
   login: async (email, password) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const response = await axios.post('/auth/login', { email, password });
       
       if (response.data && response.data.tokens && response.data.user) {
         // Lưu token và thông tin người dùng vào localStorage
@@ -44,7 +43,12 @@ const authAPI = {
       const refreshToken = localStorage.getItem('refreshToken');
       
       if (refreshToken) {
-        await axios.post(`${API_URL}/auth/logout`, { refreshToken });
+        try {
+          await axios.post('/auth/logout', { refreshToken });
+        } catch (error) {
+          console.error("Lỗi khi gọi API đăng xuất:", error);
+          // Không throw error ở đây vì chúng ta vẫn muốn xóa dữ liệu local
+        }
       }
       
       // Xóa thông tin người dùng khỏi localStorage
@@ -54,12 +58,12 @@ const authAPI = {
       
       return true;
     } catch (error) {
-      // Đảm bảo xóa dữ liệu local ngay cả khi API lỗi
+      // Đảm bảo xóa dữ liệu local ngay cả khi có lỗi khác
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       
-      throw error;
+      return true; // Trả về true vì chúng ta đã xóa dữ liệu local thành công
     }
   },
 
@@ -93,7 +97,7 @@ const authAPI = {
         throw new Error('Không có refresh token');
       }
       
-      const response = await axios.post(`${API_URL}/auth/refresh-tokens`, { refreshToken });
+      const response = await axios.post('/auth/refresh-tokens', { refreshToken });
       
       if (response.data && response.data.access) {
         localStorage.setItem('token', response.data.access.token);
@@ -111,7 +115,7 @@ const authAPI = {
   // Quên mật khẩu
   forgotPassword: async (email) => {
     try {
-      await axios.post(`${API_URL}/auth/forgot-password`, { email });
+      await axios.post('/auth/forgot-password', { email });
       return true;
     } catch (error) {
       throw error;
@@ -121,7 +125,7 @@ const authAPI = {
   // Đặt lại mật khẩu
   resetPassword: async (token, newPassword) => {
     try {
-      await axios.post(`${API_URL}/auth/reset-password?token=${token}`, { 
+      await axios.post(`/auth/reset-password?token=${token}`, { 
         password: newPassword 
       });
       return true;

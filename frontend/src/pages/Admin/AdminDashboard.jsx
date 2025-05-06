@@ -27,7 +27,7 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Chưa đăng nhập');
       }

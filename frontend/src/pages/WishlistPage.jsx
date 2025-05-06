@@ -19,7 +19,7 @@ const WishlistPage = () => {
   const fetchWishlist = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       
       if (!token) {
         setError('Vui lòng đăng nhập để xem danh sách yêu thích');
@@ -44,7 +44,7 @@ const WishlistPage = () => {
 
   const handleRemoveFromWishlist = async (productId) => {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       
       await axios.delete(`/wishlist/${productId}`, {
         headers: {

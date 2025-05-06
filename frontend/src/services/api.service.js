@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 // Create axios instance
 const apiClient = axios.create({
@@ -37,9 +37,12 @@ apiClient.interceptors.response.use(
       const { status, data } = error.response;
       
       // Handle authentication errors
-      if (status === 401) {
+      if (status === 401 || status === 403) {
         // If token expired or invalid, clear local storage
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        // Redirect to login page
+        window.location.href = '/login';
       }
       
       errorMessage = data.message || `Error: ${status}`;
