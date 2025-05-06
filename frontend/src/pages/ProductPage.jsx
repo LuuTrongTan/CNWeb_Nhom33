@@ -344,20 +344,23 @@ const ProductPage = () => {
           ) : (
             <div>
               <div className={`products-${viewMode}`}>
-                {products.map((product) => (
+                {products.map((product) => {
+                  console.log("product: ", product);
+                  
+                  return(
                   <ProductCard
                     key={product.id}
                     product={{
                       _id: product.id,
                       name: product.name,
                       price: product.price,
-                      images: [product.image],
+                      images: product.images ? [product.images[0]] : [],
                       category: product.tagCategory,
                       isNew: product.id % 3 === 0,
                       discount: product.id % 2 === 0 ? 20 : 0,
                     }}
                   />
-                ))}
+                )})}
               </div>
               {/* Phân trang */}
               {totalPage > 1 && (

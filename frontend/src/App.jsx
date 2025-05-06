@@ -58,8 +58,8 @@ const App = () => {
                 <Route path="moi/*" element={<CategoryPage />} />
                 
                 {/* Giỏ hàng và Thanh toán */}
-                <Route path="gio-hang" element={<CartPage />} />
-                <Route path="thanh-toan" element={<CheckoutPage />} />
+                <Route path="cart" element={<CartPage />} />
+                <Route path="checkout" element={<CheckoutPage />} />
                 
                 {/* Tài khoản */}
                 <Route path="login" element={<LoginPage />} />
