@@ -46,7 +46,7 @@ export const getProductsByCategory = async (
 };
 
 // Hàm lấy sản phẩm liên quan
-export const getRelatedProducts = async (productId, limit = 4) => {
+export const getRelatedProducts = async (productId, limit = 8) => {
   try {
     const response = await axios.get(`${API_URL}/product/getRelated`, {
       params: { productId, limit },
@@ -65,7 +65,11 @@ export const getProductFilter = async (
   minPrice,
   maxPrice,
   page,
-  searchTerm
+  searchTerm,
+  sortBy,
+  sortOrder,
+  isFeatured,
+  tagCategory
 ) => {
   try {
     const response = await axios.post(`${API_URL}/product/searchProducts`, {
@@ -76,6 +80,10 @@ export const getProductFilter = async (
       maxPrice: maxPrice !== undefined ? maxPrice : 10000000,
       page: Math.max(1, page ?? 1),
       searchTerm: searchTerm ?? "",
+      sortBy: sortBy ?? "createdAt",
+      sortOrder: sortOrder ?? "desc",
+      isFeatured: isFeatured ?? null,
+      tagCategory: tagCategory ?? "",
     });
     return response.data;
   } catch (error) {

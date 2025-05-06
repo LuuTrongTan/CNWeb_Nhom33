@@ -6,12 +6,6 @@ const { Schema } = mongoose;
 // Define the Picture schema
 const pictureSchema = new Schema(
   {
-    productId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true,
-      index: true,
-    },
     link: {
       type: String,
       required: true,

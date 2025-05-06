@@ -10,7 +10,15 @@ const createCategory = catchAsync(async (req, res) => {
 });
 
 const getAllCategory = catchAsync(async (req, res) => {
-  const category = await categoryService.getAllCategories();
+  const isActiveParam = req.query.isActive;
+  let isActive;
+
+  if (isActiveParam === 'true') {
+    isActive = true;
+  } else if (isActiveParam === 'false') {
+    isActive = false;
+  }
+  const category = await categoryService.getAllCategories({ isActive });
   if (!category) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
   }

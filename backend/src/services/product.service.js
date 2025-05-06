@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
-const { Product } = require('../models');
+const { Product, Picture } = require('../models');
 const ApiError = require('../utils/ApiError');
+const pictureService = require('./picture.service');
 
 /**
  * Tạo mới sản phẩm
@@ -25,18 +26,13 @@ const searchProducts = async (options = {}) => {
     tagCategory,
     minPrice,
     maxPrice,
-    hasDiscount,
-    isActive,
     isNewArrival,
     isFeatured,
     isBestSeller,
     sortBy = 'createdAt',
     sortOrder = 'desc',
-    includeOutOfStock = false,
     colors = [],
     sizes = [],
-    brands = [],
-    tags = [],
   } = options;
 
   const query = {};
@@ -68,34 +64,19 @@ const searchProducts = async (options = {}) => {
     if (maxPrice !== undefined) query.price.$lte = maxPrice;
   }
 
-  // Lọc theo trạng thái giảm giá
-  if (hasDiscount !== undefined) {
-    query.hasDiscount = hasDiscount;
-  }
-
-  // Lọc theo trạng thái kích hoạt
-  if (isActive !== undefined) {
-    query.isActive = isActive;
-  }
-
   // Lọc theo trạng thái mới nhất
   if (isNewArrival !== undefined) {
     query.isNewArrival = isNewArrival;
   }
 
   // Lọc theo trạng thái nổi bật
-  if (isFeatured !== undefined) {
+  if (typeof isFeatured === 'boolean') {
     query.isFeatured = isFeatured;
   }
 
   // Lọc theo trạng thái bán chạy
   if (isBestSeller !== undefined) {
     query.isBestSeller = isBestSeller;
-  }
-
-  // Lọc theo tình trạng kho hàng
-  if (!includeOutOfStock) {
-    query.stock = { $gt: 0 };
   }
 
   // Lọc theo màu sắc
@@ -106,16 +87,6 @@ const searchProducts = async (options = {}) => {
   // Lọc theo kích thước
   if (sizes && sizes.length > 0) {
     query.sizes = { $all: sizes };
-  }
-
-  // Lọc theo thương hiệu
-  if (brands && brands.length > 0) {
-    query.brand = { $in: brands };
-  }
-
-  // Lọc theo tags
-  if (tags && tags.length > 0) {
-    query.tags = { $in: tags };
   }
 
   // Sắp xếp
@@ -168,25 +139,13 @@ const searchProducts = async (options = {}) => {
  * @param {number} limit - Số lượng mỗi trang
  * @returns {Promise<Object>} Danh sách sản phẩm và thông tin phân trang
  */
-const getAllProducts = async (page = 1, limit = 12) => {
-  page = parseInt(page);
-  limit = parseInt(limit);
-
-  if (page < 1) page = 1;
-
-  const products = await Product.find({ isActive: true })
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .populate('category', 'name slug');
+const getAllProducts = async () => {
+  const products = await Product.find({ isActive: true }).sort({ createdAt: -1 });
 
   const total = await Product.countDocuments({ isActive: true });
 
   return {
-    page,
-    limit,
     total,
-    totalPages: Math.ceil(total / limit),
     data: products,
   };
 };
@@ -244,7 +203,7 @@ const getProductBySlug = async (slug) => {
  * @param {number} limit - Số lượng sản phẩm liên quan
  * @returns {Promise<Product[]>} Danh sách sản phẩm liên quan
  */
-const getRelatedProducts = async (productId, limit = 4) => {
+const getRelatedProducts = async (productId, limit = 8) => {
   const product = await getProductById(productId);
 
   if (!product) {
@@ -260,7 +219,7 @@ const getRelatedProducts = async (productId, limit = 4) => {
   })
     .sort({ soldCount: -1, rating: -1 })
     .limit(limit)
-    .select('name price images slug hasDiscount discountPrice');
+    .select('name price images slug hasDiscount discountPrice tagCategory rating isNewArrival');
 
   return relatedProducts;
 };
@@ -278,8 +237,7 @@ const getFeaturedProducts = async (limit = 8) => {
   })
     .sort({ createdAt: -1 })
     .limit(limit)
-    .select('name price images slug hasDiscount discountPrice rating')
-    .populate('category', 'name slug');
+    .select('name price images slug hasDiscount discountPrice rating isNewArrival');
 };
 
 /**
@@ -351,11 +309,23 @@ const deleteProductById = async (productId) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy sản phẩm');
   }
 
-  // Thay vì xóa vĩnh viễn, có thể đánh dấu sản phẩm là không hoạt động
-  // product.isActive = false;
-  // await product.save();
+  // Xử lý xóa ảnh nếu có
+  if (product.images && product.images.length > 0) {
+    for (const imageUrl of product.images) {
+      const picture = await Picture.findOne({ link: imageUrl });
+      if (picture) {
+        try {
+          await pictureService.deletePictureById(picture.id);
+        } catch (err) {
+          console.error(`Lỗi khi xóa ảnh từ Cloudinary (${imageUrl}):`, err.message);
+        }
+      } else {
+        console.warn(`Không tìm thấy ảnh với URL: ${imageUrl}`);
+      }
+    }
+  }
 
-  // Hoặc xóa vĩnh viễn nếu cần
+  // Xóa sản phẩm
   await product.deleteOne();
   return product;
 };

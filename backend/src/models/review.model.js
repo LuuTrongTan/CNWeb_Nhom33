@@ -36,19 +36,9 @@ const reviewSchema = mongoose.Schema(
         trim: true,
       },
     ],
-    likes: {
-      type: Number,
-      default: 0,
-    },
-    likedBy: [
-      {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'User',
-      },
-    ],
     verified: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {
