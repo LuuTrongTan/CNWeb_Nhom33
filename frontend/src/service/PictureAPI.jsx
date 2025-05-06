@@ -10,7 +10,10 @@ export const uploadPictures = async (imageFiles) => {
 
   try {
     const response = await axios.post(`${API_URL}/picture`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
     });
 
     if (!response) {

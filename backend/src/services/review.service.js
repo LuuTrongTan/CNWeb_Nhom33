@@ -1,7 +1,8 @@
 const httpStatus = require('http-status');
-const { Review } = require('../models');
+const { Review, Picture } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { productService } = require('./index');
+const pictureService = require('./picture.service');
 
 /**
  * Create a review
@@ -20,10 +21,10 @@ const createReview = async (reviewBody) => {
   }
 
   const review = await Review.create(reviewBody);
-  
+
   // Cập nhật đánh giá trung bình của sản phẩm
   await updateProductAverageRating(reviewBody.product);
-  
+
   return review;
 };
 
@@ -44,16 +45,16 @@ const getReviewById = async (id) => {
  */
 const getProductReviews = async (productId, options) => {
   const { page, limit, sort } = options;
-  
+
   const reviews = await Review.find({ product: productId })
     .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)
     .populate('user', 'name avatar')
     .exec();
-    
+
   const total = await Review.countDocuments({ product: productId });
-  
+
   return {
     results: reviews,
     page,
@@ -71,16 +72,16 @@ const getProductReviews = async (productId, options) => {
  */
 const getUserReviews = async (userId, options) => {
   const { page, limit, sort } = options;
-  
+
   const reviews = await Review.find({ user: userId })
     .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)
     .populate('product', 'name images price')
     .exec();
-    
+
   const total = await Review.countDocuments({ user: userId });
-  
+
   return {
     results: reviews,
     page,
@@ -96,18 +97,22 @@ const getUserReviews = async (userId, options) => {
  * @param {Object} updateBody
  * @returns {Promise<Review>}
  */
-const updateReview = async (reviewId, updateBody) => {
+const updateReview = async (reviewId, updateBody, userId) => {
   const review = await getReviewById(reviewId);
   if (!review) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
   }
-  
+
+  if (review.user.toString() !== userId.toString()) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền chỉnh sửa đánh giá này');
+  }
+
   Object.assign(review, updateBody);
   await review.save();
-  
+
   // Cập nhật đánh giá trung bình của sản phẩm
   await updateProductAverageRating(review.product);
-  
+
   return review;
 };
 
@@ -116,67 +121,39 @@ const updateReview = async (reviewId, updateBody) => {
  * @param {ObjectId} reviewId
  * @returns {Promise<Review>}
  */
-const deleteReview = async (reviewId) => {
+const deleteReview = async (reviewId, userId) => {
   const review = await getReviewById(reviewId);
   if (!review) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
   }
-  
+
+  if (review.user.toString() !== userId.toString()) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền xóa đánh giá này');
+  }
   const productId = review.product;
-  
-  await review.remove();
-  
+
+  await Review.findByIdAndDelete(reviewId);
+
+  // Xử lý xóa ảnh nếu có
+  if (review.images && review.images.length > 0) {
+    for (const imageUrl of review.images) {
+      const picture = await Picture.findOne({ link: imageUrl });
+      if (picture) {
+        try {
+          await pictureService.deletePictureById(picture.id);
+          console.log('Xóa thành công');
+        } catch (err) {
+          console.error(`Lỗi khi xóa ảnh từ Cloudinary (${imageUrl}):`, err.message);
+        }
+      } else {
+        console.warn(`Không tìm thấy ảnh với URL: ${imageUrl}`);
+      }
+    }
+  }
+
   // Cập nhật đánh giá trung bình của sản phẩm
   await updateProductAverageRating(productId);
-  
-  return review;
-};
 
-/**
- * Like a review
- * @param {ObjectId} reviewId
- * @param {ObjectId} userId
- * @returns {Promise<Review>}
- */
-const likeReview = async (reviewId, userId) => {
-  const review = await getReviewById(reviewId);
-  if (!review) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
-  }
-  
-  // Kiểm tra nếu người dùng đã thích đánh giá này rồi
-  if (review.likedBy.includes(userId)) {
-    return review;
-  }
-  
-  review.likes += 1;
-  review.likedBy.push(userId);
-  await review.save();
-  
-  return review;
-};
-
-/**
- * Unlike a review
- * @param {ObjectId} reviewId
- * @param {ObjectId} userId
- * @returns {Promise<Review>}
- */
-const unlikeReview = async (reviewId, userId) => {
-  const review = await getReviewById(reviewId);
-  if (!review) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
-  }
-  
-  // Kiểm tra nếu người dùng chưa thích đánh giá này
-  if (!review.likedBy.includes(userId)) {
-    return review;
-  }
-  
-  review.likes -= 1;
-  review.likedBy = review.likedBy.filter((id) => id.toString() !== userId.toString());
-  await review.save();
-  
   return review;
 };
 
@@ -187,15 +164,15 @@ const unlikeReview = async (reviewId, userId) => {
  */
 const updateProductAverageRating = async (productId) => {
   const reviews = await Review.find({ product: productId });
-  
+
   if (reviews.length === 0) {
     await productService.updateProductById(productId, { rating: 0, numReviews: 0 });
     return;
   }
-  
+
   const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
   const averageRating = totalRating / reviews.length;
-  
+
   await productService.updateProductById(productId, {
     rating: averageRating,
     numReviews: reviews.length,
@@ -209,6 +186,4 @@ module.exports = {
   getUserReviews,
   updateReview,
   deleteReview,
-  likeReview,
-  unlikeReview,
 };

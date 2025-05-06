@@ -1,25 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar } from '@fortawesome/free-solid-svg-icons';
-import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
-import axios from 'axios';
-import './ReviewForm.css';
+import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
+import axios from "axios";
+import "./ReviewForm.css";
+import {
+  createReview,
+  getReviewByProduct,
+  getReviewById,
+  deleteCategoryById,
+} from "../../service/ReviewAPI"; // Import API functions
+
+import { uploadPictures, deletePicture } from "../../service/PictureAPI"; // Import API functions
 
 const ReviewForm = ({ productId, onReviewSubmitted }) => {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
-  const [title, setTitle] = useState('');
-  const [comment, setComment] = useState('');
+  const [title, setTitle] = useState("");
+  const [comment, setComment] = useState("");
   const [images, setImages] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [userAuth, setUserAuth] = useState(null);
 
   // Kiểm tra user đã đăng nhập chưa
   useEffect(() => {
-    const user = localStorage.getItem('user');
+    const user = localStorage.getItem("user");
     if (user) {
       setUserAuth(JSON.parse(user));
     }
@@ -27,150 +35,153 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Giới hạn số lượng file
     if (files.length + imageFiles.length > 5) {
-      setError('Bạn chỉ có thể tải lên tối đa 5 ảnh');
+      setError("Bạn chỉ có thể tải lên tối đa 5 ảnh");
       return;
     }
-    
+
     // Kiểm tra kích thước và định dạng file
-    const validFiles = files.filter(file => {
+    const validFiles = files.filter((file) => {
       const isValidSize = file.size <= 2 * 1024 * 1024; // 2MB
-      const isValidType = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'].includes(file.type);
-      
+      const isValidType = [
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+        "image/webp",
+      ].includes(file.type);
+
       if (!isValidSize) {
-        setError('Kích thước ảnh không được vượt quá 2MB');
+        setError("Kích thước ảnh không được vượt quá 2MB");
       }
-      
+
       if (!isValidType) {
-        setError('Chỉ chấp nhận file ảnh định dạng JPEG, PNG, WEBP');
+        setError("Chỉ chấp nhận file ảnh định dạng JPEG, PNG, WEBP");
       }
-      
+
       return isValidSize && isValidType;
     });
-    
+
     if (validFiles.length === 0) return;
-    
+
     // Tạo URL hiển thị ảnh preview
-    const newImagePreviews = validFiles.map(file => URL.createObjectURL(file));
-    
-    setImages(prevImages => [...prevImages, ...newImagePreviews]);
-    setImageFiles(prevFiles => [...prevFiles, ...validFiles]);
-    
+    const newImagePreviews = validFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    setImages((prevImages) => [...prevImages, ...newImagePreviews]);
+    setImageFiles((prevFiles) => [...prevFiles, ...validFiles]);
+
     // Reset error nếu thành công
-    setError('');
+    setError("");
   };
 
   const removeImage = (index) => {
     const newImages = [...images];
     const newImageFiles = [...imageFiles];
-    
+
     // Xóa URL để tránh memory leak
     URL.revokeObjectURL(images[index]);
-    
+
     newImages.splice(index, 1);
     newImageFiles.splice(index, 1);
-    
+
     setImages(newImages);
     setImageFiles(newImageFiles);
   };
 
   const uploadImages = async () => {
     if (imageFiles.length === 0) return [];
-    
+
     const uploadPromises = imageFiles.map(async (file) => {
       // Tạo form data để upload file
       const formData = new FormData();
-      formData.append('file', file);
-      
+      formData.append("file", file);
+
       try {
-        const token = localStorage.getItem('accessToken');
-        const response = await axios.post('/upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        return response.data.url;
+        const response = await uploadPictures(formData);
+
+        console.log("Upload thành công:", response);
+        return response[0].link;
       } catch (err) {
-        console.error('Lỗi khi tải ảnh lên:', err);
-        throw new Error('Không thể tải ảnh lên');
+        console.error("Lỗi khi tải ảnh lên:", err);
+        throw new Error("Không thể tải ảnh lên");
       }
     });
-    
+
     return Promise.all(uploadPromises);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!userAuth) {
-      setError('Vui lòng đăng nhập để gửi đánh giá');
+      setError("Vui lòng đăng nhập để gửi đánh giá");
       return;
     }
-    
+
     if (rating === 0) {
-      setError('Vui lòng chọn số sao đánh giá');
+      setError("Vui lòng chọn số sao đánh giá");
       return;
     }
-    
+
     if (!comment.trim()) {
-      setError('Vui lòng nhập nội dung đánh giá');
+      setError("Vui lòng nhập nội dung đánh giá");
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
-      setError('');
-      
+      setError("");
+
       // Upload ảnh nếu có
       let imageUrls = [];
       if (imageFiles.length > 0) {
         imageUrls = await uploadImages();
       }
-      
+
       // Gửi đánh giá
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       const reviewData = {
+        user: userAuth.id,
         product: productId,
         rating,
         title: title.trim() || `Đánh giá ${rating} sao`,
         comment,
-        images: imageUrls
+        images: imageUrls,
       };
-      
-      await axios.post(`/product/${productId}/reviews`, reviewData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
+
+      const response = await createReview(reviewData);
+      console.log("Đánh giá đã gửi:", response);
+
       // Reset form
       setRating(0);
       setHover(0);
-      setTitle('');
-      setComment('');
+      setTitle("");
+      setComment("");
       setImages([]);
       setImageFiles([]);
-      
+
       // Hiển thị thông báo thành công
-      setSuccess('Cảm ơn bạn đã gửi đánh giá!');
-      
+      setSuccess("Cảm ơn bạn đã gửi đánh giá!");
+
       // Gọi callback để refresh danh sách đánh giá
       if (onReviewSubmitted) {
         onReviewSubmitted();
       }
-      
+
       // Ẩn thông báo thành công sau 3 giây
       setTimeout(() => {
-        setSuccess('');
+        setSuccess("");
       }, 3000);
     } catch (err) {
-      console.error('Lỗi khi gửi đánh giá:', err);
-      setError(err.response?.data?.message || 'Không thể gửi đánh giá. Vui lòng thử lại sau.');
+      console.error("Lỗi khi gửi đánh giá:", err);
+      setError(
+        err.response?.data?.message ||
+          "Không thể gửi đánh giá. Vui lòng thử lại sau."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -180,7 +191,9 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
     return (
       <div className="review-form-login-required">
         <h4>Viết đánh giá của bạn</h4>
-        <p>Vui lòng <a href="/login">đăng nhập</a> để gửi đánh giá</p>
+        <p>
+          Vui lòng <a href="/login">đăng nhập</a> để gửi đánh giá
+        </p>
       </div>
     );
   }
@@ -188,10 +201,10 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
   return (
     <div className="review-form">
       <h4>Viết đánh giá của bạn</h4>
-      
+
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Đánh giá của bạn</label>
@@ -218,7 +231,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
             })}
           </div>
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="title">Tiêu đề (không bắt buộc)</label>
           <input
@@ -230,7 +243,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
             maxLength="100"
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="comment">Nội dung đánh giá</label>
           <textarea
@@ -243,7 +256,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
             required
           ></textarea>
         </div>
-        
+
         <div className="form-group">
           <label>Thêm hình ảnh (không bắt buộc)</label>
           <div className="image-upload-container">
@@ -260,15 +273,15 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
             </label>
             <small>Tối đa 5 ảnh, mỗi ảnh không quá 2MB</small>
           </div>
-          
+
           {images.length > 0 && (
             <div className="image-previews">
               {images.map((image, index) => (
                 <div key={index} className="image-preview">
                   <img src={image} alt={`Preview ${index}`} />
-                  <button 
-                    type="button" 
-                    className="remove-image" 
+                  <button
+                    type="button"
+                    className="remove-image"
                     onClick={() => removeImage(index)}
                   >
                     ×
@@ -278,17 +291,17 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
             </div>
           )}
         </div>
-        
-        <button 
-          type="submit" 
-          className="submit-review-btn" 
+
+        <button
+          type="submit"
+          className="submit-review-btn"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
+          {isSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
         </button>
       </form>
     </div>
   );
 };
 
-export default ReviewForm; 
+export default ReviewForm;
