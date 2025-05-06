@@ -15,7 +15,7 @@ export const FilterProvider = ({ children }) => {
 
   const resetFilters = () => {
     setSelectedFilter({
-      category: null,
+      category: {},
       sizes: [],
       color: "",
       price: { min: 0, max: 10000000 },

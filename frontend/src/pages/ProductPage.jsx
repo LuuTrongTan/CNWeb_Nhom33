@@ -140,7 +140,7 @@ const ProductPage = ({ tagCategory }) => {
     if (filterType === "category") {
       setSelectedFilter((prev) => ({
         ...prev,
-        category: null,
+        category: {},
       }));
     } else if (filterType === "size") {
       setSelectedFilter((prev) => ({
@@ -408,22 +408,24 @@ const ProductPage = ({ tagCategory }) => {
           ) : (
             <div>
               <div className={`products-${viewMode}`}>
-                {products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={{
-                      _id: product.id,
-                      name: product.name,
-                      price: product.price,
-                      mainImage: product.mainImage,
-                      images: [product.images],
-                      category: product.tagCategory,
-                      isNew: product.id % 3 === 0,
-                      discount: product.id % 2 === 0 ? 20 : 0,
-                      tagCategory: tagCategory,
-                    }}
-                  />
-                ))}
+                {products.map((product) => {
+                  return (
+                    <ProductCard
+                      key={product.id}
+                      product={{
+                        _id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        mainImage: product.mainImage,
+                        images: [product.images],
+                        category: product.tagCategory,
+                        isNew: product.id % 3 === 0,
+                        discount: product.id % 2 === 0 ? 20 : 0,
+                        tagCategory: tagCategory,
+                      }}
+                    />
+                  );
+                })}
               </div>
               {/* Phân trang */}
               {totalPage > 1 && (

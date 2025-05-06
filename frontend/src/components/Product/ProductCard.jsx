@@ -98,11 +98,19 @@ const ProductCard = ({ product }) => {
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
+    console.log({
+      id: _id,
+      name,
+      price: discountedPrice,
+      image: images[0],
+      quantity: 1,
+    });
 
     addToCart({
       id: _id,
       name,
       price: discountedPrice,
+      images,
       image: images[0],
       quantity: 1,
     });

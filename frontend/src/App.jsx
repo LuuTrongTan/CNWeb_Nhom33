@@ -29,8 +29,6 @@ import OrderDetailPage from "./pages/User/OrderDetailPage";
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import ProductManagement from "./pages/Admin/ProductManagement";
-import BannerManagementPage from "./pages/Admin/BannerManagementPage";
-import AddEditBannerPage from "./pages/Admin/AddEditBannerPage";
 import AdminLayout from "./components/Layout/AdminLayout";
 import AddProductPage from "./pages/Admin/AddProductPage";
 import CategoryManagementPage from "./pages/Admin/CategoryManagementPage";
@@ -141,12 +139,6 @@ const App = () => {
                       element={<CategoryManagementPage />}
                     />
 
-                    <Route path="banners" element={<BannerManagementPage />} />
-                    <Route path="banners/add" element={<AddEditBannerPage />} />
-                    <Route
-                      path="banners/edit/:id"
-                      element={<AddEditBannerPage />}
-                    />
                     {/* Thêm các route Admin khác ở đây */}
                   </Route>
                 </Routes>

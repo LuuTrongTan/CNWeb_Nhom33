@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "../styles/css/CheckoutPage.css";
 
 const CheckoutPage = () => {
     const { cart, calculateTotal, applyDiscount, setShippingFee } = useCart();
@@ -20,7 +21,6 @@ const CheckoutPage = () => {
 
     const handleCheckout = async () => {
         try {
-            // Kiểm tra thông tin
             if (!shippingInfo.name || !shippingInfo.address || !shippingInfo.phone) {
                 alert("Vui lòng điền đầy đủ thông tin giao hàng!");
                 return;
@@ -33,7 +33,6 @@ const CheckoutPage = () => {
             });
             
             alert("Đặt hàng thành công!");
-            // Chuyển về trang chủ và làm mới giỏ hàng
             navigate("/");
         } catch (err) {
             alert("Lỗi khi đặt hàng: " + err.message);
@@ -42,9 +41,9 @@ const CheckoutPage = () => {
 
     if (cart.length === 0) {
         return (
-            <div className="empty-cart p-6 max-w-4xl mx-auto text-center">
-                <h1 className="text-2xl font-bold mb-4">Giỏ hàng trống</h1>
-                <button onClick={() => navigate("/")} className="back-to-shop px-4 py-2 bg-blue-500 text-white rounded">
+            <div className="checkout-empty">
+                <h1>Giỏ hàng trống</h1>
+                <button onClick={() => navigate("/")} className="checkout-back-btn">
                     Quay lại mua sắm
                 </button>
             </div>
@@ -52,17 +51,17 @@ const CheckoutPage = () => {
     }
 
     return (
-        <div className="checkout-container p-6 max-w-4xl mx-auto bg-white shadow-lg rounded-lg">
-            <h1 className="text-2xl font-bold mb-4">Thanh toán</h1>
+        <div className="checkout-wrapper">
+            <h1 className="checkout-title">Thanh toán</h1>
             
-            <div className="shipping-info mb-6">
-                <h2 className="text-lg font-semibold mb-2">Thông tin giao hàng</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="checkout-section">
+                <h2>Thông tin giao hàng</h2>
+                <div className="checkout-grid">
                     <input 
                         type="text" 
                         name="name" 
                         placeholder="Họ tên" 
-                        className="input-field border p-2 rounded"
+                        className="checkout-input"
                         value={shippingInfo.name}
                         onChange={handleInputChange} 
                     />
@@ -70,7 +69,7 @@ const CheckoutPage = () => {
                         type="text" 
                         name="phone" 
                         placeholder="Số điện thoại" 
-                        className="input-field border p-2 rounded"
+                        className="checkout-input"
                         value={shippingInfo.phone}
                         onChange={handleInputChange} 
                     />
@@ -78,7 +77,7 @@ const CheckoutPage = () => {
                         type="email" 
                         name="email" 
                         placeholder="Email" 
-                        className="input-field border p-2 rounded"
+                        className="checkout-input checkout-input-full"
                         value={shippingInfo.email}
                         onChange={handleInputChange} 
                     />
@@ -86,50 +85,56 @@ const CheckoutPage = () => {
                         type="text" 
                         name="address" 
                         placeholder="Địa chỉ" 
-                        className="input-field border p-2 rounded md:col-span-2"
+                        className="checkout-input checkout-input-full"
                         value={shippingInfo.address}
                         onChange={handleInputChange} 
                     />
                 </div>
             </div>
             
-            <div className="cart-summary mb-6">
-                <h2 className="text-lg font-semibold mb-2">Giỏ hàng của bạn</h2>
-                {cart.map(item => (
-                    <div key={item.id} className="cart-item flex items-center border-b py-2">
-                        <img src={item.image} alt={item.name} className="w-16 h-16 object-cover" />
-                        <div className="ml-4">
-                            <h3 className="font-medium">{item.name}</h3>
-                            <p>Số lượng: {item.quantity} x {item.price.toLocaleString()} VND</p>
+            <div className="checkout-section">
+                <h2>Giỏ hàng của bạn</h2>
+                <div className="checkout-cart-list">
+                    {cart.map(item => (
+                        <div key={item.id} className="checkout-cart-item">
+                            <img src={item.image} alt={item.name} className="checkout-cart-img" />
+                            <div className="checkout-cart-info">
+                                <h3>{item.name}</h3>
+                                <p>Số lượng: {item.quantity} x {item.price.toLocaleString()} VND</p>
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
-
-            <div className="discount-shipping mb-6">
-                <h2 className="text-lg font-semibold mb-2">Mã giảm giá & Vận chuyển</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input 
-                        type="text" 
-                        placeholder="Mã giảm giá" 
-                        className="discount-input border p-2 rounded" 
-                        onBlur={(e) => applyDiscount(e.target.value)} 
-                    />
-                    <input 
-                        type="number" 
-                        placeholder="Phí vận chuyển" 
-                        className="shipping-input border p-2 rounded" 
-                        defaultValue={0}
-                        onBlur={(e) => setShippingFee(parseInt(e.target.value) || 0)} 
-                    />
+                    ))}
                 </div>
             </div>
 
-            <div className="order-total text-right">
-                <h2 className="text-xl font-bold">Tổng tiền: {calculateTotal().toLocaleString()} VND</h2>
+            <div className="checkout-section">
+                <h2>Phí vận chuyển</h2>
+                
+                    <input 
+                        type="number" 
+                        placeholder="Phí vận chuyển" 
+                        className="checkout-input"
+                        defaultValue={0}
+                        onBlur={(e) => setShippingFee(parseInt(e.target.value) || 0)} 
+                    />
+                    <></>
+                <h2>Mã giảm giá</h2>
+                    <input 
+                        type="text" 
+                        placeholder="Mã giảm giá" 
+                        className="checkout-input"
+                        onBlur={(e) => applyDiscount(e.target.value)} 
+                    />
+                
+            </div>
+
+            <div className="checkout-footer">
+                <div className="checkout-total">
+                    Tổng tiền: <span>{calculateTotal().toLocaleString()} VND</span>
+                </div>
                 <button 
                     onClick={handleCheckout} 
-                    className="place-order-btn mt-4 px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                    className="checkout-order-btn"
                 >
                     Đặt hàng
                 </button>
