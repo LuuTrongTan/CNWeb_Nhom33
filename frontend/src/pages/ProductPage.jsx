@@ -100,6 +100,7 @@ const ProductPage = ({ tagCategory }) => {
   // //Lấy thêm sản phẩm
   const handleClickMoreProduct = async (pageNumber) => {
     try {
+      console.log("Dữ liệu sản phẩm:", selectedFilter);
       const response = await getProductFilter(
         selectedFilter.color,
         selectedFilter.category._id,
@@ -140,7 +141,7 @@ const ProductPage = ({ tagCategory }) => {
     if (filterType === "category") {
       setSelectedFilter((prev) => ({
         ...prev,
-        category: null,
+        category: {},
       }));
     } else if (filterType === "size") {
       setSelectedFilter((prev) => ({
