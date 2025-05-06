@@ -25,6 +25,7 @@ import SettingsPage from "./pages/Auth/SettingsPage";
 import WishlistPage from "./pages/WishlistPage";
 import OrderHistoryPage from "./pages/User/OrderHistoryPage";
 import OrderDetailPage from "./pages/User/OrderDetailPage";
+import OrderManagementPage from "./pages/Admin/OrderManagementPage";
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -35,6 +36,7 @@ import CategoryManagementPage from "./pages/Admin/CategoryManagementPage";
 
 // Styles
 import "./styles/css/App.css";
+import "./styles/css/Order/order.css";
 
 // Context Providers
 import { CartProvider } from "./context/CartContext";
@@ -108,7 +110,7 @@ const App = () => {
 
                     {/* Giỏ hàng và Thanh toán */}
                     <Route path="cart" element={<CartPage />} />
-                    <Route path="thanh-toan" element={<CheckoutPage />} />
+                    <Route path="checkout" element={<CheckoutPage />} />
 
                     {/* Tài khoản */}
                     <Route path="login" element={<LoginPage />} />
@@ -129,6 +131,7 @@ const App = () => {
                     <Route path="dashboard" element={<AdminDashboard />} />
                     <Route path="products" element={<ProductManagement />} />
                     <Route path="products/add" element={<AddProductPage />} />
+                    <Route path="orders" element={<OrderManagementPage />} />
                     <Route
                       path="products/edit/:id"
                       element={<AddProductPage />}
@@ -138,6 +141,9 @@ const App = () => {
                       path="categories"
                       element={<CategoryManagementPage />}
                     />
+
+                    {/* User Routes */}
+                    <Route path="orders" element={<OrderHistoryPage />} />
 
                     {/* Thêm các route Admin khác ở đây */}
                   </Route>

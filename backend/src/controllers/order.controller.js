@@ -7,10 +7,37 @@ const ApiError = require('../utils/ApiError');
  * Tạo đơn hàng mới
  */
 const createOrder = catchAsync(async (req, res) => {
+  // Kiểm tra dữ liệu đầu vào
+  const { items, shippingAddress, paymentMethod, totalItemsPrice, shippingPrice, taxPrice, discountPrice, notes } = req.body;
+  
+  if (!items || items.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Giỏ hàng không được trống');
+  }
+  
+  if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.address || 
+      !shippingAddress.city || !shippingAddress.district || !shippingAddress.ward || !shippingAddress.phone) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Thông tin giao hàng không đầy đủ');
+  }
+  
+  if (!paymentMethod) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Vui lòng chọn phương thức thanh toán');
+  }
+  
+  // Tạo đơn hàng
   const order = await orderService.createOrder({
-    ...req.body,
     user: req.user.id,
+    items,
+    shippingAddress,
+    paymentMethod,
+    totalItemsPrice: totalItemsPrice || 0,
+    shippingPrice: shippingPrice || 0,
+    taxPrice: taxPrice || 0,
+    discountPrice: discountPrice || 0,
+    notes: notes || '',
+    // Tính tổng tiền đơn hàng
+    totalPrice: (totalItemsPrice || 0) + (shippingPrice || 0) + (taxPrice || 0) - (discountPrice || 0),
   });
+  
   res.status(httpStatus.CREATED).send(order);
 });
 
@@ -81,6 +108,49 @@ const cancelOrder = catchAsync(async (req, res) => {
 });
 
 /**
+ * Cập nhật trạng thái đơn hàng
+ */
+const updateOrderStatus = catchAsync(async (req, res) => {
+  const { status } = req.body;
+  
+  if (!status) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Trạng thái đơn hàng không được để trống');
+  }
+  
+  const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+  if (!validStatuses.includes(status)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Trạng thái đơn hàng không hợp lệ');
+  }
+  
+  const order = await orderService.getOrderById(req.params.orderId);
+  
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đơn hàng');
+  }
+  
+  // Chỉ admin mới có quyền cập nhật trạng thái
+  if (req.user.role !== 'admin') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền cập nhật trạng thái đơn hàng');
+  }
+  
+  // Xử lý các trường hợp cập nhật đặc biệt
+  let updateData = { status };
+  
+  if (status === 'delivered' && !order.isDelivered) {
+    updateData.isDelivered = true;
+    updateData.deliveredAt = new Date();
+  }
+  
+  if (status === 'cancelled' && !order.cancelledAt) {
+    updateData.cancelledAt = new Date();
+  }
+  
+  const updatedOrder = await orderService.updateOrderById(req.params.orderId, updateData);
+  
+  res.send(updatedOrder);
+});
+
+/**
  * Lấy số liệu thống kê đơn hàng của người dùng
  */
 const getOrderStats = catchAsync(async (req, res) => {
@@ -94,4 +164,5 @@ module.exports = {
   getOrderById,
   cancelOrder,
   getOrderStats,
+  updateOrderStatus,
 }; 
