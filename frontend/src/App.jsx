@@ -19,6 +19,7 @@ import SettingsPage from './pages/Auth/SettingsPage';
 import WishlistPage from './pages/WishlistPage';
 import OrderHistoryPage from './pages/User/OrderHistoryPage';
 import OrderDetailPage from './pages/User/OrderDetailPage';
+import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
 
 // Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -68,6 +69,7 @@ const App = () => {
                     {/* Tài khoản */}
                     <Route path="login" element={<LoginPage />} />
                     <Route path="register" element={<RegisterPage />} />
+                    <Route path="forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="wishlist" element={<WishlistPage />} />
