@@ -35,6 +35,7 @@ import ProductManagement from "./pages/Admin/ProductManagement";
 import AdminLayout from "./components/Layout/AdminLayout";
 import AddProductPage from "./pages/Admin/AddProductPage";
 import CategoryManagementPage from "./pages/Admin/CategoryManagementPage";
+import OrderManagementPage from "./pages/Admin/OrderManagementPage";
 
 // Styles
 import "./styles/css/App.css";
