@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faEnvelope, faPhone, faShoppingBag, faEdit, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faEnvelope, faPhone, faShoppingBag, faEdit, faCamera, faLock } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import AvatarModal from '../../components/AvatarModal';
 import '../../styles/css/Auth/Profile.css';
@@ -199,29 +199,37 @@ const ProfilePage = () => {
             <p><FontAwesomeIcon icon={faEnvelope} /> {user.email}</p>
             {user.phone && <p><FontAwesomeIcon icon={faPhone} /> {user.phone}</p>}
             
-            {!editMode ? (
-              <button 
-                className="edit-profile-button"
-                onClick={() => setEditMode(true)}
-              >
-                <FontAwesomeIcon icon={faEdit} /> Chỉnh sửa thông tin
-              </button>
-            ) : (
-              <button 
-                className="cancel-edit-button"
-                onClick={() => {
-                  setEditMode(false);
-                  setFormData({
-                    name: user.name || '',
-                    phone: user.phone || '',
-                    address: user.address || ''
-                  });
-                  setError('');
-                }}
-              >
-                Hủy chỉnh sửa
-              </button>
-            )}
+            <div className="profile-actions">
+              {!editMode ? (
+                <button 
+                  className="edit-profile-button"
+                  onClick={() => setEditMode(true)}
+                >
+                  <FontAwesomeIcon icon={faEdit} /> Chỉnh sửa thông tin
+                </button>
+              ) : (
+                <button 
+                  className="cancel-edit-button"
+                  onClick={() => {
+                    setEditMode(false);
+                    setFormData({
+                      name: user.name || '',
+                      phone: user.phone || '',
+                      address: user.address || ''
+                    });
+                    setError('');
+                  }}
+                >
+                  Hủy chỉnh sửa
+                </button>
+              )}
+              
+              {user.authType === 'local' && (
+                <Link to="/change-password" className="change-password-button">
+                  <FontAwesomeIcon icon={faLock} /> Đổi mật khẩu
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 

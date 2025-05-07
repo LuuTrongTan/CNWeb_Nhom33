@@ -22,6 +22,8 @@ router.post('/send-verification-email', auth(), authController.sendVerificationE
 router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
 router.post('/google-login', validate(authValidation.googleLoginSchema) ,authController.googleAuth);
 
+// Thêm route thay đổi mật khẩu
+router.post('/change-password', auth(), validate(authValidation.changePassword), userController.changePassword);
 
 module.exports = router;
 

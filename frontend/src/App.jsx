@@ -20,6 +20,7 @@ import WishlistPage from './pages/WishlistPage';
 import OrderHistoryPage from './pages/User/OrderHistoryPage';
 import OrderDetailPage from './pages/User/OrderDetailPage';
 import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
+import ChangePasswordPage from './pages/Auth/ChangePasswordPage';
 
 // Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -71,6 +72,7 @@ const App = () => {
                     <Route path="register" element={<RegisterPage />} />
                     <Route path="forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="profile" element={<ProfilePage />} />
+                    <Route path="change-password" element={<ChangePasswordPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="wishlist" element={<WishlistPage />} />
                     <Route path="don-hang" element={<OrderHistoryPage />} />
