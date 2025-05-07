@@ -1,56 +1,89 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, Link } from 'react-router-dom';
-import { getProductsByCategory, getProductFilter } from '../service/productAPI';
-import { getAllCategory } from '../service/categoryAPI';
-import { useCart } from '../context/CartContext';
-import '../styles/css/CategoryPage.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter, faTimes, faSort, faChevronDown, faChevronUp, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFilter,
+  faHome,
+  faChevronRight,
+  faSort,
+  faSearch,
+  faTh,
+  faList,
+} from "@fortawesome/free-solid-svg-icons";
+import ProductCard from "../components/Product/ProductCard";
+import "../styles/css/ProductPage.css";
+import { getProductFilter } from "../service/productAPI"; // Import hàm fetchProducts từ productAPI
+
+import { FilterContext } from "../context/FilterContext"; // Import context filter nếu cần
 
 const CategoryPage = () => {
   const { pathname } = useLocation();
-  const categoryPath = pathname.split('/')[1]; // Lấy phần đầu tiên của đường dẫn (ví dụ: 'nu', 'nam', 'tre-em')
-  
+  const categoryPath = pathname.split("/")[1]; // Lấy phần đầu tiên của đường dẫn (ví dụ: 'nu', 'nam', 'tre-em')
+
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortBy, setSortBy] = useState("all");
+  const [showSortFilter, setShowSortFilter] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [showFilter, setShowFilter] = useState(false);
-  const { addToCart } = useCart();
+  const [viewMode, setViewMode] = useState("grid");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [totalProduct, setTotalProduct] = useState(0);
+  const [totalPage, setTotalPage] = useState(1);
+  const [pageNumbers, setPageNumbers] = useState([]);
+  const { selectedFilter, setSelectedFilter, resetFilters } =
+    useContext(FilterContext);
 
-  // Các state cho bộ lọc
-  const [priceRange, setPriceRange] = useState([0, 2000000]);
-  const [selectedSizes, setSelectedSizes] = useState([]);
-  const [selectedColors, setSelectedColors] = useState([]);
-  const [sortBy, setSortBy] = useState('-createdAt'); // Mặc định sắp xếp theo ngày tạo mới nhất
-  
-  const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-  const colors = ['Đen', 'Trắng', 'Đỏ', 'Xanh Navy', 'Xanh Lá', 'Vàng', 'Xám'];
+  const sortOptions = [
+    { id: "all", name: "Tất cả", sortBy: "createdAt", sortOrder: "desc" },
+    { id: "featured", name: "Nổi bật", sortBy: "createdAt", sortOrder: "desc" },
+
+    {
+      id: "price-asc",
+      name: "Giá tăng dần",
+      sortBy: "price",
+      sortOrder: "asc",
+    },
+    {
+      id: "price-desc",
+      name: "Giá giảm dần",
+      sortBy: "price",
+      sortOrder: "desc",
+    },
+  ];
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await getAllCategory();
+        const categoryMap = {
+          ao: "Áo",
+          quan: "Quần",
+          giayvadep: "Giày & Dép",
+          phukien: "Phụ Kiện",
+        };
+
+        const data = await getCategoryByTagName(categoryMap[categoryPath]);
+        console.log("Danh sách danh mục:", data);
         setCategories(data);
-        
+
         // Tìm category ID dựa trên pathname
         let categoryId = null;
         if (categoryPath) {
-          const matchedCategory = data.find(cat => {
-            const catNameSlug = cat.name.toLowerCase().replace(/\s+/g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          const matchedCategory = data.find((cat) => {
+            const catNameSlug = cat.name
+              .toLowerCase()
+              .replace(/\s+/g, "-")
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "");
             return catNameSlug === categoryPath;
           });
-          
+
           if (matchedCategory) {
             categoryId = matchedCategory._id;
             setSelectedCategory(matchedCategory);
           }
         }
-        
+
         if (categoryId) {
           fetchProductsByCategory(categoryId);
         } else {
@@ -65,7 +98,7 @@ const CategoryPage = () => {
     };
 
     fetchCategories();
-    
+
     // Cuộn trang lên đầu khi component được mount
     window.scrollTo(0, 0);
   }, [categoryPath]);
@@ -73,7 +106,7 @@ const CategoryPage = () => {
   const fetchProductsByCategory = async (categoryId, page = 1) => {
     setLoading(true);
     try {
-      const response = await getProductsByCategory(categoryId, page);
+      const response = await getProductFilter(categoryId, page);
       setProducts(response.data);
       setTotalPages(response.totalPages);
       setTotalProducts(response.total);
@@ -95,7 +128,7 @@ const CategoryPage = () => {
         selectedSizes.length > 0 ? selectedSizes : null,
         currentPage.toString()
       );
-      
+
       setProducts(response.docs || []);
       setTotalPages(response.totalPages || 1);
       setTotalProducts(response.totalDocs || 0);
@@ -124,19 +157,15 @@ const CategoryPage = () => {
   };
 
   const handleSizeToggle = (size) => {
-    setSelectedSizes(prev => 
-      prev.includes(size) 
-        ? prev.filter(s => s !== size) 
-        : [...prev, size]
+    setSelectedSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
     );
     setCurrentPage(1);
   };
 
   const handleColorToggle = (color) => {
-    setSelectedColors(prev => 
-      prev.includes(color) 
-        ? prev.filter(c => c !== color) 
-        : [...prev, color]
+    setSelectedColors((prev) =>
+      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
     );
     setCurrentPage(1);
   };
@@ -154,7 +183,7 @@ const CategoryPage = () => {
 
   const handleAddToCart = (product) => {
     addToCart(product);
-    alert('Đã thêm sản phẩm vào giỏ hàng!');
+    alert("Đã thêm sản phẩm vào giỏ hàng!");
   };
 
   const clearFilters = () => {
@@ -171,51 +200,67 @@ const CategoryPage = () => {
   const renderPagination = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-    
+
     if (startPage > 1) {
       pages.push(
-        <button key="first" onClick={() => handlePageChange(1)} className="pagination-button">
+        <button
+          key="first"
+          onClick={() => handlePageChange(1)}
+          className="pagination-button"
+        >
           1
         </button>
       );
       if (startPage > 2) {
-        pages.push(<span key="ellipsis1" className="pagination-ellipsis">...</span>);
+        pages.push(
+          <span key="ellipsis1" className="pagination-ellipsis">
+            ...
+          </span>
+        );
       }
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
-        <button 
-          key={i} 
-          onClick={() => handlePageChange(i)} 
-          className={`pagination-button ${currentPage === i ? 'active' : ''}`}
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`pagination-button ${currentPage === i ? "active" : ""}`}
         >
           {i}
         </button>
       );
     }
-    
+
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) {
-        pages.push(<span key="ellipsis2" className="pagination-ellipsis">...</span>);
+        pages.push(
+          <span key="ellipsis2" className="pagination-ellipsis">
+            ...
+          </span>
+        );
       }
       pages.push(
-        <button key="last" onClick={() => handlePageChange(totalPages)} className="pagination-button">
+        <button
+          key="last"
+          onClick={() => handlePageChange(totalPages)}
+          className="pagination-button"
+        >
           {totalPages}
         </button>
       );
     }
-    
+
     return (
       <div className="pagination">
-        <button 
+        <button
           className="pagination-button"
           onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
@@ -223,9 +268,11 @@ const CategoryPage = () => {
           Trước
         </button>
         {pages}
-        <button 
+        <button
           className="pagination-button"
-          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+          onClick={() =>
+            handlePageChange(Math.min(totalPages, currentPage + 1))
+          }
           disabled={currentPage === totalPages}
         >
           Sau
@@ -248,7 +295,10 @@ const CategoryPage = () => {
       <div className="error-container">
         <h2>Đã xảy ra lỗi!</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()} className="retry-button">
+        <button
+          onClick={() => window.location.reload()}
+          className="retry-button"
+        >
           Thử lại
         </button>
       </div>
@@ -258,9 +308,9 @@ const CategoryPage = () => {
   return (
     <div className="category-page">
       <div className="category-banner">
-        <h1>{selectedCategory ? selectedCategory.name : 'Tất cả sản phẩm'}</h1>
+        <h1>{selectedCategory ? selectedCategory.name : "Tất cả sản phẩm"}</h1>
         <div className="breadcrumb">
-          <Link to="/">Trang chủ</Link> / 
+          <Link to="/">Trang chủ</Link> /
           {selectedCategory ? (
             <span>{selectedCategory.name}</span>
           ) : (
@@ -268,27 +318,31 @@ const CategoryPage = () => {
           )}
         </div>
       </div>
-      
+
       <div className="category-content">
         <button className="filter-toggle-button" onClick={toggleFilter}>
           <FontAwesomeIcon icon={faFilter} /> Bộ lọc
         </button>
-        
-        <div className={`filter-sidebar ${showFilter ? 'show' : ''}`}>
+
+        <div className={`filter-sidebar ${showFilter ? "show" : ""}`}>
           <div className="filter-header">
             <h2>Bộ lọc</h2>
             <button className="close-filter" onClick={toggleFilter}>
               <FontAwesomeIcon icon={faTimes} />
             </button>
           </div>
-          
+
           <div className="filter-section">
             <h3>Danh mục</h3>
             <ul className="category-list">
-              {categories.map(category => (
+              {categories.map((category) => (
                 <li key={category._id}>
-                  <button 
-                    className={`category-button ${selectedCategory && selectedCategory._id === category._id ? 'active' : ''}`}
+                  <button
+                    className={`category-button ${
+                      selectedCategory && selectedCategory._id === category._id
+                        ? "active"
+                        : ""
+                    }`}
                     onClick={() => handleCategoryChange(category)}
                   >
                     {category.name}
@@ -297,14 +351,16 @@ const CategoryPage = () => {
               ))}
             </ul>
           </div>
-          
+
           <div className="filter-section">
             <h3>Kích thước</h3>
             <div className="size-filters">
-              {sizes.map(size => (
-                <button 
-                  key={size} 
-                  className={`size-filter ${selectedSizes.includes(size) ? 'active' : ''}`}
+              {sizes.map((size) => (
+                <button
+                  key={size}
+                  className={`size-filter ${
+                    selectedSizes.includes(size) ? "active" : ""
+                  }`}
                   onClick={() => handleSizeToggle(size)}
                 >
                   {size}
@@ -312,14 +368,16 @@ const CategoryPage = () => {
               ))}
             </div>
           </div>
-          
+
           <div className="filter-section">
             <h3>Màu sắc</h3>
             <div className="color-filters">
-              {colors.map(color => (
-                <button 
-                  key={color} 
-                  className={`color-filter ${selectedColors.includes(color) ? 'active' : ''}`}
+              {colors.map((color) => (
+                <button
+                  key={color}
+                  className={`color-filter ${
+                    selectedColors.includes(color) ? "active" : ""
+                  }`}
                   onClick={() => handleColorToggle(color)}
                 >
                   {color}
@@ -327,51 +385,51 @@ const CategoryPage = () => {
               ))}
             </div>
           </div>
-          
+
           <div className="filter-section">
             <h3>Giá</h3>
             <div className="price-range-inputs">
-              <input 
-                type="number" 
-                value={priceRange[0]} 
+              <input
+                type="number"
+                value={priceRange[0]}
                 onChange={(e) => handlePriceRangeChange(0, e.target.value)}
                 min="0"
                 step="100000"
               />
               <span>-</span>
-              <input 
-                type="number" 
-                value={priceRange[1]} 
+              <input
+                type="number"
+                value={priceRange[1]}
                 onChange={(e) => handlePriceRangeChange(1, e.target.value)}
                 min={priceRange[0]}
                 step="100000"
               />
             </div>
             <div className="price-range-slider">
-              <input 
-                type="range" 
-                min="0" 
-                max="2000000" 
-                value={priceRange[0]} 
+              <input
+                type="range"
+                min="0"
+                max="2000000"
+                value={priceRange[0]}
                 onChange={(e) => handlePriceRangeChange(0, e.target.value)}
                 step="100000"
               />
-              <input 
-                type="range" 
-                min="0" 
-                max="2000000" 
-                value={priceRange[1]} 
+              <input
+                type="range"
+                min="0"
+                max="2000000"
+                value={priceRange[1]}
                 onChange={(e) => handlePriceRangeChange(1, e.target.value)}
                 step="100000"
               />
             </div>
           </div>
-          
+
           <button className="clear-filters-button" onClick={clearFilters}>
             Xóa bộ lọc
           </button>
         </div>
-        
+
         <div className="products-container">
           <div className="products-header">
             <div className="products-count">
@@ -379,7 +437,10 @@ const CategoryPage = () => {
             </div>
             <div className="products-sort">
               <label>Sắp xếp:</label>
-              <select value={sortBy} onChange={(e) => handleSortChange(e.target.value)}>
+              <select
+                value={sortBy}
+                onChange={(e) => handleSortChange(e.target.value)}
+              >
                 <option value="-createdAt">Mới nhất</option>
                 <option value="price">Giá: Thấp đến cao</option>
                 <option value="-price">Giá: Cao đến thấp</option>
@@ -387,7 +448,7 @@ const CategoryPage = () => {
               </select>
             </div>
           </div>
-          
+
           {products.length === 0 ? (
             <div className="no-products">
               <p>Không tìm thấy sản phẩm nào phù hợp với bộ lọc.</p>
@@ -397,35 +458,49 @@ const CategoryPage = () => {
             </div>
           ) : (
             <div className="products-grid">
-              {products.map(product => (
+              {products.map((product) => (
                 <div className="product-card" key={product._id}>
-                  <Link to={`/products/${product._id}`} className="product-image">
-                    <img 
-                      src={product.images && product.images.length > 0 
-                        ? product.images[0]
-                        : 'https://picsum.photos/seed/product/300/400'
-                      } 
-                      alt={product.name} 
+                  <Link
+                    to={`/products/${product._id}`}
+                    className="product-image"
+                  >
+                    <img
+                      src={
+                        product.images && product.images.length > 0
+                          ? product.images[0]
+                          : "https://picsum.photos/seed/product/300/400"
+                      }
+                      alt={product.name}
                     />
                     {product.discountPercentage > 0 && (
-                      <span className="discount-badge">-{product.discountPercentage}%</span>
+                      <span className="discount-badge">
+                        -{product.discountPercentage}%
+                      </span>
                     )}
                   </Link>
                   <div className="product-info">
                     <h3 className="product-name">
-                      <Link to={`/products/${product._id}`}>{product.name}</Link>
+                      <Link to={`/products/${product._id}`}>
+                        {product.name}
+                      </Link>
                     </h3>
                     <div className="product-price">
                       {product.salePrice ? (
                         <>
-                          <span className="sale-price">{product.salePrice.toLocaleString()}đ</span>
-                          <span className="original-price">{product.price.toLocaleString()}đ</span>
+                          <span className="sale-price">
+                            {product.salePrice.toLocaleString()}đ
+                          </span>
+                          <span className="original-price">
+                            {product.price.toLocaleString()}đ
+                          </span>
                         </>
                       ) : (
-                        <span className="regular-price">{product.price.toLocaleString()}đ</span>
+                        <span className="regular-price">
+                          {product.price.toLocaleString()}đ
+                        </span>
                       )}
                     </div>
-                    <button 
+                    <button
                       className="add-to-cart-button"
                       onClick={() => handleAddToCart(product)}
                     >
@@ -436,7 +511,7 @@ const CategoryPage = () => {
               ))}
             </div>
           )}
-          
+
           {totalPages > 1 && renderPagination()}
         </div>
       </div>
@@ -444,4 +519,4 @@ const CategoryPage = () => {
   );
 };
 
-export default CategoryPage; 
+export default CategoryPage;

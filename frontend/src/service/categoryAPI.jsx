@@ -53,3 +53,27 @@ export const createCategory = async (categoryData) => {
     throw error;
   }
 };
+
+export const updateCategoryById = async (id, bodyData) => {
+  try {
+    const response = await axios.patch(`${API_URL}/category`, bodyData, {
+      params: { categoryId: id },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi cập nhật danh mục:", error);
+    throw error;
+  }
+};
+
+export const deleteCategoryById = async (categoryId) => {
+  try {
+    const response = await axios.delete(`${API_URL}/category`, {
+      params: { categoryId },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi xóa sản phẩm:", error);
+    throw error;
+  }
+};

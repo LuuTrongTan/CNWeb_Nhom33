@@ -21,4 +21,8 @@ router
   .route('/:orderId/cancel')
   .patch(auth(), orderController.cancelOrder);
 
+router
+  .route('/:orderId/status')
+  .patch(auth('admin'), orderController.updateOrderStatus);
+
 module.exports = router; 

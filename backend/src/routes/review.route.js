@@ -7,10 +7,10 @@ router
   .route('/')
   .post(auth(), reviewController.createReview)
   .get(reviewController.getReview)
-  .patch(reviewController.updateReview)
-  .delete(reviewController.deleteReview);
+  .patch(auth(), reviewController.updateReview)
+  .delete(auth(), reviewController.deleteReview);
 
-router.route('/getAllReview').get(reviewController.getAllReview);
+// router.route('/getAllReview').get(reviewController.getAllReview);
 
 router.route('/getFilterReview').get(reviewController.getReviews);
 
@@ -20,15 +20,11 @@ router.route('/product/:productId').get(reviewController.getProductReviews);
 // Thêm route lấy đánh giá của người dùng
 router.route('/user/:userId').get(auth(), reviewController.getUserReviews);
 
-router.route('/:reviewId/feedback').post(reviewController.addFeedbackToReview);
+// router.route('/:reviewId/feedback').post(reviewController.addFeedbackToReview);
 
-router
-  .route('/:reviewId/feedback/:feedbackId')
-  .patch(reviewController.updateFeedbackInReview)
-  .delete(reviewController.deleteFeedbackFromReview);
-
-// Thêm routes thích và bỏ thích đánh giá
-router.route('/:reviewId/like').post(auth(), reviewController.likeReview);
-router.route('/:reviewId/unlike').delete(auth(), reviewController.unlikeReview);
+// router
+//   .route('/:reviewId/feedback/:feedbackId')
+//   .patch(reviewController.updateFeedbackInReview)
+//   .delete(reviewController.deleteFeedbackFromReview);
 
 module.exports = router;

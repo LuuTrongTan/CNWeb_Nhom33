@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { format } from "date-fns";
 import useOrderWebSocket from "../../hooks/useOrderWebSocket";
+import OrderStatus from './OrderStatus';
+import { vi } from 'date-fns/locale';
 
 const OrderDetail = () => {
   const { orderId } = useParams();
@@ -56,6 +58,55 @@ const OrderDetail = () => {
     return <div>Không tìm thấy đơn hàng</div>;
   }
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: vi });
+  };
+
+  // Hiển thị tiến trình đơn hàng
+  const renderOrderProgress = () => {
+    const statusSteps = [
+      { key: 'pending', label: 'Chờ xác nhận' },
+      { key: 'processing', label: 'Đang xử lý' },
+      { key: 'shipped', label: 'Đang giao hàng' },
+      { key: 'delivered', label: 'Đã giao hàng' }
+    ];
+
+    const currentIndex = statusSteps.findIndex(step => step.key === order.orderStatus);
+    const isCancelled = order.orderStatus === 'cancelled';
+
+    return (
+      <div className="order-progress my-6">
+        <h3 className="text-lg font-semibold mb-3">Tiến trình đơn hàng</h3>
+        {isCancelled ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            Đơn hàng đã bị hủy vào {formatDate(order.cancelledAt)}
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            {statusSteps.map((step, index) => (
+              <div key={step.key} className="flex flex-col items-center w-1/4">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  index <= currentIndex ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                }`}>
+                  {index + 1}
+                </div>
+                <div className="text-center mt-2 text-sm">{step.label}</div>
+                {index < statusSteps.length - 1 && (
+                  <div className="relative w-full">
+                    <div className={`absolute h-1 top-1/2 transform -translate-y-1/2 left-0 right-0 ${
+                      index < currentIndex ? 'bg-blue-500' : 'bg-gray-200'
+                    }`}></div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <button
@@ -88,26 +139,10 @@ const OrderDetail = () => {
               Đặt ngày {format(new Date(order.createdAt), "dd/MM/yyyy")}
             </p>
           </div>
-          <span
-            className={`px-4 py-2 rounded-full ${
-              order.orderStatus === "processing"
-                ? "bg-yellow-100 text-yellow-800"
-                : order.orderStatus === "shipping"
-                ? "bg-blue-100 text-blue-800"
-                : order.orderStatus === "delivered"
-                ? "bg-green-100 text-green-800"
-                : order.orderStatus === "completed"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {order.orderStatus === "processing" && "Đang xử lý"}
-            {order.orderStatus === "shipping" && "Đang giao"}
-            {order.orderStatus === "delivered" && "Đã giao"}
-            {order.orderStatus === "completed" && "Hoàn tất"}
-            {order.orderStatus === "cancelled" && "Đã hủy"}
-          </span>
+          <OrderStatus status={order.orderStatus} />
         </div>
+
+        {renderOrderProgress()}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>

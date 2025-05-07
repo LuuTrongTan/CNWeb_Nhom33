@@ -19,13 +19,10 @@ const createPicture = async (req, res) => {
     }
 
     try {
-      const { productId } = req.body;
-
       const pictures = await Promise.all(
         req.files.map((file) => {
           const filePath = file.path;
           const picture = Picture.create({
-            productId,
             link: filePath,
             public_id: file.filename || file.public_id, // fallback
           });
@@ -62,7 +59,7 @@ const deletePictureById = async (id) => {
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Error while deleting picture from Cloudinary');
   }
-  await picture.remove();
+  await Picture.findByIdAndDelete(id);
   return picture;
 };
 

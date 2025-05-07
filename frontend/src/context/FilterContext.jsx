@@ -8,64 +8,20 @@ export const FilterProvider = ({ children }) => {
     sizes: [],
     color: "",
     price: { min: 0, max: 10000000 }, // Giá mặc định từ 0 đến 10 triệu VND
+    sortBy: "createdAt",
+    sortOrder: "desc",
+    isFeatured: null,
   });
 
   const resetFilters = () => {
     setSelectedFilter({
-      category: null,
+      category: {},
       sizes: [],
       color: "",
       price: { min: 0, max: 10000000 },
-    });
-  };
-
-  const addSizeFilter = (size) => {
-    setSelectedFilter((prev) => {
-      if (prev.sizes.includes(size)) {
-        return {
-          ...prev,
-          sizes: prev.sizes.filter((s) => s !== size),
-        };
-      } else {
-        return {
-          ...prev,
-          sizes: [...prev.sizes, size],
-        };
-      }
-    });
-  };
-
-  const setCategoryFilter = (category) => {
-    setSelectedFilter((prev) => ({
-      ...prev,
-      category,
-    }));
-  };
-
-  const setColorFilter = (color) => {
-    setSelectedFilter((prev) => ({
-      ...prev,
-      color,
-    }));
-  };
-
-  const setPriceFilter = (min, max) => {
-    setSelectedFilter((prev) => {
-      // Nếu cả min và max đều null/undefined => xóa luôn `price`
-      if (min == null && max == null) {
-        const { price, ...rest } = prev;
-        return rest;
-      }
-
-      // Tạo mới hoàn toàn price (không giữ lại cái cũ)
-      const newPrice = {};
-      if (min != null) newPrice.min = min;
-      if (max != null) newPrice.max = max;
-
-      return {
-        ...prev,
-        price: newPrice,
-      };
+      sortBy: "createdAt",
+      sortOrder: "desc",
+      isFeatured: null,
     });
   };
 
@@ -75,10 +31,6 @@ export const FilterProvider = ({ children }) => {
         selectedFilter,
         setSelectedFilter,
         resetFilters,
-        addSizeFilter,
-        setCategoryFilter,
-        setColorFilter,
-        setPriceFilter,
       }}
     >
       {children}

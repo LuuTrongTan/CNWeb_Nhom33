@@ -11,40 +11,48 @@ import {
   faList,
 } from "@fortawesome/free-solid-svg-icons";
 import ProductCard from "../components/Product/ProductCard";
-import "../styles/css/ProductList.css";
+import "../styles/css/ProductPage.css";
 import { getProductFilter } from "../service/productAPI"; // Import hàm fetchProducts từ productAPI
 
 import { FilterContext } from "../context/FilterContext"; // Import context filter nếu cần
 
-const ProductPage = () => {
+const ProductPage = ({ tagCategory }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sortBy, setSortBy] = useState("featured");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [priceRangeFilter, setPriceRangeFilter] = useState("");
+  const [sortBy, setSortBy] = useState("all");
   const [showSortFilter, setShowSortFilter] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("grid");
   const [searchTerm, setSearchTerm] = useState("");
   const [totalProduct, setTotalProduct] = useState(0);
   const [totalPage, setTotalPage] = useState(1);
-  const [pageNumbers, setPageNumbers] = useState([]);
   const { selectedFilter, setSelectedFilter, resetFilters } =
     useContext(FilterContext);
+  // const location = useLocation();
 
   const sortOptions = [
-    { id: "featured", name: "Nổi bật" },
-    { id: "newest", name: "Mới nhất" },
-    { id: "price-asc", name: "Giá tăng dần" },
-    { id: "price-desc", name: "Giá giảm dần" },
+    { id: "all", name: "Tất cả", sortBy: "createdAt", sortOrder: "desc" },
+    { id: "featured", name: "Nổi bật", sortBy: "createdAt", sortOrder: "desc" },
+
+    {
+      id: "price-asc",
+      name: "Giá tăng dần",
+      sortBy: "price",
+      sortOrder: "asc",
+    },
+    {
+      id: "price-desc",
+      name: "Giá giảm dần",
+      sortBy: "price",
+      sortOrder: "desc",
+    },
   ];
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-
         const categoryId =
           selectedFilter.category && selectedFilter.category._id
             ? selectedFilter.category._id
@@ -57,72 +65,60 @@ const ProductPage = () => {
           selectedFilter.price.min,
           selectedFilter.price.max,
           1,
-          searchTerm
+          searchTerm,
+          selectedFilter.sortBy,
+          selectedFilter.sortOrder,
+          selectedFilter.isFeatured,
+          tagCategory
         );
-
-        console.log("Dữ liệu sản phẩm:", response);
         setProducts(response.products);
-        setTotalProduct(response.total);
+        setTotalProduct(response.totalItems);
         setTotalPage(response.totalPages);
-
-        if (totalPage && totalPage > 0) {
-          const initialPages = [];
-          for (let i = 1; i <= totalPage; i++) {
-            initialPages.push({ index: i, wasClicked: i === 1 });
-          }
-          setPageNumbers(initialPages);
-        }
 
         setTimeout(() => {
           setLoading(false);
-        }, 500); // Giả lập thời gian tải
+        }, 500); // Giả ập thời gian tải
       } catch (err) {
         setError("Có lỗi xảy ra khi tải dữ liệu sản phẩm");
         setLoading(false);
         console.error("Lỗi khi tải sản phẩm:", err);
       }
     };
+
+    window.scrollTo(0, 0);
     setCurrentPage(1);
 
     fetchProducts();
-  }, [totalPage, selectedFilter, searchTerm]);
+  }, [totalPage, selectedFilter, searchTerm, tagCategory]);
 
-  // Sắp xếp sản phẩm
-  const sortProducts = (a, b) => {
-    if (sortBy === "price-asc") return a.price - b.price;
-    if (sortBy === "price-desc") return b.price - a.price;
-    if (sortBy === "newest") return new Date(b.id) - new Date(a.id); // Giả sử id có thể dùng làm mốc thời gian
+  const pageNumbers = [];
 
-    // Mặc định: nổi bật
-    return a.id - b.id;
-  };
+  for (let i = 1; i <= totalPage; i++) {
+    pageNumbers.push(i);
+  }
 
   // //Lấy thêm sản phẩm
   const handleClickMoreProduct = async (pageNumber) => {
     try {
-      // if (pageNumber.wasClicked) return;
-
       const response = await getProductFilter(
         selectedFilter.color,
         selectedFilter.category._id,
         selectedFilter.sizes,
         selectedFilter.price.min,
         selectedFilter.price.max,
-        pageNumber.index,
-        searchTerm
+        pageNumber,
+        searchTerm,
+        selectedFilter.sortBy,
+        selectedFilter.sortOrder,
+        selectedFilter.isFeatured,
+        tagCategory
       );
 
       console.log("Dữ liệu sản phẩm:", response);
 
       setProducts(response.products);
 
-      setCurrentPage(pageNumber.index);
-
-      // setPageNumbers((prevPageNumbers) =>
-      //   prevPageNumbers.map((page) =>
-      //     page.index === pageNumber.index ? { ...page, wasClicked: true } : page
-      //   )
-      // );
+      setCurrentPage(pageNumber);
     } catch (error) {
       console.error("Lỗi khi lấy thêm sản phẩm:", error);
     }
@@ -144,7 +140,7 @@ const ProductPage = () => {
     if (filterType === "category") {
       setSelectedFilter((prev) => ({
         ...prev,
-        category: null,
+        category: {},
       }));
     } else if (filterType === "size") {
       setSelectedFilter((prev) => ({
@@ -155,6 +151,43 @@ const ProductPage = () => {
       setSelectedFilter((prev) => ({
         ...prev,
         color: "",
+      }));
+    }
+  };
+
+  const handleSortOptions = (option) => {
+    if (option.id === "all") {
+      setSelectedFilter((prev) => ({
+        ...prev,
+        sortBy: option.sortBy,
+        sortOrder: option.sortOrder,
+        isFeatured: null,
+      }));
+    }
+
+    if (option.id === "featured") {
+      setSelectedFilter((prev) => ({
+        ...prev,
+        sortBy: option.sortBy,
+        sortOrder: option.sortOrder,
+        isFeatured: true,
+      }));
+    }
+
+    if (option.id === "price-asc") {
+      setSelectedFilter((prev) => ({
+        ...prev,
+        sortBy: option.sortBy,
+        sortOrder: option.sortOrder,
+        isFeatured: null,
+      }));
+    }
+
+    if (option.id === "price-desc") {
+      setSelectedFilter((prev) => ({
+        ...prev,
+        sortBy: option.sortBy,
+        sortOrder: option.sortOrder,
       }));
     }
   };
@@ -188,10 +221,38 @@ const ProductPage = () => {
           <span className="breadcrumb-separator">
             <FontAwesomeIcon icon={faChevronRight} />
           </span>
-          <div className="breadcrumb-item active">Sản phẩm</div>
+          <div className="breadcrumb-item2">
+            {" "}
+            {tagCategory !== "" ? (
+              <div style={{ display: "flex" }}>
+                <Link
+                  to="/products"
+                  onChange={() => {
+                    tagCategory = "";
+                  }}
+                >
+                  <p className="breadcrumb-item active">Sản phẩm</p>
+                </Link>
+                <div>
+                  {tagCategory === "Áo" && "Áo"}
+                  {tagCategory === "Quần" && "Quần"}
+                  {tagCategory === "Giày & Dép" && "Giày & Dép"}
+                  {tagCategory === "Phụ kiện" && "Phụ kiện"}
+                </div>
+              </div>
+            ) : (
+              <div> Sản phẩm </div>
+            )}
+          </div>
         </div>
 
-        <h1 className="products-title">Sản phẩm</h1>
+        <h1 className="products-title">
+          {tagCategory === "Áo" && "Áo"}
+          {tagCategory === "Quần" && "Quần"}
+          {tagCategory === "" && "Tất cả sản phẩm"}
+          {tagCategory === "Giày & Dép" && "Giày & Dép"}
+          {tagCategory === "Phụ kiện" && "Phụ kiện"}
+        </h1>
         <p className="products-description">
           Khám phá bộ sưu tập sản phẩm mới nhất với chất lượng và giá cả hợp lý
         </p>
@@ -278,12 +339,14 @@ const ProductPage = () => {
           <div className="filter-dropdown">
             <button
               className="filter-button"
-              onClick={() => handleFilterClick("sort")}
+              onClick={() => {
+                setShowSortFilter(!showSortFilter);
+              }}
             >
               <FontAwesomeIcon icon={faSort} />
               <span>
                 {sortOptions.find((option) => option.id === sortBy)?.name ||
-                  "Nổi bật"}
+                  "Tất cả"}
               </span>
               <FontAwesomeIcon
                 icon={faChevronRight}
@@ -300,6 +363,7 @@ const ProductPage = () => {
                       sortBy === option.id ? "active" : ""
                     }`}
                     onClick={() => {
+                      handleSortOptions(option);
                       setSortBy(option.id);
                       setShowSortFilter(false);
                     }}
@@ -344,38 +408,42 @@ const ProductPage = () => {
           ) : (
             <div>
               <div className={`products-${viewMode}`}>
-                {products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={{
-                      _id: product.id,
-                      name: product.name,
-                      price: product.price,
-                      images: [product.image],
-                      category: product.tagCategory,
-                      isNew: product.id % 3 === 0,
-                      discount: product.id % 2 === 0 ? 20 : 0,
-                    }}
-                  />
-                ))}
+                {products.map((product) => {
+                  return (
+                    <ProductCard
+                      key={product.id}
+                      product={{
+                        _id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        mainImage: product.mainImage,
+                        images: [product.images],
+                        category: product.tagCategory,
+                        isNew: product.id % 3 === 0,
+                        discount: product.id % 2 === 0 ? 20 : 0,
+                        tagCategory: tagCategory,
+                      }}
+                    />
+                  );
+                })}
               </div>
               {/* Phân trang */}
               {totalPage > 1 && (
                 <div className="pagination">
                   <ul className="pagination-list">
                     {pageNumbers.map((number) => (
-                      <li key={number.index} className="pagination-item">
+                      <li key={number} className="pagination-item">
                         <button
                           className={`pagination-button ${
-                            currentPage === number.index ? "active" : ""
+                            currentPage === number ? "active" : ""
                           }`}
                           onClick={() => {
-                            setCurrentPage(number.index);
+                            setCurrentPage(number);
                             handleClickMoreProduct(number);
                             window.scrollTo({ top: 0, behavior: "smooth" });
                           }}
                         >
-                          {number.index}
+                          {number}
                         </button>
                       </li>
                     ))}
