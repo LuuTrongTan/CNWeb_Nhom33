@@ -101,27 +101,34 @@
   gap: 5px;
 }
 
-.edit-profile-button, .cancel-edit-button {
-  margin-top: 15px;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 5px;
+.profile-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.edit-profile-button,
+.cancel-edit-button,
+.change-password-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  transition: background-color 0.3s;
+  transition: all 0.2s;
 }
 
 .edit-profile-button {
   background-color: #4a90e2;
   color: white;
+  border: none;
 }
 
 .edit-profile-button:hover {
-  background-color: #3a7bd5;
+  background-color: #357abd;
 }
 
 .cancel-edit-button {
@@ -131,7 +138,19 @@
 }
 
 .cancel-edit-button:hover {
-  background-color: #eee;
+  background-color: #e9ecef;
+}
+
+.change-password-button {
+  background-color: #f8f9fa;
+  color: #4a90e2;
+  border: 1px solid #4a90e2;
+  text-decoration: none;
+}
+
+.change-password-button:hover {
+  background-color: #4a90e2;
+  color: white;
 }
 
 .profile-main {
@@ -555,4 +574,18 @@
   color: #1976d2;
   width: 20px;
   height: 20px;
+}
+
+@media (max-width: 768px) {
+  .profile-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .edit-profile-button,
+  .cancel-edit-button,
+  .change-password-button {
+    width: 100%;
+    justify-content: center;
+  }
 }

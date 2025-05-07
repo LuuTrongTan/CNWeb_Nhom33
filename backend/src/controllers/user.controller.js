@@ -159,6 +159,35 @@ const updateProfile = catchAsync(async (req, res) => {
   res.send(user);
 });
 
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng.' });
+    }
+
+    if (user.authType !== 'local') {
+      return res.status(400).json({ message: 'Tài khoản này sử dụng đăng nhập qua bên thứ ba (Google/Facebook).' });
+    }
+
+    // Kiểm tra mật khẩu hiện tại
+    const isPasswordValid = await user.isPasswordMatch(currentPassword);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'Mật khẩu hiện tại không đúng.' });
+    }
+
+    // Cập nhật mật khẩu mới
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Đổi mật khẩu thành công!' });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error });
+  }
+};
+
 module.exports = {
   createUser,
   getUsers,
@@ -171,4 +200,5 @@ module.exports = {
   requestPasswordReset,
   verifyResetCode,
   resetPassword,
+  changePassword,
 };

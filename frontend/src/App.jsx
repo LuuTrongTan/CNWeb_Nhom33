@@ -12,20 +12,22 @@ import ResetFilterOnRouteChange from "./context/ResetFilterOnRouteChange";
 import MainLayout from "./components/Layout/MainLayout";
 
 // Pages
-import Home from "./pages/HomePage";
-import ProductPage from "./pages/ProductPage";
-import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import ProductDetailPage from "./pages/ProductDetailPage";
-import CategoryPage from "./pages/CategoryPage";
-import LoginPage from "./pages/Auth/LoginPage";
-import RegisterPage from "./pages/Auth/RegisterPage";
-import ProfilePage from "./pages/Auth/ProfilePage";
-import SettingsPage from "./pages/Auth/SettingsPage";
-import WishlistPage from "./pages/WishlistPage";
-import OrderHistoryPage from "./pages/User/OrderHistoryPage";
-import OrderDetailPage from "./pages/User/OrderDetailPage";
-import OrderManagementPage from "./pages/Admin/OrderManagementPage";
+
+import Home from './pages/HomePage';
+import ProductPage from './pages/ProductPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import CategoryPage from './pages/CategoryPage';
+import LoginPage from './pages/Auth/LoginPage';
+import RegisterPage from './pages/Auth/RegisterPage';
+import ProfilePage from './pages/Auth/ProfilePage';
+import SettingsPage from './pages/Auth/SettingsPage';
+import WishlistPage from './pages/WishlistPage';
+import OrderHistoryPage from './pages/User/OrderHistoryPage';
+import OrderDetailPage from './pages/User/OrderDetailPage';
+import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
+import ChangePasswordPage from './pages/Auth/ChangePasswordPage';
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -115,7 +117,9 @@ const App = () => {
                     {/* Tài khoản */}
                     <Route path="login" element={<LoginPage />} />
                     <Route path="register" element={<RegisterPage />} />
+                    <Route path="forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="profile" element={<ProfilePage />} />
+                    <Route path="change-password" element={<ChangePasswordPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="wishlist" element={<WishlistPage />} />
                     <Route path="don-hang" element={<OrderHistoryPage />} />
