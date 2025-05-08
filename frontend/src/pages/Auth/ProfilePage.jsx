@@ -219,7 +219,9 @@ const ProfilePage = () => {
               <img src={user.avatar} alt={user.name} />
             ) : (
               <div className="avatar-placeholder">
-                {user.name.charAt(0).toUpperCase()}
+                {user.name && user.name.trim().length > 0
+                  ? user.name.charAt(0).toUpperCase()
+                  : <FontAwesomeIcon icon={faUser} />}
               </div>
             )}
             <button 
