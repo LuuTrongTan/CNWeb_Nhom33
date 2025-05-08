@@ -5,7 +5,7 @@ import {
   faHeart,
   faShoppingCart,
   faEye,
-  faStar as solidStar,
+  faStar,
   faStar as regularStar,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
@@ -22,6 +22,8 @@ const ProductCard = ({ product }) => {
     discount = 0,
     tagCategory,
     mainImage,
+    rating,
+    numReviews,
   } = product;
   const discountedPrice =
     discount > 0 ? price - (price * discount) / 100 : price;
@@ -190,20 +192,29 @@ const ProductCard = ({ product }) => {
 
           <div className="product-rating">
             <div className="stars">
-              {[...Array(5)].map((_, i) => (
-                <span
-                  key={i}
-                  className={`star ${
-                    i < Math.floor(Math.random() * 2 + 3) ? "filled" : ""
-                  }`}
-                >
-                  ★
-                </span>
-              ))}
+              {[...Array(5)].map((_, i) => {
+                const diff = rating - i;
+
+                let fillClass = "star-empty";
+                if (diff >= 1) fillClass = "star-100";
+                else if (diff >= 0.9) fillClass = "star-90";
+                else if (diff >= 0.8) fillClass = "star-80";
+                else if (diff >= 0.7) fillClass = "star-70";
+                else if (diff >= 0.6) fillClass = "star-60";
+                else if (diff >= 0.5) fillClass = "star-50";
+                else if (diff >= 0.4) fillClass = "star-40";
+                else if (diff >= 0.3) fillClass = "star-30";
+                else if (diff >= 0.2) fillClass = "star-20";
+                else if (diff >= 0.1) fillClass = "star-10";
+
+                return (
+                  <span key={i} className={`star ${fillClass}`}>
+                    <FontAwesomeIcon icon={faStar} />
+                  </span>
+                );
+              })}
             </div>
-            <span className="rating-count">
-              ({Math.floor(Math.random() * 20 + 5)})
-            </span>
+            <span className="rating-count">({numReviews})</span>
           </div>
 
           <div className="product-price">

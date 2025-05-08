@@ -20,7 +20,8 @@ const createReview = async (reviewBody) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Bạn đã đánh giá sản phẩm này rồi');
   }
 
-  const review = await Review.create(reviewBody);
+  let result = await Review.create(reviewBody);
+  const review = await Review.findById(result._id).populate('user', 'name avatar').lean();
 
   // Cập nhật đánh giá trung bình của sản phẩm
   await updateProductAverageRating(reviewBody.product);
@@ -146,7 +147,7 @@ const deleteReview = async (reviewId, userId) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đánh giá');
   }
 
-  if (review.user.toString() !== userId.toString()) {
+  if (review.user._id.toString() !== userId.toString()) {
     throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền xóa đánh giá này');
   }
   const productId = review.product;

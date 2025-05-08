@@ -18,6 +18,8 @@ import {
   updateFeedbackById,
 } from "../../service/ReviewAPI";
 
+import ReviewForm from "./ReviewForm";
+
 const ReviewList = ({ productId }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -200,12 +202,12 @@ const ReviewList = ({ productId }) => {
     setReviewToDelete(review);
   };
 
-  const handleConfirmDelete = async (review) => {
+  const handleConfirmDelete = async (review2) => {
     try {
-      await deleteReviewById(review._id, userAuth.id);
+      await deleteReviewById(review2._id, userAuth.id);
 
       // Cập nhật state
-      setReviews(reviews.filter((review) => review._id !== reviewToDelete.id));
+      setReviews(reviews.filter((review) => review._id !== reviewToDelete._id));
       setReviewToDelete(null);
     } catch (err) {
       console.error("Lỗi khi xóa đánh giá:", err);
@@ -239,9 +241,16 @@ const ReviewList = ({ productId }) => {
     return <div className="review-error">{error}</div>;
   }
 
+  const handleNewReview = (newReview) => {
+    setReviews((prevReviews) => [newReview, ...prevReviews]);
+  };
+
   if (reviews.length === 0) {
     return (
-      <div className="no-reviews">Chưa có đánh giá nào cho sản phẩm này.</div>
+      <>
+        <div className="no-reviews">Chưa có đánh giá nào cho sản phẩm này.</div>
+        <ReviewForm productId={productId} onReviewSubmitted={handleNewReview} />
+      </>
     );
   }
 
@@ -568,6 +577,8 @@ const ReviewList = ({ productId }) => {
           </button>
         </div>
       )}
+
+      <ReviewForm productId={productId} onReviewSubmitted={handleNewReview} />
     </div>
   );
 };

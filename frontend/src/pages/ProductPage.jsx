@@ -100,6 +100,7 @@ const ProductPage = ({ tagCategory }) => {
   // //Lấy thêm sản phẩm
   const handleClickMoreProduct = async (pageNumber) => {
     try {
+      setLoading(true);
       const response = await getProductFilter(
         selectedFilter.color,
         selectedFilter.category._id,
@@ -117,8 +118,8 @@ const ProductPage = ({ tagCategory }) => {
       console.log("Dữ liệu sản phẩm:", response);
 
       setProducts(response.products);
-
       setCurrentPage(pageNumber);
+      setLoading(false);
     } catch (error) {
       console.error("Lỗi khi lấy thêm sản phẩm:", error);
     }
@@ -422,6 +423,8 @@ const ProductPage = ({ tagCategory }) => {
                         isNew: product.id % 3 === 0,
                         discount: product.id % 2 === 0 ? 20 : 0,
                         tagCategory: tagCategory,
+                        rating: product.rating,
+                        numReviews: product.numReviews,
                       }}
                     />
                   );

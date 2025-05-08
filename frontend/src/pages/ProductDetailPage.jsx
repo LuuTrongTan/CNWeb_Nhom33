@@ -16,7 +16,6 @@ import {
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import ReviewList from "../components/Review/ReviewList";
-import ReviewForm from "../components/Review/ReviewForm";
 import axios from "axios";
 import ProductCard from "../components/Product/ProductCard";
 import { getCategoryById } from "../service/categoryAPI";
@@ -300,7 +299,9 @@ const ProductDetailPage = ({ tagCategory }) => {
                   </span>
                 );
               })}
-              <span className="review-count">({product.rating} đánh giá)</span>
+              <span className="review-count">
+                ({product.numReviews} đánh giá)
+              </span>
             </div>
             <div className="product-sku">
               <span>Số lượng đã bán:</span>{" "}
@@ -547,25 +548,6 @@ const ProductDetailPage = ({ tagCategory }) => {
               </div>
 
               <ReviewList productId={id} />
-
-              <ReviewForm
-                productId={id}
-                onReviewSubmitted={() => {
-                  // Reload product data to update review count and rating
-                  const fetchProductDetails = async () => {
-                    try {
-                      const data = await getProductById(id);
-                      setProduct(data);
-                    } catch (err) {
-                      console.error(
-                        "Lỗi khi cập nhật thông tin sản phẩm:",
-                        err
-                      );
-                    }
-                  };
-                  fetchProductDetails();
-                }}
-              />
             </div>
           )}
         </div>

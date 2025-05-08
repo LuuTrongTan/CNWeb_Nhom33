@@ -164,7 +164,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
 
       // Gọi callback để refresh danh sách đánh giá
       if (onReviewSubmitted) {
-        onReviewSubmitted();
+        onReviewSubmitted(response);
       }
 
       // Ẩn thông báo thành công sau 3 giây
