@@ -74,7 +74,11 @@ const AddProductPage = () => {
             data.images.map((image) => getPictureByLink(image))
           );
           const URLreviewList = URLreview.map((item) => {
-            return item[0];
+            if (item[0]) {
+              return item[0];
+            } else {
+              return "test";
+            }
           });
           console.log("URLreview", URLreviewList);
           setImagePreviewUrls(URLreviewList); // Các URL thực tế sau khi gọi API

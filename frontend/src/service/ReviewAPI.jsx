@@ -28,21 +28,6 @@ export const getReviewById = async (reviewId) => {
   }
 };
 
-// export const getCategoryByTagName = async (tagCategory) => {
-//   try {
-//     const response = await axios.get(
-//       `${API_URL}/category/getCategoriesByTagCategory`,
-//       {
-//         params: { tagCategory },
-//       }
-//     );
-//     return response.data;
-//   } catch (error) {
-//     console.error("Lỗi khi lấy chi tiết danh mục:", error);
-//     throw error;
-//   }
-// };
-
 export const createReview = async (reviewData) => {
   try {
     const response = await axios.post(`${API_URL}/review`, reviewData, {
@@ -77,7 +62,7 @@ export const updateReviewById = async (reviewId, bodyData) => {
   }
 };
 
-export const deleteCategoryById = async (reviewId, userId) => {
+export const deleteReviewById = async (reviewId, userId) => {
   try {
     const response = await axios.delete(
       `${API_URL}/review?reviewId=${reviewId}&userId=${userId}`,
@@ -91,6 +76,62 @@ export const deleteCategoryById = async (reviewId, userId) => {
     return response.data;
   } catch (error) {
     console.error("Lỗi khi xóa review:", error);
+    throw error;
+  }
+};
+
+export const createFeedBack = async (reviewId, userId, content) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/review/${reviewId}/feedback`,
+      { user: userId, content: content },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi tạo feedback:", error);
+    throw error;
+  }
+};
+
+export const deleteFeedbackById = async (feedbackId, reviewId) => {
+  try {
+    const response = await axios.delete(
+      `${API_URL}/review/${reviewId}/feedback/${feedbackId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi xóa feedback:", error);
+    throw error;
+  }
+};
+
+export const updateFeedbackById = async (feedbackId, reviewId, bodyData) => {
+  try {
+    const response = await axios.patch(
+      `${API_URL}/review/${reviewId}/feedback/${feedbackId}`,
+      bodyData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi xóa feedback:", error);
     throw error;
   }
 };

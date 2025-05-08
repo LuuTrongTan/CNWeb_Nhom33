@@ -132,7 +132,7 @@ select.error {
 
 .input-prefix {
   position: absolute;
-  left: 12px;
+  right: 12px;
   color: #666;
 }
 
@@ -386,14 +386,14 @@ select.error {
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .page-header button {
     align-self: flex-start;
   }
-} 
+}

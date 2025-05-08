@@ -4,12 +4,7 @@ import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 import axios from "axios";
 import "./ReviewForm.css";
-import {
-  createReview,
-  getReviewByProduct,
-  getReviewById,
-  deleteCategoryById,
-} from "../../service/ReviewAPI"; // Import API functions
+import { createReview } from "../../service/ReviewAPI"; // Import API functions
 
 import { uploadPictures, deletePicture } from "../../service/PictureAPI"; // Import API functions
 
