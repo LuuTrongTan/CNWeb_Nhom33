@@ -18,12 +18,14 @@ router.post('/forgot-password', userController.requestPasswordReset);
 router.post('/verify-reset-code', userController.verifyResetCode); 
 router.post('/reset-password', userController.resetPassword);
 /*router.post('/reset-password', validate(authValidation.resetPassword), authController.resetPassword);*/
-router.post('/send-verification-email', auth(), authController.sendVerificationEmail);
-router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
 router.post('/google-login', validate(authValidation.googleLoginSchema) ,authController.googleAuth);
 
 // Thêm route thay đổi mật khẩu
 router.post('/change-password', auth(), validate(authValidation.changePassword), userController.changePassword);
+
+// Thêm route mới cho xác thực email
+router.post('/request-email-verification', auth(), userController.requestEmailVerification);
+router.post('/verify-email', auth(), userController.verifyEmail);
 
 module.exports = router;
 
