@@ -54,7 +54,7 @@ const ProductDetailPage = ({ tagCategory }) => {
         // Lấy sản phẩm liên quan sau khi có thông tin sản phẩm
         try {
           const relatedData = await getRelatedProducts(id);
-          // console.log("Dữ liệu sản phẩm liên quan:", relatedData);
+          console.log("Dữ liệu sản phẩm liên quan:", relatedData);
           setRelatedProducts(relatedData);
         } catch (err) {
           console.error("Lỗi khi lấy sản phẩm liên quan:", err);
@@ -563,7 +563,7 @@ const ProductDetailPage = ({ tagCategory }) => {
                   _id: relatedProduct._id,
                   name: relatedProduct.name,
                   price: relatedProduct.price,
-                  images: relatedProduct.images,
+                  mainImage: relatedProduct.images[0],
                   category: category || "Thời trang",
                   isNewArrival: relatedProduct.isNewArrival,
                   discount: relatedProduct.discountPercentage,

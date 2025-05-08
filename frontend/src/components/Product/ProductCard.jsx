@@ -133,6 +133,8 @@ const ProductCard = ({ product }) => {
       navigate(`/products/giayvadep/${_id}`);
     } else if (tagCategory === "Phụ kiện") {
       navigate(`/products/phukien/${_id}`);
+    } else {
+      navigate(`/products/${_id}`);
     }
   };
 
