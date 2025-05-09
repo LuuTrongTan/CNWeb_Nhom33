@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getProductById } from "../../service/productAPI";
 import {
   faStar,
   faThumbsUp,
@@ -20,7 +21,7 @@ import {
 
 import ReviewForm from "./ReviewForm";
 
-const ReviewList = ({ productId }) => {
+const ReviewList = ({ productId, updateProduct }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -198,7 +199,7 @@ const ReviewList = ({ productId }) => {
     }
   };
 
-  const confirmDeleteReview = (review) => {
+  const confirmDeleteReview = async (review) => {
     setReviewToDelete(review);
   };
 
@@ -209,6 +210,8 @@ const ReviewList = ({ productId }) => {
       // Cập nhật state
       setReviews(reviews.filter((review) => review._id !== reviewToDelete._id));
       setReviewToDelete(null);
+      const data = await getProductById(productId);
+      updateProduct(data);
     } catch (err) {
       console.error("Lỗi khi xóa đánh giá:", err);
     }
@@ -241,8 +244,10 @@ const ReviewList = ({ productId }) => {
     return <div className="review-error">{error}</div>;
   }
 
-  const handleNewReview = (newReview) => {
+  const handleNewReview = async (newReview) => {
     setReviews((prevReviews) => [newReview, ...prevReviews]);
+    const data = await getProductById(productId);
+    updateProduct(data);
   };
 
   if (reviews.length === 0) {

@@ -193,6 +193,10 @@ const ProductDetailPage = ({ tagCategory }) => {
     }
   };
 
+  const handleNewRatingReview = (updateProduct) => {
+    setProduct(updateProduct);
+  };
+
   if (loading) {
     return (
       <div className="product-detail-loading">
@@ -519,7 +523,9 @@ const ProductDetailPage = ({ tagCategory }) => {
               <h3>Đánh giá từ khách hàng</h3>
               <div className="reviews-summary">
                 <div className="average-rating">
-                  <span className="rating-number">{product.rating}</span>
+                  <span className="rating-number">
+                    {product.rating.toFixed(1)}
+                  </span>
                   <div className="rating-stars">
                     {[...Array(5)].map((_, i) => {
                       const diff = product.rating - i;
@@ -547,7 +553,10 @@ const ProductDetailPage = ({ tagCategory }) => {
                 </div>
               </div>
 
-              <ReviewList productId={id} />
+              <ReviewList
+                productId={id}
+                updateProduct={handleNewRatingReview}
+              />
             </div>
           )}
         </div>

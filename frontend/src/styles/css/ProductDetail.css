@@ -44,7 +44,7 @@
 
 .product-images {
   flex: 1;
-  max-width: 550px;
+  max-width: 430px;
 }
 
 .product-info {
@@ -70,7 +70,8 @@
 }
 
 .main-image img {
-  width: 100%;
+  width: 80%;
+  max-height: 550px;
   height: auto;
   object-fit: cover;
   display: block;
