@@ -58,6 +58,16 @@ export const getRelatedProducts = async (productId, limit = 8) => {
   }
 };
 
+export const getFeaturedProducts = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/product/getFeatured`);
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm:", error);
+    throw error;
+  }
+};
+
 export const getProductFilter = async (
   color,
   categoryId,

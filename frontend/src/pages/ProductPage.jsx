@@ -71,6 +71,7 @@ const ProductPage = ({ tagCategory }) => {
           selectedFilter.isFeatured,
           tagCategory
         );
+        console.log("dkfndkf", response.products);
         setProducts(response.products);
         setTotalProduct(response.totalItems);
         setTotalPage(response.totalPages);
@@ -417,11 +418,12 @@ const ProductPage = ({ tagCategory }) => {
                         _id: product.id,
                         name: product.name,
                         price: product.price,
+                        discountPrice: product.discountPrice,
                         mainImage: product.mainImage,
                         images: [product.images],
                         category: product.tagCategory,
-                        isNew: product.id % 3 === 0,
-                        discount: product.id % 2 === 0 ? 20 : 0,
+                        isNewArrival: product.isNewArrival,
+                        discount: product.hasDiscount,
                         tagCategory: tagCategory,
                         rating: product.rating,
                         numReviews: product.numReviews,

@@ -128,7 +128,7 @@ const ProductDetailPage = ({ tagCategory }) => {
     const productToAdd = {
       id: product._id, // Đảm bảo có id
       name: product.name,
-      price: product.price,
+      price: product.discountPrice,
       images: product.images,
       selectedSize,
       selectedColor,
@@ -569,13 +569,18 @@ const ProductDetailPage = ({ tagCategory }) => {
               <ProductCard
                 key={relatedProduct._id}
                 product={{
-                  _id: relatedProduct._id,
+                  _id: relatedProduct.id,
                   name: relatedProduct.name,
                   price: relatedProduct.price,
-                  mainImage: relatedProduct.images[0],
-                  category: category || "Thời trang",
+                  discountPrice: relatedProduct.discountPrice,
+                  mainImage: relatedProduct.mainImage,
+                  images: [relatedProduct.images],
+                  category: relatedProduct.tagCategory,
                   isNewArrival: relatedProduct.isNewArrival,
-                  discount: relatedProduct.discountPercentage,
+                  discount: relatedProduct.hasDiscount,
+                  tagCategory: relatedProduct.tagCategory,
+                  rating: relatedProduct.rating,
+                  numReviews: relatedProduct.numReviews,
                 }}
               />
             ))}

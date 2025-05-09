@@ -19,6 +19,8 @@ router.route('/getByCategory').get(productController.getProductsByCategory);
 
 router.route('/getRelated').get(productController.getRelatedProducts);
 
+router.route('/getFeatured').get(productController.getFeaturedProducts);
+
 // Thêm route để lấy đánh giá theo sản phẩm
 router.route('/:productId/reviews').get(reviewController.getProductReviews).post(auth(), reviewController.createReview);
 

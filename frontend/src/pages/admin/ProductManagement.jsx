@@ -305,7 +305,7 @@ const ProductManagement = () => {
                     </span>
                   </td>
                   <td>
-                    {product.discountPrice ? (
+                    {product.discountPrice < product.price ? (
                       <div className="price-column">
                         <span className="discounted-price">
                           {product.discountPrice.toLocaleString("vi-VN")}₫

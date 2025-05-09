@@ -46,6 +46,11 @@ const getRelatedProducts = catchAsync(async (req, res) => {
   res.send(products);
 });
 
+const getFeaturedProducts = catchAsync(async (req, res) => {
+  const products = await productService.getFeaturedProducts();
+  res.send(products);
+});
+
 const getProductById = catchAsync(async (req, res) => {
   const productId = req.query.productId;
   if (!productId) {
@@ -85,4 +90,5 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
+  getFeaturedProducts,
 };

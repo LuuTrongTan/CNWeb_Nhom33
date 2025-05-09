@@ -1,38 +1,26 @@
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import "../styles/css/HomePage.css";
+import { getFeaturedProducts } from "../service/productAPI";
+import ProductCard from "../components/Product/ProductCard";
 
 const Home = () => {
-  const featuredProducts = [
-    {
-      id: 1,
-      name: "Áo Thun Basic",
-      price: 250000,
-      image: "https://picsum.photos/seed/product1/300/400",
-      category: "Áo",
-    },
-    {
-      id: 2,
-      name: "Quần Jeans Slim Fit",
-      price: 550000,
-      image: "https://picsum.photos/seed/product2/300/400",
-      category: "Quần",
-    },
-    {
-      id: 3,
-      name: "Áo Khoác Bomber",
-      price: 750000,
-      image: "https://picsum.photos/seed/product3/300/400",
-      category: "Áo",
-    },
-    {
-      id: 4,
-      name: "Váy Liền Thân",
-      price: 450000,
-      image: "https://picsum.photos/seed/product4/300/400",
-      category: "Váy",
-    },
-  ];
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await getFeaturedProducts();
+        console.log("dkfndkf", response);
+        setFeaturedProducts(response);
+      } catch (err) {
+        setError("Có lỗi xảy ra khi tải dữ liệu sản phẩm");
+        console.error("Lỗi khi tải sản phẩm:", err);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
 
   const categories = [
     {
@@ -98,29 +86,23 @@ const Home = () => {
         </div>
         <div className="products-grid">
           {featuredProducts.map((product) => (
-            <div className="product-card" key={product.id}>
-              <div className="product-image">
-                <img src={product.image} alt={product.name} />
-                <div className="product-actions">
-                  <button className="action-btn">
-                    <i className="fa-solid fa-heart"></i>
-                  </button>
-                  <button className="action-btn">
-                    <i className="fa-solid fa-cart-shopping"></i>
-                  </button>
-                  <button className="action-btn">
-                    <i className="fa-solid fa-eye"></i>
-                  </button>
-                </div>
-              </div>
-              <div className="product-info">
-                <span className="product-category">{product.category}</span>
-                <h3 className="product-name">{product.name}</h3>
-                <div className="product-price">
-                  {product.price.toLocaleString()}đ
-                </div>
-              </div>
-            </div>
+            <ProductCard
+              key={product.id}
+              product={{
+                _id: product.id,
+                name: product.name,
+                price: product.price,
+                discountPrice: product.discountPrice,
+                mainImage: product.mainImage,
+                images: [product.images],
+                category: product.tagCategory,
+                isNewArrival: product.isNewArrival,
+                discount: product.hasDiscount,
+                tagCategory: product.tagCategory,
+                rating: product.rating,
+                numReviews: product.numReviews,
+              }}
+            />
           ))}
         </div>
       </section>
@@ -130,7 +112,7 @@ const Home = () => {
         <div className="promo-content">
           <h2>Giảm giá đến 50%</h2>
           <p>Cho tất cả sản phẩm mùa hè</p>
-          <Link to="/sale" className="btn-secondary">
+          <Link to="/products" className="btn-secondary">
             Khám phá ngay
           </Link>
         </div>

@@ -93,12 +93,16 @@
 }
 
 .discount-badge {
-  position: relative !important;
-  top: -48px !important;
+  position: absolute !important;
+  top: 13px !important;
   left: 50% !important;
-  width: 46%;
-  background-color: var(--primary-color);
+  right: 12px;
+  background-color: #e53935;
   color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* Product Actions */

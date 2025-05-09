@@ -94,9 +94,9 @@ const searchProducts = async (options = {}) => {
 
   // Xử lý các trường hợp sắp xếp đặc biệt
   if (sortBy === 'price' && sortOrder === 'asc') {
-    sort.price = 1;
+    sort.discountPrice = 1;
   } else if (sortBy === 'price' && sortOrder === 'desc') {
-    sort.price = -1;
+    sort.discountPrice = -1;
   } else if (sortBy === 'name' && sortOrder === 'asc') {
     sort.name = 1;
   } else if (sortBy === 'name' && sortOrder === 'desc') {
@@ -218,8 +218,7 @@ const getRelatedProducts = async (productId, limit = 8) => {
     stock: { $gt: 0 },
   })
     .sort({ soldCount: -1, rating: -1 })
-    .limit(limit)
-    .select('name price images slug hasDiscount discountPrice tagCategory rating isNewArrival');
+    .limit(limit);
 
   return relatedProducts;
 };
@@ -235,9 +234,8 @@ const getFeaturedProducts = async (limit = 8) => {
     isActive: true,
     stock: { $gt: 0 },
   })
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .select('name price images slug hasDiscount discountPrice rating isNewArrival');
+    .sort({ createdAt: 1 })
+    .limit(limit);
 };
 
 /**

@@ -17,16 +17,17 @@ const ProductCard = ({ product }) => {
     _id,
     name,
     price,
+    discountPrice,
     images,
     category,
-    discount = 0,
+    discount,
     tagCategory,
     mainImage,
     rating,
     numReviews,
   } = product;
   const discountedPrice =
-    discount > 0 ? price - (price * discount) / 100 : price;
+    discount === true ? ((price - discountPrice) / price) * 100 : 0;
 
   const { addToCart } = useCart();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -103,7 +104,7 @@ const ProductCard = ({ product }) => {
     console.log({
       id: _id,
       name,
-      price: discountedPrice,
+      price: discountPrice,
       image: images[0],
       quantity: 1,
     });
@@ -111,7 +112,7 @@ const ProductCard = ({ product }) => {
     addToCart({
       id: _id,
       name,
-      price: discountedPrice,
+      price: discountPrice,
       images,
       image: images[0],
       quantity: 1,
@@ -153,8 +154,10 @@ const ProductCard = ({ product }) => {
           {product.isNewArrival && (
             <div className="product-badge new-badge">Mới</div>
           )}
-          {discount > 0 && (
-            <div className="product-badge discount-badge">-{discount}%</div>
+          {discountedPrice > 0 && (
+            <div className="product-badge discount-badge">
+              -{discountedPrice}%
+            </div>
           )}
 
           <div className="product-actions">
@@ -220,14 +223,20 @@ const ProductCard = ({ product }) => {
           </div>
 
           <div className="product-price">
-            {discount > 0 && (
+            {discountedPrice > 0 && (
               <span className="original-price">
                 {price.toLocaleString("vi-VN")}đ
               </span>
             )}
-            <span className="current-price">
-              {discountedPrice.toLocaleString("vi-VN")}đ
-            </span>
+            {discountedPrice > 0 ? (
+              <span className="current-price">
+                {discountPrice.toLocaleString("vi-VN")}đ
+              </span>
+            ) : (
+              <span className="current-price">
+                {price.toLocaleString("vi-VN")}đ
+              </span>
+            )}
           </div>
         </div>
 

@@ -62,8 +62,8 @@ productSchema.pre('save', function (next) {
   if (this.discountPrice > 0 && this.discountPrice < this.price) {
     this.hasDiscount = true;
   } else {
+    this.discountPrice = this.price;
     this.hasDiscount = false;
-    this.discountPrice = 0;
   }
 
   this.updatedAt = Date.now();
