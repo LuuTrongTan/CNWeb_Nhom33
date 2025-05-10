@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faEnvelope, faPhone, faShoppingBag, faEdit, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faEnvelope, faPhone, faShoppingBag, faEdit, faCamera, faLock, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import AvatarModal from '../../components/AvatarModal';
+import EmailVerificationModal from '../../components/EmailVerificationModal';
 import '../../styles/css/Auth/Profile.css';
 
 const ProfilePage = () => {
@@ -19,6 +20,7 @@ const ProfilePage = () => {
     address: ''
   });
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const navigate = useNavigate();
   const { currentUser, isAuthenticated } = useAuth();
 
@@ -152,6 +154,30 @@ const ProfilePage = () => {
     }
   };
 
+  const handleVerificationSuccess = () => {
+    // Cập nhật trạng thái xác thực trong state và localStorage
+    const updatedUser = { ...user, isEmailVerified: true };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
+  const handleRequestVerification = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('/auth/request-email-verification', 
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      setIsVerificationModalOpen(true);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Có lỗi xảy ra khi gửi mã xác thực');
+    }
+  };
+
   if (loading) {
     return (
       <div className="profile-loading">
@@ -176,6 +202,16 @@ const ProfilePage = () => {
         <h1>Trang cá nhân</h1>
       </div>
 
+      {user && user.authType === 'local' && !user.isEmailVerified && (
+        <div className="verification-warning">
+          <FontAwesomeIcon icon={faExclamationTriangle} />
+          <span>Tài khoản của bạn chưa được xác thực email.</span>
+          <button onClick={handleRequestVerification}>
+            Xác thực ngay
+          </button>
+        </div>
+      )}
+
       <div className="profile-content">
         <div className="profile-sidebar">
           <div className="profile-avatar">
@@ -183,7 +219,9 @@ const ProfilePage = () => {
               <img src={user.avatar} alt={user.name} />
             ) : (
               <div className="avatar-placeholder">
-                {user.name.charAt(0).toUpperCase()}
+                {user.name && user.name.trim().length > 0
+                  ? user.name.charAt(0).toUpperCase()
+                  : <FontAwesomeIcon icon={faUser} />}
               </div>
             )}
             <button 
@@ -199,29 +237,37 @@ const ProfilePage = () => {
             <p><FontAwesomeIcon icon={faEnvelope} /> {user.email}</p>
             {user.phone && <p><FontAwesomeIcon icon={faPhone} /> {user.phone}</p>}
             
-            {!editMode ? (
-              <button 
-                className="edit-profile-button"
-                onClick={() => setEditMode(true)}
-              >
-                <FontAwesomeIcon icon={faEdit} /> Chỉnh sửa thông tin
-              </button>
-            ) : (
-              <button 
-                className="cancel-edit-button"
-                onClick={() => {
-                  setEditMode(false);
-                  setFormData({
-                    name: user.name || '',
-                    phone: user.phone || '',
-                    address: user.address || ''
-                  });
-                  setError('');
-                }}
-              >
-                Hủy chỉnh sửa
-              </button>
-            )}
+            <div className="profile-actions">
+              {!editMode ? (
+                <button 
+                  className="edit-profile-button"
+                  onClick={() => setEditMode(true)}
+                >
+                  <FontAwesomeIcon icon={faEdit} /> Chỉnh sửa thông tin
+                </button>
+              ) : (
+                <button 
+                  className="cancel-edit-button"
+                  onClick={() => {
+                    setEditMode(false);
+                    setFormData({
+                      name: user.name || '',
+                      phone: user.phone || '',
+                      address: user.address || ''
+                    });
+                    setError('');
+                  }}
+                >
+                  Hủy chỉnh sửa
+                </button>
+              )}
+              
+              {user.authType === 'local' && (
+                <Link to="/change-password" className="change-password-button">
+                  <FontAwesomeIcon icon={faLock} /> Đổi mật khẩu
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
@@ -333,6 +379,12 @@ const ProfilePage = () => {
         isOpen={isAvatarModalOpen}
         onClose={() => setIsAvatarModalOpen(false)}
         onSuccess={handleAvatarUpdate}
+      />
+
+      <EmailVerificationModal
+        isOpen={isVerificationModalOpen}
+        onClose={() => setIsVerificationModalOpen(false)}
+        onSuccess={handleVerificationSuccess}
       />
     </div>
   );
