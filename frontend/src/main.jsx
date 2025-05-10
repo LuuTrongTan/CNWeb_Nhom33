@@ -2,6 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import React from "react";
 import App from "./App.jsx";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Import core styles
 import "./styles/scss/main.scss";
@@ -26,6 +28,17 @@ createRoot(document.getElementById("root")).render(
       <AuthProvider>
         <CartProvider>
           <App />
+          <ToastContainer 
+            position="bottom-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
         </CartProvider>
       </AuthProvider>
     </AxiosProvider>

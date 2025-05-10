@@ -6,3 +6,4 @@ module.exports.Review = require('./review.model');
 module.exports.Picture = require('./picture.model');
 module.exports.Wishlist = require('./wishlist.model');
 module.exports.Order = require('./order.model');
+module.exports.Cart = require('./cart.model');

@@ -11,6 +11,7 @@ const config = require('../config/config');
 const wishlistRoute = require('./wishlist.route');
 const orderRoute = require('./order.route');
 const dashboardRoute = require('./dashboard.route');
+const cartRoute = require('./cart.route');
 
 const router = express.Router();
 
@@ -54,6 +55,10 @@ const defaultRoutes = [
   {
     path: '/dashboard',
     route: dashboardRoute,
+  },
+  {
+    path: '/cart',
+    route: cartRoute,
   },
 ];
 
