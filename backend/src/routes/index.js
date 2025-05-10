@@ -11,6 +11,8 @@ const config = require('../config/config');
 const wishlistRoute = require('./wishlist.route');
 const orderRoute = require('./order.route');
 const dashboardRoute = require('./dashboard.route');
+const goongRoute = require('./goong.route');
+const locationRoute = require('./location.route');
 
 const router = express.Router();
 
@@ -30,6 +32,10 @@ const defaultRoutes = [
   {
     path: '/category',
     route: categoryRoute,
+  },
+  {
+    path: '/location',
+    route: locationRoute,
   },
   {
     path: '/review',
@@ -54,6 +60,10 @@ const defaultRoutes = [
   {
     path: '/dashboard',
     route: dashboardRoute,
+  },
+  {
+    path: '/goong',
+    route: goongRoute,
   },
 ];
 
