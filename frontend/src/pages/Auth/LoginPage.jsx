@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
@@ -13,6 +13,15 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login, loginWithGoogle } = useAuth();
+
+  // Lấy thông báo lỗi từ localStorage khi component mount
+  useEffect(() => {
+    const savedError = localStorage.getItem('loginError');
+    if (savedError) {
+      setError(savedError);
+      localStorage.removeItem('loginError'); // Xóa sau khi đã lấy
+    }
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -33,7 +42,16 @@ const LoginPage = () => {
       navigate('/');
     } catch (err) {
       console.error('Lỗi đăng nhập:', err);
-      setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      // Xử lý lỗi rate limit
+      if (err.response?.status === 429) {
+        const errorMsg = 'Quá nhiều yêu cầu đăng nhập. Vui lòng thử lại sau 5 phút.';
+        setError(errorMsg);
+        localStorage.setItem('loginError', errorMsg);
+      } else {
+        const errorMsg = err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+        setError(errorMsg);
+        localStorage.setItem('loginError', errorMsg);
+      }
     } finally {
       setLoading(false);
     }

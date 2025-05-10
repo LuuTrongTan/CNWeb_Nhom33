@@ -1,15 +1,16 @@
-Sconst express = require('express');
+const express = require('express');
 const validate = require('../middlewares/validate');
 const authValidation = require('../validations/auth.validation');
 const authController = require('../controllers/auth.controller');
 const userController = require('../controllers/user.controller');
 const auth = require('../middlewares/auth');
+const { authLimiter } = require('../middlewares/rateLimiter');
 
 const router = express.Router();
 console.log('Auth routes loaded auth.route.js');
 
 router.post('/register', validate(authValidation.register), authController.register);
-router.post('/login', validate(authValidation.login), authController.login);
+router.post('/login', authLimiter, validate(authValidation.login), authController.login);
 router.post('/logout', validate(authValidation.logout), authController.logout);
 router.post('/refresh-tokens', validate(authValidation.refreshTokens), authController.refreshTokens);
 /*router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);*/

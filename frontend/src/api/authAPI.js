@@ -1,10 +1,10 @@
-import axios from 'axios';
+import apiClient from '../services/api.service';
 
 const authAPI = {
   // Đăng ký tài khoản mới
   register: async (userData) => {
     try {
-      const response = await axios.post('/auth/register', userData);
+      const response = await apiClient.post('/auth/register', userData);
       
       if (response.data && response.data.tokens && response.data.user) {
         // Lưu token và thông tin người dùng vào localStorage
@@ -22,7 +22,7 @@ const authAPI = {
   // Đăng nhập
   login: async (email, password) => {
     try {
-      const response = await axios.post('/auth/login', { email, password });
+      const response = await apiClient.post('/auth/login', { email, password });
       
       if (response.data && response.data.tokens && response.data.user) {
         // Lưu token và thông tin người dùng vào localStorage
@@ -44,7 +44,7 @@ const authAPI = {
       
       if (refreshToken) {
         try {
-          await axios.post('/auth/logout', { refreshToken });
+          await apiClient.post('/auth/logout', { refreshToken });
         } catch (error) {
           console.error("Lỗi khi gọi API đăng xuất:", error);
           // Không throw error ở đây vì chúng ta vẫn muốn xóa dữ liệu local
@@ -97,7 +97,7 @@ const authAPI = {
         throw new Error('Không có refresh token');
       }
       
-      const response = await axios.post('/auth/refresh-tokens', { refreshToken });
+      const response = await apiClient.post('/auth/refresh-tokens', { refreshToken });
       
       if (response.data && response.data.access) {
         localStorage.setItem('token', response.data.access.token);
@@ -115,7 +115,7 @@ const authAPI = {
   // Quên mật khẩu
   forgotPassword: async (email) => {
     try {
-      await axios.post('/auth/forgot-password', { email });
+      await apiClient.post('/auth/forgot-password', { email });
       return true;
     } catch (error) {
       throw error;
@@ -125,7 +125,7 @@ const authAPI = {
   // Đặt lại mật khẩu
   resetPassword: async (token, newPassword) => {
     try {
-      await axios.post(`/auth/reset-password?token=${token}`, { 
+      await apiClient.post(`/auth/reset-password?token=${token}`, { 
         password: newPassword 
       });
       return true;
