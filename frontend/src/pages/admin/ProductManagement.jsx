@@ -8,7 +8,7 @@ import {
   fetchProductsAPI,
   deleteProduct,
 } from "../../service/productAPI";
-import { getAllCategory, getCategoryById } from "../../service/categoryAPI";
+import { getAllCategory } from "../../service/categoryAPI";
 import {
   faPlus,
   faEdit,

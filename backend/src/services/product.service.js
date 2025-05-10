@@ -26,6 +26,7 @@ const searchProducts = async (options = {}) => {
     tagCategory,
     minPrice,
     maxPrice,
+    stock,
     isNewArrival,
     isFeatured,
     isBestSeller,
