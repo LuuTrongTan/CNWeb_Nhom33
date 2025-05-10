@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:4000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Lấy danh sách đơn hàng của người dùng đăng nhập
 export const getUserOrders = async (page = 1, limit = 10) => {
