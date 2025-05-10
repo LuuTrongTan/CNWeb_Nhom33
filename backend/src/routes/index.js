@@ -25,11 +25,11 @@ const defaultRoutes = [
     route: userRoute,
   },
   {
-    path: '/product',
+    path: '/products',
     route: productRoute,
   },
   {
-    path: '/category',
+    path: '/categories',
     route: categoryRoute,
   },
   {

@@ -21,7 +21,7 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 const CheckoutForm = ({ onCancel }) => {
-    const { cart, calculateTotal, clearCart } = useCart();
+    const { cart, calculateTotal, clearCart, getSelectedItems } = useCart();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [orderInfo, setOrderInfo] = useState({
@@ -65,9 +65,17 @@ const CheckoutForm = ({ onCancel }) => {
         try {
             setLoading(true);
             
-            // Chuẩn bị dữ liệu đơn hàng
+            // Lấy danh sách sản phẩm đã chọn
+            const selectedCartItems = getSelectedItems();
+            
+            if (selectedCartItems.length === 0) {
+                alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
+                return;
+            }
+            
+            // Chuẩn bị dữ liệu đơn hàng chỉ với các sản phẩm đã chọn
             const orderData = {
-                items: cart.map(item => ({
+                items: selectedCartItems.map(item => ({
                     product: item.id,
                     name: item.name,
                     price: item.price,
@@ -257,7 +265,7 @@ const CheckoutForm = ({ onCancel }) => {
                 <div className="order-summary mb-6">
                     <h3 className="text-lg font-semibold mb-2">Tóm tắt đơn hàng</h3>
                     <div className="bg-gray-50 p-4 rounded">
-                        {cart.map(item => (
+                        {getSelectedItems().map(item => (
                             <div key={item.id} className="flex justify-between py-2 border-b">
                                 <div>
                                     <span className="font-medium">{item.name}</span>

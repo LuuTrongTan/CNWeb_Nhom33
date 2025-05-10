@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useState, useEffect } from "react";
-import CheckoutForm from "../components/Checkout/CheckoutForm";
 import "../styles/css/CartPage.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faArrowLeft, faArrowRight, faTags, faMinus, faPlus, faPalette, faRuler, faSpinner, faCheck } from "@fortawesome/free-solid-svg-icons";
@@ -20,9 +19,9 @@ const CartPage = () => {
     getSelectedItems
   } = useCart();
   const navigate = useNavigate();
-  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
-  const [productDetails, setProductDetails] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [localCart, setLocalCart] = useState([]);
+  const [isAllSelected, setIsAllSelected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [debug, setDebug] = useState(false);
 
@@ -30,13 +29,12 @@ const CartPage = () => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       if (cart.length === 0) {
-        setLoading(false);
+        setIsLoading(false);
         return;
       }
       
       try {
-        setLoading(true);
-        setError(null);
+        setIsLoading(true);
         const details = {};
         let hasError = false;
         
@@ -61,15 +59,15 @@ const CartPage = () => {
         }
         
         if (hasError) {
-          setError("Không thể tải đầy đủ thông tin sản phẩm. Một số tùy chọn có thể không hiển thị.");
+          console.warn("Không thể tải đầy đủ thông tin sản phẩm. Một số tùy chọn có thể không hiển thị.");
         }
         
-        setProductDetails(details);
+        setLocalCart(details);
       } catch (err) {
         console.error("Error fetching product details:", err);
-        setError("Đã có lỗi xảy ra khi tải thông tin sản phẩm.");
+        console.warn("Đã có lỗi xảy ra khi tải thông tin sản phẩm.");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -129,7 +127,7 @@ const CartPage = () => {
 
   // Kiểm tra xem sản phẩm có size và color không
   const hasOptions = (productId) => {
-    const product = productDetails[productId];
+    const product = localCart[productId];
     if (!product) return false;
     
     return (
@@ -155,9 +153,9 @@ const CartPage = () => {
             size: item.selectedSize,
             color: item.selectedColor
           })),
-          loadedProducts: Object.keys(productDetails).length,
-          productDetails: Object.keys(productDetails).reduce((acc, key) => {
-            const product = productDetails[key];
+          loadedProducts: Object.keys(localCart).length,
+          productDetails: Object.keys(localCart).reduce((acc, key) => {
+            const product = localCart[key];
             acc[key] = {
               id: product._id,
               name: product.name,
@@ -171,6 +169,15 @@ const CartPage = () => {
         }, null, 2)}</pre>
       </div>
     );
+  };
+
+  const handleCheckout = () => {
+    const selectedItems = getSelectedItems();
+    if (selectedItems.length === 0) {
+      alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
+      return;
+    }
+    navigate("/checkout");
   };
 
   return (
@@ -187,7 +194,7 @@ const CartPage = () => {
         )}
       </div>
 
-      {loading && (
+      {isLoading && (
         <div className="cartpage-loading">
           <FontAwesomeIcon icon={faSpinner} spin />
           <p>Đang tải thông tin sản phẩm...</p>
@@ -217,12 +224,17 @@ const CartPage = () => {
               <div className="cartpage-header-checkbox">
                 <input
                   type="checkbox"
-                  checked={selectedItems.length === cart.length}
+                  checked={selectedItems.length === cart.length && cart.length > 0}
                   onChange={handleToggleSelectAll}
                   className="cartpage-select-all"
                   id="select-all"
                 />
-                <label htmlFor="select-all">Tất cả</label>
+                <label htmlFor="select-all" className="checkbox-label">
+                  <span className="checkbox-custom">
+                    {selectedItems.length === cart.length && cart.length > 0 && <FontAwesomeIcon icon={faCheck} />}
+                  </span>
+                  <span style={{ marginLeft: '8px' }}>Tất cả</span>
+                </label>
               </div>
               <div className="cartpage-header-product">Sản phẩm</div>
               <div className="cartpage-header-price">Đơn giá</div>
@@ -267,14 +279,14 @@ const CartPage = () => {
                       {/* Phần tùy chọn kích thước và màu sắc */}
                       <div className="cartpage-options">
                         {/* Hiển thị lựa chọn kích thước */}
-                        {productDetails[item.id]?.sizes && productDetails[item.id].sizes.length > 0 && (
+                        {localCart[item.id]?.sizes && localCart[item.id].sizes.length > 0 && (
                           <div className="cartpage-option-group">
                             <div className="cartpage-option-title">
                               <FontAwesomeIcon icon={faRuler} />
                               <span>Kích thước:</span>
                             </div>
                             <div className="cartpage-sizes-list">
-                              {productDetails[item.id].sizes.map((size, idx) => (
+                              {localCart[item.id].sizes.map((size, idx) => (
                                 <span
                                   key={`${itemId}-size-${size}-${idx}`}
                                   className={`cartpage-size-option ${
@@ -290,14 +302,14 @@ const CartPage = () => {
                         )}
                         
                         {/* Hiển thị lựa chọn màu sắc */}
-                        {productDetails[item.id]?.colors && productDetails[item.id].colors.length > 0 && (
+                        {localCart[item.id]?.colors && localCart[item.id].colors.length > 0 && (
                           <div className="cartpage-option-group">
                             <div className="cartpage-option-title">
                               <FontAwesomeIcon icon={faPalette} />
                               <span>Màu sắc:</span>
                             </div>
                             <div className="cartpage-colors-list">
-                              {productDetails[item.id].colors.map((color, idx) => (
+                              {localCart[item.id].colors.map((color, idx) => (
                                 <span
                                   key={`${itemId}-color-${color}-${idx}`}
                                   className={`cartpage-color-option ${
@@ -390,7 +402,7 @@ const CartPage = () => {
                 <span>Đã chọn {totalSelectedItems} sản phẩm</span>
               </div>
               <div className="cartpage-summary-row">
-                <span>Tổng tiền:</span>
+                <span>Tổng tiền ({totalSelectedItems} sản phẩm):</span>
                 <span className="cartpage-summary-value">{calculateTotal().toLocaleString()} ₫</span>
               </div>
             </div>
@@ -402,7 +414,7 @@ const CartPage = () => {
                 <FontAwesomeIcon icon={faArrowLeft} /> Tiếp tục mua sắm
               </button>
               <button
-                onClick={() => navigate("/checkout")}
+                onClick={handleCheckout}
                 className="cartpage-checkout"
                 disabled={getSelectedItems().length === 0}
               >

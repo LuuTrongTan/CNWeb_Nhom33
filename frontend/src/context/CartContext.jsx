@@ -115,9 +115,9 @@ export const CartProvider = ({ children }) => {
         }
       } else {
         // Lấy giỏ hàng từ localStorage cho người dùng chưa đăng nhập
-        const savedCart = localStorage.getItem("cart");
-        if (savedCart) {
-          try {
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      try {
             const parsedCart = JSON.parse(savedCart);
             // Đảm bảo mỗi item có cartItemId
             const cartWithIds = parsedCart.map(item => {
@@ -134,37 +134,37 @@ export const CartProvider = ({ children }) => {
             setSelectedItems(cartWithIds.map(item => item.cartItemId));
             // Lưu lại giỏ hàng với cartItemId
             localStorage.setItem("cart", JSON.stringify(cartWithIds));
-          } catch (e) {
-            console.error("Lỗi khi đọc giỏ hàng từ localStorage:", e);
-            localStorage.removeItem("cart");
-          }
-        }
+      } catch (e) {
+        console.error("Lỗi khi đọc giỏ hàng từ localStorage:", e);
+        localStorage.removeItem("cart");
+      }
+    }
       }
     };
-    
+
     fetchCart();
   }, [isAuthenticated, currentUser]);
 
   // Lưu giỏ hàng vào localStorage khi thay đổi (chỉ cho người dùng chưa đăng nhập)
   useEffect(() => {
     if (!isAuthenticated && cart.length > 0) {
-      localStorage.setItem("cart", JSON.stringify(cart));
+    localStorage.setItem("cart", JSON.stringify(cart));
     }
   }, [cart, isAuthenticated]);
 
   const addToCart = async (product) => {
-    // Chuyển đổi _id thành id nếu cần
-    const productToAdd = {
-      id: product._id || product.id,
-      name: product.name,
+      // Chuyển đổi _id thành id nếu cần
+      const productToAdd = {
+        id: product._id || product.id,
+        name: product.name,
       price: product.hasDiscount ? product.discountPrice : product.price,
       originalPrice: product.price,
       hasDiscount: product.hasDiscount || false,
-      image: product.images?.[0] || product.image,
-      quantity: product.quantity || 1,
-      selectedSize: product.selectedSize,
-      selectedColor: product.selectedColor,
-    };
+        image: product.images?.[0] || product.image,
+        quantity: product.quantity || 1,
+        selectedSize: product.selectedSize,
+        selectedColor: product.selectedColor,
+      };
 
     if (isAuthenticated) {
       try {
@@ -236,27 +236,27 @@ export const CartProvider = ({ children }) => {
           item.selectedColor === productToAdd.selectedColor
         );
 
-        if (existing) {
+      if (existing) {
           // Nếu sản phẩm đã tồn tại với cùng màu sắc và kích thước, chỉ cập nhật số lượng
-          return prev.map((item) =>
+        return prev.map((item) =>
             (item.id === productToAdd.id && 
              item.selectedSize === productToAdd.selectedSize && 
              item.selectedColor === productToAdd.selectedColor)
-              ? {
-                  ...item,
-                  quantity: item.quantity + (productToAdd.quantity || 1),
-                }
-              : item
-          );
-        } else {
+            ? {
+                ...item,
+                quantity: item.quantity + (productToAdd.quantity || 1),
+              }
+            : item
+        );
+      } else {
           // Nếu là sản phẩm mới HOẶC có màu/kích thước khác, thêm mới vào giỏ hàng
           return [...prev, {
             ...productToAdd,
             // Tạo ID duy nhất cho mục giỏ hàng này để phân biệt các biến thể khác nhau
             cartItemId: `${productToAdd.id}-${productToAdd.selectedSize || 'no-size'}-${productToAdd.selectedColor || 'no-color'}-${Date.now()}`
           }];
-        }
-      });
+      }
+    });
       showSuccess(`Đã thêm ${productToAdd.name} vào giỏ hàng`);
     }
   };
@@ -547,7 +547,7 @@ export const CartProvider = ({ children }) => {
   const calculateTotal = () => {
     const subtotal = cart.reduce(
       (acc, item) => {
-        const itemId = item.id || item.cartItemId;
+        const itemId = item.cartItemId || item.id;
         if (selectedItems.includes(itemId)) {
           return acc + item.price * item.quantity;
         }
@@ -574,8 +574,8 @@ export const CartProvider = ({ children }) => {
       }
     } else {
       // Nếu chưa đăng nhập, xóa từ state và localStorage
-      setCart([]);
-      localStorage.removeItem("cart");
+    setCart([]);
+    localStorage.removeItem("cart");
       showSuccess("Đã xóa toàn bộ giỏ hàng");
     }
   };
@@ -594,7 +594,7 @@ export const CartProvider = ({ children }) => {
   // Hàm chọn tất cả hoặc bỏ chọn tất cả
   const toggleSelectAll = (isSelected) => {
     if (isSelected) {
-      setSelectedItems(cart.map(item => item.id || item.cartItemId));
+      setSelectedItems(cart.map(item => item.cartItemId || item.id));
     } else {
       setSelectedItems([]);
     }
@@ -602,7 +602,7 @@ export const CartProvider = ({ children }) => {
 
   // Hàm chỉ lấy các sản phẩm được chọn từ giỏ hàng
   const getSelectedItems = () => {
-    return cart.filter(item => selectedItems.includes(item.id || item.cartItemId));
+    return cart.filter(item => selectedItems.includes(item.cartItemId || item.id));
   };
 
   // Sửa lại hàm tạo đơn hàng để chỉ tạo đơn với các sản phẩm đã chọn
@@ -657,12 +657,12 @@ export const CartProvider = ({ children }) => {
           setCart(formattedItems);
           // Cập nhật danh sách mục đã chọn
           setSelectedItems(formattedItems.map(item => item.id));
-        }
+    }
       } else {
         // Đối với người dùng chưa đăng nhập, lọc ra các mục chưa được chọn và cập nhật localStorage
-        const remainingItems = cart.filter(item => !selectedItems.includes(item.id || item.cartItemId));
+        const remainingItems = cart.filter(item => !selectedItems.includes(item.cartItemId || item.id));
         setCart(remainingItems);
-        setSelectedItems(remainingItems.map(item => item.id || item.cartItemId));
+        setSelectedItems(remainingItems.map(item => item.cartItemId || item.id));
         localStorage.setItem("cart", JSON.stringify(remainingItems));
       }
 

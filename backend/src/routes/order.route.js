@@ -1,28 +1,30 @@
 const express = require('express');
 const auth = require('../middlewares/auth');
+const validate = require('../middlewares/validate');
+const orderValidation = require('../validations/order.validation');
 const orderController = require('../controllers/order.controller');
 
 const router = express.Router();
 
-router
-  .route('/')
-  .post(auth(), orderController.createOrder)
-  .get(auth(), orderController.getUserOrders);
+// Tạo đơn hàng mới - không cần đăng nhập
+router.post('/', orderController.createOrder);
 
-router
-  .route('/stats')
-  .get(auth(), orderController.getOrderStats);
+// Lấy đơn hàng theo ID - không cần đăng nhập nếu có mã đơn hàng
+router.get('/:orderId', orderController.getOrderById);
 
-router
-  .route('/:orderId')
-  .get(auth(), orderController.getOrderById);
+// Các route yêu cầu đăng nhập
+router.use(auth());
 
-router
-  .route('/:orderId/cancel')
-  .patch(auth(), orderController.cancelOrder);
+// Lấy danh sách đơn hàng của người dùng
+router.get('/', orderController.getOrders);
 
-router
-  .route('/:orderId/status')
-  .patch(auth('admin'), orderController.updateOrderStatus);
+// Hủy đơn hàng
+router.patch('/:orderId/cancel', orderController.cancelOrder);
+
+// Các route yêu cầu quyền admin
+router.use(auth('admin'));
+
+// Cập nhật trạng thái đơn hàng
+router.patch('/:orderId', orderController.updateOrderStatus);
 
 module.exports = router; 

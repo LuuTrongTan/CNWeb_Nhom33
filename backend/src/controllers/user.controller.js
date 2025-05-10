@@ -159,6 +159,15 @@ const updateProfile = catchAsync(async (req, res) => {
   res.send(user);
 });
 
+/**
+ * Lấy thông tin giao hàng của người dùng đang đăng nhập
+ */
+const getUserShippingInfo = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const shippingInfo = await userService.getUserShippingInfo(userId);
+  res.status(httpStatus.OK).send(shippingInfo);
+});
+
 module.exports = {
   createUser,
   getUsers,
@@ -171,4 +180,5 @@ module.exports = {
   requestPasswordReset,
   verifyResetCode,
   resetPassword,
+  getUserShippingInfo,
 };
