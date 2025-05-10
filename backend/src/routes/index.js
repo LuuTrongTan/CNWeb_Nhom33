@@ -14,6 +14,7 @@ const dashboardRoute = require('./dashboard.route');
 const goongRoute = require('./goong.route');
 const locationRoute = require('./location.route');
 const momoRoute = require('./momo.route');
+const cartRoute = require('./cart.route');
 
 const router = express.Router();
 
@@ -69,6 +70,10 @@ const defaultRoutes = [
   {
     path: '/momo',
     route: momoRoute,
+  },
+  {
+    path: '/cart',
+    route: cartRoute,
   },
 ];
 

@@ -47,6 +47,50 @@ components:
         message:
           type: string
 
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+        user:
+          type: string
+          description: ID của người dùng sở hữu giỏ hàng
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              product:
+                type: string
+                description: ID của sản phẩm
+              quantity:
+                type: number
+                description: Số lượng sản phẩm
+              price:
+                type: number
+                description: Giá của sản phẩm
+              name:
+                type: string
+                description: Tên sản phẩm
+              image:
+                type: string
+                description: URL hình ảnh sản phẩm
+              selectedSize:
+                type: string
+                description: Kích thước được chọn
+              selectedColor:
+                type: string
+                description: Màu sắc được chọn
+        lastUpdated:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
   responses:
     DuplicateEmail:
       description: Email already taken

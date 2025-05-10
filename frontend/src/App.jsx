@@ -26,6 +26,7 @@ import WishlistPage from "./pages/WishlistPage";
 import OrderHistoryPage from "./pages/User/OrderHistoryPage";
 import OrderDetailPage from "./pages/User/OrderDetailPage";
 import OrderManagementPage from "./pages/Admin/OrderManagementPage";
+import OrderConfirmation from './pages/OrderConfirmation';
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -111,6 +112,7 @@ const App = () => {
                     {/* Giỏ hàng và Thanh toán */}
                     <Route path="cart" element={<CartPage />} />
                     <Route path="checkout" element={<CheckoutPage />} />
+                    <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
 
                     {/* Tài khoản */}
                     <Route path="login" element={<LoginPage />} />

@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { User } = require('../models');
+const { User, Order } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -79,6 +79,46 @@ const deleteUserById = async (userId) => {
   return user;
 };
 
+/**
+ * Lấy thông tin giao hàng của người dùng
+ * @param {ObjectId} userId
+ * @returns {Promise<Object>}
+ */
+const getUserShippingInfo = async (userId) => {
+  const user = await getUserById(userId);
+  
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Người dùng không tồn tại');
+  }
+  
+  // Lấy đơn hàng gần nhất của người dùng để lấy thông tin giao hàng
+  const latestOrder = await Order.findOne({ user: userId })
+    .sort({ createdAt: -1 })
+    .select('shippingAddress');
+  
+  // Nếu có đơn hàng trước đó, sử dụng thông tin giao hàng từ đơn hàng đó
+  if (latestOrder && latestOrder.shippingAddress) {
+    return {
+      fullName: latestOrder.shippingAddress.fullName || user.name || '',
+      phone: latestOrder.shippingAddress.phone || user.phone || '',
+      address: latestOrder.shippingAddress.address || user.address || '',
+      city: latestOrder.shippingAddress.city || '',
+      district: latestOrder.shippingAddress.district || '',
+      ward: latestOrder.shippingAddress.ward || '',
+    };
+  }
+  
+  // Nếu không có đơn hàng trước đó, sử dụng thông tin từ hồ sơ người dùng
+  return {
+    fullName: user.name || '',
+    phone: user.phone || '',
+    address: user.address || '',
+    city: '',
+    district: '',
+    ward: '',
+  };
+};
+
 module.exports = {
   createUser,
   queryUsers,
@@ -86,4 +126,5 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
+  getUserShippingInfo,
 };
