@@ -1,6 +1,25 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
 
+const { Schema } = mongoose;
+
+const feedbackSchema = new Schema(
+  {
+    user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
 const reviewSchema = mongoose.Schema(
   {
     user: {
@@ -40,6 +59,7 @@ const reviewSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    listFeedback: [feedbackSchema],
   },
   {
     timestamps: true,

@@ -16,7 +16,6 @@ import {
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import ReviewList from "../components/Review/ReviewList";
-import ReviewForm from "../components/Review/ReviewForm";
 import axios from "axios";
 import ProductCard from "../components/Product/ProductCard";
 import { getCategoryById } from "../service/categoryAPI";
@@ -55,7 +54,7 @@ const ProductDetailPage = ({ tagCategory }) => {
         // Lấy sản phẩm liên quan sau khi có thông tin sản phẩm
         try {
           const relatedData = await getRelatedProducts(id);
-          // console.log("Dữ liệu sản phẩm liên quan:", relatedData);
+          console.log("Dữ liệu sản phẩm liên quan:", relatedData);
           setRelatedProducts(relatedData);
         } catch (err) {
           console.error("Lỗi khi lấy sản phẩm liên quan:", err);
@@ -129,7 +128,7 @@ const ProductDetailPage = ({ tagCategory }) => {
     const productToAdd = {
       id: product._id, // Đảm bảo có id
       name: product.name,
-      price: product.price,
+      price: product.discountPrice,
       images: product.images,
       selectedSize,
       selectedColor,
@@ -192,6 +191,10 @@ const ProductDetailPage = ({ tagCategory }) => {
     } finally {
       setIsLoadingWishlist(false);
     }
+  };
+
+  const handleNewRatingReview = (updateProduct) => {
+    setProduct(updateProduct);
   };
 
   if (loading) {
@@ -300,7 +303,9 @@ const ProductDetailPage = ({ tagCategory }) => {
                   </span>
                 );
               })}
-              <span className="review-count">({product.rating} đánh giá)</span>
+              <span className="review-count">
+                ({product.numReviews} đánh giá)
+              </span>
             </div>
             <div className="product-sku">
               <span>Số lượng đã bán:</span>{" "}
@@ -518,7 +523,9 @@ const ProductDetailPage = ({ tagCategory }) => {
               <h3>Đánh giá từ khách hàng</h3>
               <div className="reviews-summary">
                 <div className="average-rating">
-                  <span className="rating-number">{product.rating}</span>
+                  <span className="rating-number">
+                    {product.rating.toFixed(1)}
+                  </span>
                   <div className="rating-stars">
                     {[...Array(5)].map((_, i) => {
                       const diff = product.rating - i;
@@ -546,25 +553,9 @@ const ProductDetailPage = ({ tagCategory }) => {
                 </div>
               </div>
 
-              <ReviewList productId={id} />
-
-              <ReviewForm
+              <ReviewList
                 productId={id}
-                onReviewSubmitted={() => {
-                  // Reload product data to update review count and rating
-                  const fetchProductDetails = async () => {
-                    try {
-                      const data = await getProductById(id);
-                      setProduct(data);
-                    } catch (err) {
-                      console.error(
-                        "Lỗi khi cập nhật thông tin sản phẩm:",
-                        err
-                      );
-                    }
-                  };
-                  fetchProductDetails();
-                }}
+                updateProduct={handleNewRatingReview}
               />
             </div>
           )}
@@ -578,13 +569,18 @@ const ProductDetailPage = ({ tagCategory }) => {
               <ProductCard
                 key={relatedProduct._id}
                 product={{
-                  _id: relatedProduct._id,
+                  _id: relatedProduct.id,
                   name: relatedProduct.name,
                   price: relatedProduct.price,
-                  images: relatedProduct.images,
-                  category: category || "Thời trang",
+                  discountPrice: relatedProduct.discountPrice,
+                  mainImage: relatedProduct.mainImage,
+                  images: [relatedProduct.images],
+                  category: relatedProduct.tagCategory,
                   isNewArrival: relatedProduct.isNewArrival,
-                  discount: relatedProduct.discountPercentage,
+                  discount: relatedProduct.hasDiscount,
+                  tagCategory: relatedProduct.tagCategory,
+                  rating: relatedProduct.rating,
+                  numReviews: relatedProduct.numReviews,
                 }}
               />
             ))}

@@ -27,7 +27,23 @@ const Sidebar = ({ toggleSidebar, tagCategory }) => {
 
   // Danh mục sản phẩm
 
-  const sizes = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"];
+  const sizes = [
+    "One Size",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "2XL",
+    "3XL",
+    "4XL",
+    "37",
+    "38",
+    "39",
+    "40",
+    "41",
+    "42",
+    "43",
+  ];
   const colors = [
     { name: "Đen", code: "#000000" },
     { name: "Trắng", code: "#FFFFFF" },
@@ -356,7 +372,7 @@ const Sidebar = ({ toggleSidebar, tagCategory }) => {
                 }`}
                 onClick={() => handleSizeChange(size)}
               >
-                {size}
+                {size === "One Size" ? "*" : size}
               </div>
             ))}
           </div>

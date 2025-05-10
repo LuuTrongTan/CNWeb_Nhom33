@@ -5,7 +5,7 @@ import {
   faHeart,
   faShoppingCart,
   faEye,
-  faStar as solidStar,
+  faStar,
   faStar as regularStar,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
@@ -17,14 +17,17 @@ const ProductCard = ({ product }) => {
     _id,
     name,
     price,
+    discountPrice,
     images,
     category,
-    discount = 0,
+    discount,
     tagCategory,
     mainImage,
+    rating,
+    numReviews,
   } = product;
   const discountedPrice =
-    discount > 0 ? price - (price * discount) / 100 : price;
+    discount === true ? ((price - discountPrice) / price) * 100 : 0;
 
   const { addToCart } = useCart();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -101,7 +104,7 @@ const ProductCard = ({ product }) => {
     console.log({
       id: _id,
       name,
-      price: discountedPrice,
+      price: discountPrice,
       image: images[0],
       quantity: 1,
     });
@@ -109,7 +112,7 @@ const ProductCard = ({ product }) => {
     addToCart({
       id: _id,
       name,
-      price: discountedPrice,
+      price: discountPrice,
       images,
       image: images[0],
       quantity: 1,
@@ -131,6 +134,8 @@ const ProductCard = ({ product }) => {
       navigate(`/products/giayvadep/${_id}`);
     } else if (tagCategory === "Phụ kiện") {
       navigate(`/products/phukien/${_id}`);
+    } else {
+      navigate(`/products/${_id}`);
     }
   };
 
@@ -149,8 +154,10 @@ const ProductCard = ({ product }) => {
           {product.isNewArrival && (
             <div className="product-badge new-badge">Mới</div>
           )}
-          {discount > 0 && (
-            <div className="product-badge discount-badge">-{discount}%</div>
+          {discountedPrice > 0 && (
+            <div className="product-badge discount-badge">
+              -{discountedPrice}%
+            </div>
           )}
 
           <div className="product-actions">
@@ -190,31 +197,46 @@ const ProductCard = ({ product }) => {
 
           <div className="product-rating">
             <div className="stars">
-              {[...Array(5)].map((_, i) => (
-                <span
-                  key={i}
-                  className={`star ${
-                    i < Math.floor(Math.random() * 2 + 3) ? "filled" : ""
-                  }`}
-                >
-                  ★
-                </span>
-              ))}
+              {[...Array(5)].map((_, i) => {
+                const diff = rating - i;
+
+                let fillClass = "star-empty";
+                if (diff >= 1) fillClass = "star-100";
+                else if (diff >= 0.9) fillClass = "star-90";
+                else if (diff >= 0.8) fillClass = "star-80";
+                else if (diff >= 0.7) fillClass = "star-70";
+                else if (diff >= 0.6) fillClass = "star-60";
+                else if (diff >= 0.5) fillClass = "star-50";
+                else if (diff >= 0.4) fillClass = "star-40";
+                else if (diff >= 0.3) fillClass = "star-30";
+                else if (diff >= 0.2) fillClass = "star-20";
+                else if (diff >= 0.1) fillClass = "star-10";
+
+                return (
+                  <span key={i} className={`star ${fillClass}`}>
+                    <FontAwesomeIcon icon={faStar} />
+                  </span>
+                );
+              })}
             </div>
-            <span className="rating-count">
-              ({Math.floor(Math.random() * 20 + 5)})
-            </span>
+            <span className="rating-count">({numReviews})</span>
           </div>
 
           <div className="product-price">
-            {discount > 0 && (
+            {discountedPrice > 0 && (
               <span className="original-price">
                 {price.toLocaleString("vi-VN")}đ
               </span>
             )}
-            <span className="current-price">
-              {discountedPrice.toLocaleString("vi-VN")}đ
-            </span>
+            {discountedPrice > 0 ? (
+              <span className="current-price">
+                {discountPrice.toLocaleString("vi-VN")}đ
+              </span>
+            ) : (
+              <span className="current-price">
+                {price.toLocaleString("vi-VN")}đ
+              </span>
+            )}
           </div>
         </div>
 

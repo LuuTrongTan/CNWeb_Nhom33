@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getProductById } from "../../service/productAPI";
 import {
   faStar,
   faThumbsUp,
@@ -11,12 +12,16 @@ import axios from "axios";
 import "./ReviewList.css";
 import {
   getReviewByProduct,
-  getReviewById,
-  deleteCategoryById,
+  deleteReviewById,
   updateReviewById,
+  createFeedBack,
+  deleteFeedbackById,
+  updateFeedbackById,
 } from "../../service/ReviewAPI";
 
-const ReviewList = ({ productId }) => {
+import ReviewForm from "./ReviewForm";
+
+const ReviewList = ({ productId, updateProduct }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,8 +30,13 @@ const ReviewList = ({ productId }) => {
   const [userAuth, setUserAuth] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [reviewToDelete, setReviewToDelete] = useState(null);
+  const [feedBackToDelete, setFeedBackToDelete] = useState(null);
   const [reviewToEdit, setReviewToEdit] = useState(null);
+  const [feedbackToEdit, setFeedbackToEdit] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditFeedbackOpen, setIsEditFeedbackOpen] = useState(false);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyContent, setReplyContent] = useState("");
 
   // Lấy thông tin user đã đăng nhập từ localStorage
   useEffect(() => {
@@ -64,7 +74,94 @@ const ReviewList = ({ productId }) => {
     }
   }, [productId, page]);
 
-  // Hàm xử lý sửa đánh giá
+  //Hàm xử lý feedBackReview
+  const handleReplySubmit = async (reviewId) => {
+    if (!replyContent.trim()) {
+      alert("Nội dung trả lời không được để trống.");
+      return;
+    }
+
+    try {
+      console.log("replyContent", replyContent);
+      const response = await createFeedBack(
+        reviewId,
+        userAuth.id,
+        replyContent
+      );
+      console.log("response", response);
+
+      // Cập nhật danh sách review với trả lời mới
+      setReviews((prevReviews) =>
+        prevReviews.map((review) =>
+          review._id === reviewId ? response : review
+        )
+      );
+
+      // Đặt lại trạng thái
+      setReplyingTo(null);
+      setReplyContent("");
+    } catch (err) {
+      console.error("Lỗi khi gửi trả lời:", err);
+    }
+  };
+
+  const handleEditFeedback = (feedback, review) => {
+    setReviewToEdit(review);
+    setFeedbackToEdit(feedback);
+    setIsEditFeedbackOpen(true);
+  };
+
+  const handleUpdateFeedback = async () => {
+    if (!feedbackToEdit.content.trim()) {
+      alert("Nội dung không được để trống.");
+      return;
+    }
+
+    try {
+      const response = await updateFeedbackById(
+        feedbackToEdit._id,
+        reviewToEdit._id,
+        {
+          content: feedbackToEdit.content,
+        }
+      );
+
+      // Cập nhật state
+      setReviews(
+        reviews.map((review) =>
+          review._id === reviewToEdit._id ? response : review
+        )
+      );
+
+      setIsEditFeedbackOpen(false);
+      setReviewToEdit(null);
+      setFeedbackToEdit(null);
+    } catch (err) {
+      console.error("Lỗi khi cập nhật đánh giá:", err);
+    }
+  };
+
+  const confirmDeleteFeedback = (feedBack, review) => {
+    setFeedBackToDelete(feedBack);
+    setReviewToDelete(review);
+  };
+
+  const handleConfirmDeleteFeedback = async (feedBack, review2) => {
+    try {
+      const response = await deleteFeedbackById(feedBack._id, review2._id);
+      // Cập nhật danh sách review với trả lời mới
+      setReviews((prevReviews) =>
+        prevReviews.map((review) =>
+          review._id === review2._id ? response : review
+        )
+      );
+      setFeedBackToDelete(null);
+      setReviewToDelete(null);
+    } catch (err) {
+      console.error("Lỗi khi xóa bình luận:", err);
+    }
+  };
+  // Hàm xử lý  đánh giá
   const handleEditReview = (review) => {
     setReviewToEdit(review);
     setIsEditModalOpen(true);
@@ -77,7 +174,7 @@ const ReviewList = ({ productId }) => {
     }
 
     try {
-      await updateReviewById(reviewToEdit.id, {
+      await updateReviewById(reviewToEdit._id, {
         title: reviewToEdit.title,
         comment: reviewToEdit.comment,
       });
@@ -85,7 +182,7 @@ const ReviewList = ({ productId }) => {
       // Cập nhật state
       setReviews(
         reviews.map((review) =>
-          review.id === reviewToEdit.id
+          review._id === reviewToEdit._id
             ? {
                 ...review,
                 title: reviewToEdit.title,
@@ -102,17 +199,19 @@ const ReviewList = ({ productId }) => {
     }
   };
 
-  const confirmDeleteReview = (review) => {
+  const confirmDeleteReview = async (review) => {
     setReviewToDelete(review);
   };
 
-  const handleConfirmDelete = async (review) => {
+  const handleConfirmDelete = async (review2) => {
     try {
-      await deleteCategoryById(review.id, userAuth.id);
+      await deleteReviewById(review2._id, userAuth.id);
 
       // Cập nhật state
-      setReviews(reviews.filter((review) => review.id !== reviewToDelete.id));
+      setReviews(reviews.filter((review) => review._id !== reviewToDelete._id));
       setReviewToDelete(null);
+      const data = await getProductById(productId);
+      updateProduct(data);
     } catch (err) {
       console.error("Lỗi khi xóa đánh giá:", err);
     }
@@ -145,16 +244,25 @@ const ReviewList = ({ productId }) => {
     return <div className="review-error">{error}</div>;
   }
 
+  const handleNewReview = async (newReview) => {
+    setReviews((prevReviews) => [newReview, ...prevReviews]);
+    const data = await getProductById(productId);
+    updateProduct(data);
+  };
+
   if (reviews.length === 0) {
     return (
-      <div className="no-reviews">Chưa có đánh giá nào cho sản phẩm này.</div>
+      <>
+        <div className="no-reviews">Chưa có đánh giá nào cho sản phẩm này.</div>
+        <ReviewForm productId={productId} onReviewSubmitted={handleNewReview} />
+      </>
     );
   }
 
   return (
     <div className="review-list">
       {reviews.map((review) => (
-        <div key={review.id} className="review-item">
+        <div key={review._id} className="review-item">
           <div className="review-header">
             <div className="review-user-info">
               <div className="review-avatar">
@@ -174,15 +282,15 @@ const ReviewList = ({ productId }) => {
               </div>
             </div>
             <div className="review-actions">
-              {userAuth && userAuth.id === review.user.id && (
+              {userAuth && userAuth.id === review.user._id && (
                 <div className="dropdown">
                   <button
                     className="dropdown-toggle"
-                    onClick={() => toggleDropdown(review.id)}
+                    onClick={() => toggleDropdown(review._id)}
                   >
                     <FontAwesomeIcon icon={faEllipsisV} />
                   </button>
-                  {dropdownOpen === review.id && (
+                  {dropdownOpen === review._id && (
                     <div className="dropdown-menu">
                       <button
                         className="edit-button"
@@ -219,13 +327,111 @@ const ReviewList = ({ productId }) => {
           </div>
 
           <h4 className="review-title">{review.title}</h4>
-          <p className="review-comment">{review.comment}</p>
+          <p className="review-comment">{review.comment} </p>
 
           {review.images && review.images.length > 0 && (
             <div className="review-images">
               {review.images.map((img, index) => (
                 <img key={index} src={img} alt={`Review image ${index + 1}`} />
               ))}
+            </div>
+          )}
+          <div className="review-actions">
+            <button
+              className="reply-button"
+              onClick={() => setReplyingTo(review._id)}
+            >
+              Trả lời
+            </button>
+          </div>
+
+          {review.listFeedback.length > 0 &&
+            review.listFeedback.map((feedBack) => (
+              <div key={feedBack._id} className="feedBack-item">
+                <div className="review-header">
+                  <div className="review-user-info">
+                    <div className="review-avatar">
+                      {feedBack.user.avatar ? (
+                        <img
+                          src={feedBack.user.avatar}
+                          alt={feedBack.user.name}
+                        />
+                      ) : (
+                        <div className="default-avatar">
+                          {feedBack.user.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="review-user-name">
+                        {feedBack.user.name}
+                      </div>
+                      <div className="review-date">
+                        {formatDate(feedBack.createdAt)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="review-actions">
+                    {userAuth && userAuth.id === feedBack.user._id && (
+                      <div className="dropdown">
+                        <button
+                          className="dropdown-toggle"
+                          onClick={() => toggleDropdown(feedBack._id)}
+                        >
+                          <FontAwesomeIcon icon={faEllipsisV} />
+                        </button>
+                        {dropdownOpen === feedBack._id && (
+                          <div className="dropdown-menu">
+                            <button
+                              className="edit-button"
+                              onClick={() =>
+                                handleEditFeedback(feedBack, review)
+                              }
+                            >
+                              Sửa
+                            </button>
+                            <button
+                              className="delete-button"
+                              onClick={() => {
+                                confirmDeleteFeedback(feedBack, review);
+                              }}
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <p className="review-feedBack">{feedBack.content}</p>
+              </div>
+            ))}
+
+          {replyingTo === review._id && (
+            <div className="reply-form">
+              <textarea
+                placeholder="Nhập nội dung trả lời..."
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+              ></textarea>
+              <div className="reply-actions">
+                <button
+                  className="cancel-reply-button"
+                  onClick={() => {
+                    setReplyingTo(null);
+                    setReplyContent("");
+                  }}
+                >
+                  Hủy
+                </button>
+                <button
+                  className="submit-reply-button"
+                  onClick={() => handleReplySubmit(review._id)}
+                >
+                  Gửi
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -246,6 +452,34 @@ const ReviewList = ({ productId }) => {
               <button
                 className="delete-button"
                 onClick={() => handleConfirmDelete(reviewToDelete)}
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {feedBackToDelete && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Xác nhận xóa</h2>
+            <p>Bạn có chắc chắn muốn xóa bình luận này?</p>
+            <div className="modal-actions">
+              <button
+                className="cancel-button"
+                onClick={() => {
+                  setFeedBackToDelete(null);
+                  setReviewToDelete(null);
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                className="delete-button"
+                onClick={() =>
+                  handleConfirmDeleteFeedback(feedBackToDelete, reviewToDelete)
+                }
               >
                 Xóa
               </button>
@@ -298,6 +532,45 @@ const ReviewList = ({ productId }) => {
         </div>
       )}
 
+      {isEditFeedbackOpen && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Sửa bình luận</h2>
+            <div className="form-group">
+              <label htmlFor="edit-comment">Nội dung</label>
+              <textarea
+                id="edit-comment"
+                rows="4"
+                value={feedbackToEdit.content}
+                onChange={(e) => {
+                  setFeedbackToEdit({
+                    ...feedbackToEdit,
+                    content: e.target.value,
+                  });
+
+                  setReviewToEdit({ ...reviewToEdit });
+                }}
+              ></textarea>
+            </div>
+            <div className="modal-actions">
+              <button
+                className="cancel-button"
+                onClick={() => {
+                  setIsEditFeedbackOpen(false);
+                  setFeedbackToEdit(null);
+                  setReviewToEdit(null);
+                }}
+              >
+                Hủy
+              </button>
+              <button className="save-button" onClick={handleUpdateFeedback}>
+                Lưu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {hasMore && (
         <div className="load-more-container">
           <button
@@ -309,6 +582,8 @@ const ReviewList = ({ productId }) => {
           </button>
         </div>
       )}
+
+      <ReviewForm productId={productId} onReviewSubmitted={handleNewReview} />
     </div>
   );
 };

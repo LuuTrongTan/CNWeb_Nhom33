@@ -552,7 +552,6 @@
 
 /* Image upload styling */
 .image-upload-container {
-  display: flex;
   gap: 20px;
   flex-wrap: wrap;
 }

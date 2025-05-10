@@ -1,4 +1,4 @@
-const express = require('express');
+Sconst express = require('express');
 const validate = require('../middlewares/validate');
 const authValidation = require('../validations/auth.validation');
 const authController = require('../controllers/auth.controller');
@@ -6,7 +6,7 @@ const userController = require('../controllers/user.controller');
 const auth = require('../middlewares/auth');
 
 const router = express.Router();
-console.log("Auth routes loaded auth.route.js");
+console.log('Auth routes loaded auth.route.js');
 
 router.post('/register', validate(authValidation.register), authController.register);
 router.post('/login', validate(authValidation.login), authController.login);
@@ -15,7 +15,7 @@ router.post('/refresh-tokens', validate(authValidation.refreshTokens), authContr
 /*router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);*/
 
 router.post('/forgot-password', userController.requestPasswordReset);
-router.post('/verify-reset-code', userController.verifyResetCode); 
+router.post('/verify-reset-code', userController.verifyResetCode);
 router.post('/reset-password', userController.resetPassword);
 /*router.post('/reset-password', validate(authValidation.resetPassword), authController.resetPassword);*/
 router.post('/google-login', validate(authValidation.googleLoginSchema) ,authController.googleAuth);

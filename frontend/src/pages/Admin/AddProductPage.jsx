@@ -74,7 +74,11 @@ const AddProductPage = () => {
             data.images.map((image) => getPictureByLink(image))
           );
           const URLreviewList = URLreview.map((item) => {
-            return item[0];
+            if (item[0]) {
+              return item[0];
+            } else {
+              return "test";
+            }
           });
           console.log("URLreview", URLreviewList);
           setImagePreviewUrls(URLreviewList); // Các URL thực tế sau khi gọi API
@@ -227,16 +231,16 @@ const AddProductPage = () => {
       errors.discountPrice = "Giá sản phẩm phải lớn hơn 0";
     if (
       formData.price &&
-      Number(formData.price) <= Number(formData.discountPrice)
+      Number(formData.price) < Number(formData.discountPrice)
     ) {
       errors.price = "Giá gốc phải lớn hơn giá bán";
     }
     if (
       formData.discountPercentage &&
-      (Number(formData.discountPercentage) <= 0 ||
+      (Number(formData.discountPercentage) < 0 ||
         Number(formData.discountPercentage) > 100)
     ) {
-      errors.discountPercentage = "Phần trăm giảm giá phải từ 1-100%";
+      errors.discountPercentage = "Phần trăm giảm giá phải từ 0-100%";
     }
     if (!id && imageFiles.length === 0)
       errors.images = "Cần ít nhất một hình ảnh cho sản phẩm";

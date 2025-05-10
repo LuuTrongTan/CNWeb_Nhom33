@@ -53,6 +53,11 @@ if (config.env === 'production') {
 // api routes - đã cập nhật không mount vào /v1 nữa
 app.use('/', routes);
 
+// test route to check if server is alive
+app.get('/', (req, res) => {
+  res.send('Hello world!');
+});
+
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));

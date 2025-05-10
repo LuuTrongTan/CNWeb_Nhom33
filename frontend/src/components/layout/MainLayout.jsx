@@ -72,6 +72,13 @@ const MainLayout = () => {
     pathParts[0] === "products" &&
     pathParts[1] &&
     /^[0-9a-fA-F]{24}$/.test(pathParts[1]);
+
+  const isProductDetailPage2 =
+    pathParts[0] === "products" &&
+    pathParts[1] &&
+    pathParts[2] &&
+    /^[0-9a-fA-F]{24}$/.test(pathParts[2]);
+
   const isCategoryPage = pathParts[1];
 
   const categoryMap = {
@@ -84,7 +91,9 @@ const MainLayout = () => {
   return (
     <div
       className={`layout ${sidebarOpen ? "sidebar-open" : "sidebar-closed"} ${
-        isHomePage || isProductDetailPage ? "home-page" : ""
+        isHomePage || isProductDetailPage || isProductDetailPage2
+          ? "home-page"
+          : ""
       }`}
     >
       <Navbar />
