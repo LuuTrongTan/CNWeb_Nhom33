@@ -13,6 +13,7 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const shippingRoutes = require('./routes/shipping');
 
 const app = express();
 
@@ -52,6 +53,7 @@ if (config.env === 'production') {
 
 // api routes - đã cập nhật không mount vào /v1 nữa
 app.use('/', routes);
+app.use('/api/shipping', shippingRoutes);
 
 // test route to check if server is alive
 app.get('/', (req, res) => {

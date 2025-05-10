@@ -21,6 +21,10 @@ router
   .patch(auth('manageUsers'), validate(userValidation.updateUser), userController.updateUser)
   .delete(auth('manageUsers'), validate(userValidation.deleteUser), userController.deleteUser);
 
+router
+  .route('/shipping-info')
+  .get(auth(), userController.getUserShippingInfo);
+
 module.exports = router;
 
 /**
@@ -253,4 +257,35 @@ module.exports = router;
  *         $ref: '#/components/responses/Forbidden'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * /users/shipping-info:
+ *   get:
+ *     summary: Lấy thông tin giao hàng
+ *     description: Lấy thông tin giao hàng của người dùng đang đăng nhập.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 fullName:
+ *                   type: string
+ *                 phone:
+ *                   type: string
+ *                 address:
+ *                   type: string
+ *                 city:
+ *                   type: string
+ *                 district:
+ *                   type: string
+ *                 ward:
+ *                   type: string
  */

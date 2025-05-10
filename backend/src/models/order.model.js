@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
+const { toJSON } = require('./plugins');
 
 const orderItemSchema = mongoose.Schema(
   {
@@ -19,7 +19,6 @@ const orderItemSchema = mongoose.Schema(
     quantity: {
       type: Number,
       required: true,
-      min: 1,
     },
     image: {
       type: String,
@@ -27,12 +26,16 @@ const orderItemSchema = mongoose.Schema(
     },
     color: {
       type: String,
+      default: '',
     },
     size: {
       type: String,
+      default: '',
     },
   },
-  { _id: false }
+  {
+    _id: false,
+  }
 );
 
 const orderSchema = mongoose.Schema(
@@ -40,7 +43,12 @@ const orderSchema = mongoose.Schema(
     user: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'User',
+      required: false, // Cho phép đặt hàng không cần đăng nhập
+    },
+    orderNumber: {
+      type: String,
       required: true,
+      unique: true,
     },
     items: [orderItemSchema],
     shippingAddress: {
@@ -58,7 +66,7 @@ const orderSchema = mongoose.Schema(
       },
       district: {
         type: String,
-        required: true, 
+        required: true,
       },
       ward: {
         type: String,
@@ -72,13 +80,14 @@ const orderSchema = mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ['cod', 'card', 'banking', 'momo'],
+      enum: ['cod', 'banking', 'momo', 'card'],
+      default: 'cod',
     },
-    paymentResult: {
-      id: { type: String },
-      status: { type: String },
-      update_time: { type: String },
-      email_address: { type: String },
+    shippingMethod: {
+      type: String,
+      required: true,
+      enum: ['standard', 'fast', 'express'],
+      default: 'standard',
     },
     totalItemsPrice: {
       type: Number,
@@ -90,16 +99,7 @@ const orderSchema = mongoose.Schema(
       required: true,
       default: 0,
     },
-    taxPrice: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    discountPrice: {
-      type: Number,
-      default: 0,
-    },
-    totalPrice: {
+    totalAmount: {
       type: Number,
       required: true,
       default: 0,
@@ -112,10 +112,10 @@ const orderSchema = mongoose.Schema(
     },
     notes: {
       type: String,
+      default: '',
     },
     isPaid: {
       type: Boolean,
-      required: true,
       default: false,
     },
     paidAt: {
@@ -123,20 +123,10 @@ const orderSchema = mongoose.Schema(
     },
     isDelivered: {
       type: Boolean,
-      required: true,
       default: false,
     },
     deliveredAt: {
       type: Date,
-    },
-    cancelledAt: {
-      type: Date,
-    },
-    trackingNumber: {
-      type: String,
-    },
-    shippingProvider: {
-      type: String,
     },
   },
   {
@@ -144,9 +134,25 @@ const orderSchema = mongoose.Schema(
   }
 );
 
-// Thêm plugin để chuyển đổi mongoose sang json
+// Thêm plugin
 orderSchema.plugin(toJSON);
-orderSchema.plugin(paginate);
+
+// Tạo mã đơn hàng tự động trước khi lưu
+orderSchema.pre('save', async function (next) {
+  const order = this;
+  if (!order.orderNumber) {
+    const date = new Date();
+    const year = date.getFullYear().toString().slice(-2);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    order.orderNumber = `DH${year}${month}${day}${random}`;
+    
+    // Tính tổng tiền đơn hàng
+    order.totalAmount = order.totalItemsPrice + order.shippingPrice;
+  }
+  next();
+});
 
 /**
  * @typedef Order
