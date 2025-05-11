@@ -3,7 +3,6 @@ const config = require('../config/config');
 const logger = require('../config/logger');
 
 const transport = nodemailer.createTransport(config.email.smtp);
-/* istanbul ignore next */
 if (config.env !== 'test') {
   transport
     .verify()
@@ -20,25 +19,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
 });
-
-/**
- * Send an email
- * @param {string} to
- * @param {string} subject
- * @param {string} text
- * @returns {Promise}
- */
-const sendEmail = async (to, subject, text) => {
-  const msg = { from: config.email.from, to, subject, text };
-  await transport.sendMail(msg);
-};
-
-/**
- * Send reset password email
- * @param {string} to
- * @param {string} token
- * @returns {Promise}
- */
 
 /**
  * Send verification email
@@ -70,7 +50,6 @@ const sendResetPasswordEmail = async (email, code) => {
 
 module.exports = {
   transport,
-  sendEmail,
   sendResetPasswordEmail,
   sendVerificationEmail,
 };
