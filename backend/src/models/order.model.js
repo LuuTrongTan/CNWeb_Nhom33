@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('./plugins');
+const { paginate } = require('./plugins');
 
 const orderItemSchema = mongoose.Schema(
   {
@@ -128,14 +129,25 @@ const orderSchema = mongoose.Schema(
     deliveredAt: {
       type: Date,
     },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+      immutable: true, // Đảm bảo trường này không thể thay đổi sau khi đã tạo
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now
+    }
   },
   {
-    timestamps: true,
+    // Vô hiệu hóa tự động tạo timestamps để sử dụng cấu hình tùy chỉnh ở trên
+    timestamps: false
   }
 );
 
 // Thêm plugin
 orderSchema.plugin(toJSON);
+orderSchema.plugin(paginate);
 
 // Tạo mã đơn hàng tự động trước khi lưu
 orderSchema.pre('save', async function (next) {
@@ -150,6 +162,16 @@ orderSchema.pre('save', async function (next) {
     
     // Tính tổng tiền đơn hàng
     order.totalAmount = order.totalItemsPrice + order.shippingPrice;
+  }
+  next();
+});
+
+// Thêm middleware pre update để đảm bảo createdAt không bị thay đổi
+orderSchema.pre('findOneAndUpdate', function (next) {
+  // Xóa trường createdAt khỏi update nếu có
+  if (this._update && this._update.createdAt) {
+    console.log('Ngăn cản thay đổi createdAt trong quá trình update đơn hàng');
+    delete this._update.createdAt;
   }
   next();
 });

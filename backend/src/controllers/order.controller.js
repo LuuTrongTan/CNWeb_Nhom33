@@ -16,8 +16,18 @@ const createOrder = catchAsync(async (req, res) => {
     user: userId,
   };
   
+  // Đảm bảo createdAt là giá trị cố định và không thay đổi
+  if (!orderData.createdAt) {
+    orderData.createdAt = new Date().toISOString();
+  }
+  
+  // Tính tổng tiền đơn hàng
+  orderData.totalAmount = orderData.totalItemsPrice + orderData.shippingPrice;
+  
   // Gọi service để tạo đơn hàng
   const order = await orderService.createOrder(orderData);
+  
+  // Trả về toàn bộ thông tin đơn hàng đã tạo
   res.status(httpStatus.CREATED).send(order);
 });
 
@@ -52,13 +62,28 @@ const getOrderById = catchAsync(async (req, res) => {
  * Hủy đơn hàng
  */
 const cancelOrder = catchAsync(async (req, res) => {
+  try {
+    console.log('Nhận yêu cầu hủy đơn hàng:', req.params.orderId);
+    console.log('User ID:', req.user ? req.user.id : 'Không có user');
+    console.log('Request body:', req.body);
+    
   const order = await orderService.getOrderById(req.params.orderId);
   if (!order) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }
   
   // Kiểm tra quyền hủy đơn hàng
-  if (req.user.id !== order.user.toString() && req.user.role !== 'admin') {
+    // Cho phép hủy đơn khi:
+    // 1. Người dùng đã đăng nhập và là chủ đơn hàng
+    // 2. Người dùng là admin
+    // 3. Người dùng biết mã đơn hàng và số điện thoại đặt hàng
+    const isAuthorized = 
+      (req.user && req.user.id === order.user?.toString()) || 
+      (req.user && req.user.role === 'admin') ||
+      (req.body.orderNumber === order.orderNumber && 
+       req.body.phone === order.shippingAddress.phone);
+    
+    if (!isAuthorized) {
     throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền hủy đơn hàng này');
   }
   
@@ -67,8 +92,23 @@ const cancelOrder = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Không thể hủy đơn hàng ở trạng thái này');
   }
   
-  const updatedOrder = await orderService.updateOrderById(req.params.orderId, { status: 'cancelled' });
+    // Lấy lý do hủy đơn hàng từ request body (nếu có)
+    const updateData = { 
+      status: 'cancelled',
+      cancelReason: req.body.cancelReason || 'Hủy bởi khách hàng',
+      cancelledAt: new Date()
+    };
+    
+    console.log('Cập nhật đơn hàng với dữ liệu:', updateData);
+    
+    const updatedOrder = await orderService.updateOrderById(req.params.orderId, updateData);
+    console.log('Đơn hàng đã được cập nhật thành công');
+    
   res.send(updatedOrder);
+  } catch (error) {
+    console.error('Lỗi khi hủy đơn hàng:', error);
+    throw error;
+  }
 });
 
 /**

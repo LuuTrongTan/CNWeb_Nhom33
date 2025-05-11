@@ -13,6 +13,7 @@ import {
   faChevronDown,
   faChevronUp,
   faImages,
+  faStore,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "../../styles/css/Admin/AdminLayout.css";
@@ -140,126 +141,11 @@ const AdminLayout = () => {
               location.pathname.includes("/admin/orders") ? "active" : ""
             }
           >
-            <div
-              className="sidebar-item"
-              onClick={() => toggleDropdown("orders")}
-            >
+            <Link to="/admin/orders">
               <div className="sidebar-item-content">
                 <FontAwesomeIcon icon={faShoppingCart} />
                 {!collapsed && <span>Đơn hàng</span>}
               </div>
-              {!collapsed && (
-                <FontAwesomeIcon
-                  icon={dropdowns.orders ? faChevronUp : faChevronDown}
-                  className="dropdown-icon"
-                />
-              )}
-            </div>
-
-            {dropdowns.orders && !collapsed && (
-              <ul className="sidebar-dropdown">
-                <li>
-                  <Link to="/admin/orders">Tất cả đơn hàng</Link>
-                </li>
-                <li>
-                  <Link to="/admin/orders?status=pending">Chưa xử lý</Link>
-                </li>
-                <li>
-                  <Link to="/admin/orders?status=processing">Đang xử lý</Link>
-                </li>
-                <li>
-                  <Link to="/admin/orders?status=shipped">Đang giao hàng</Link>
-                </li>
-                <li>
-                  <Link to="/admin/orders?status=completed">Hoàn thành</Link>
-                </li>
-                <li>
-                  <Link to="/admin/orders?status=cancelled">Đã hủy</Link>
-                </li>
-              </ul>
-            )}
-          </li>
-
-          <li
-            className={
-              location.pathname.includes("/admin/customers") ? "active" : ""
-            }
-          >
-            <div
-              className="sidebar-item"
-              onClick={() => toggleDropdown("customers")}
-            >
-              <div className="sidebar-item-content">
-                <FontAwesomeIcon icon={faUsers} />
-                {!collapsed && <span>Khách hàng</span>}
-              </div>
-              {!collapsed && (
-                <FontAwesomeIcon
-                  icon={dropdowns.customers ? faChevronUp : faChevronDown}
-                  className="dropdown-icon"
-                />
-              )}
-            </div>
-
-            {dropdowns.customers && !collapsed && (
-              <ul className="sidebar-dropdown">
-                <li>
-                  <Link to="/admin/customers">Danh sách</Link>
-                </li>
-                <li>
-                  <Link to="/admin/customers/reviews">Đánh giá</Link>
-                </li>
-              </ul>
-            )}
-          </li>
-
-          <li
-            className={
-              location.pathname.includes("/admin/marketing") ? "active" : ""
-            }
-          >
-            <div
-              className="sidebar-item"
-              onClick={() => toggleDropdown("marketing")}
-            >
-              <div className="sidebar-item-content">
-                <FontAwesomeIcon icon={faTags} />
-                {!collapsed && <span>Marketing</span>}
-              </div>
-              {!collapsed && (
-                <FontAwesomeIcon
-                  icon={dropdowns.marketing ? faChevronUp : faChevronDown}
-                  className="dropdown-icon"
-                />
-              )}
-            </div>
-
-            {dropdowns.marketing && !collapsed && (
-              <ul className="sidebar-dropdown">
-                <li>
-                  <Link to="/admin/banners">Banner</Link>
-                </li>
-                <li>
-                  <Link to="/admin/marketing/coupons">Mã giảm giá</Link>
-                </li>
-                <li>
-                  <Link to="/admin/marketing/promotions">Khuyến mãi</Link>
-                </li>
-              </ul>
-            )}
-          </li>
-
-          <li className={isActive("/reports")}>
-            <Link to="/admin/reports">
-              <FontAwesomeIcon icon={faChartBar} />
-              {!collapsed && <span>Báo cáo</span>}
-            </Link>
-          </li>
-
-          <li className={isActive("/settings")}>
-            <Link to="/admin/settings">
-              <FontAwesomeIcon icon={faCog} />
-              {!collapsed && <span>Cài đặt</span>}
             </Link>
           </li>
 
@@ -290,6 +176,11 @@ const AdminLayout = () => {
           </div>
 
           <div className="header-right">
+            <Link to="/" className="back-to-store">
+              <FontAwesomeIcon icon={faStore} />
+              <span>Quay lại cửa hàng</span>
+            </Link>
+
             <div className="admin-user">
               <img
                 src="https://randomuser.me/api/portraits/men/85.jpg"

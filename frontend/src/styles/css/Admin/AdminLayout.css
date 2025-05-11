@@ -169,6 +169,27 @@
   align-items: center;
 }
 
+/* Nút quay lại cửa hàng */
+.back-to-store {
+  display: flex;
+  align-items: center;
+  background-color: #3498db;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+  margin-right: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.back-to-store:hover {
+  background-color: #2980b9;
+}
+
+.back-to-store svg {
+  margin-right: 0.5rem;
+}
+
 .admin-user {
   display: flex;
   align-items: center;

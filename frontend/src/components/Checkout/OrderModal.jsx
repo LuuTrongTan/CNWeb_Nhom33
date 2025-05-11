@@ -5,10 +5,11 @@ import { useAuth } from "../../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { createOrder } from "../../services/order.service";
 
 // Tạo instance axios
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || ""}/api`,
+  baseURL: `${import.meta.env.VITE_API_URL || ""}`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -136,14 +137,14 @@ const OrderModal = ({ isOpen, onClose }) => {
         discountPrice: 0,
       };
 
-      // Gọi API tạo đơn hàng
-      const response = await api.post("/orders", orderData);
+      // Gọi service để tạo đơn hàng
+      const response = await createOrder(orderData);
 
       // Xử lý thành công
-      alert("Đặt hàng thành công! Mã đơn hàng: " + response.data.id);
+      alert("Đặt hàng thành công! Mã đơn hàng: " + response.id);
       clearCart();
       onClose();
-      navigate("/orders/" + response.data.id);
+      navigate("/orders/" + response.id);
     } catch (error) {
       console.error("Lỗi khi đặt hàng:", error);
       alert(

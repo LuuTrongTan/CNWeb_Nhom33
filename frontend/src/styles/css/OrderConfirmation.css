@@ -33,16 +33,22 @@
 }
 
 .order-confirmation-number {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  background-color: #e8f5e9;
-  border-radius: 4px;
+  margin-top: 1rem;
   font-size: 1.1rem;
 }
 
-.order-confirmation-number span {
+.order-confirmation-number span,
+.order-confirmation-date span {
   margin-right: 0.5rem;
-  color: #555;
+  color: #4b5563;
+}
+
+.order-confirmation-date {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .order-confirmation-number strong {
