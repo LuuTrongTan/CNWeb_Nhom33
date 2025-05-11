@@ -140,12 +140,13 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     
     try {
-      const data = await googleLogin(token);
-      setCurrentUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('token', data.tokens.access.token);
-      localStorage.setItem('refreshToken', data.tokens.refresh.token);
-      return data;
+      const response = await googleLogin(token);
+      const { user, tokens } = response.data;
+      setCurrentUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', tokens.access.token);
+      localStorage.setItem('refreshToken', tokens.refresh.token);
+      return response.data;
     } catch (err) {
       setError(err.response?.data?.message || "Đăng nhập Google thất bại");
       throw err;
