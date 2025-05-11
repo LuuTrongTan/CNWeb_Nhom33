@@ -205,9 +205,6 @@ const CartPage = () => {
         {cart.length > 0 && (
           <div className="cartpage-summary">
             <span className="cartpage-total-items">{totalItems} sản phẩm</span>
-            <button onClick={toggleDebug} className="cartpage-debug-toggle">
-              {debug ? "Ẩn Debug" : "Hiện Debug"}
-            </button>
           </div>
         )}
       </div>
