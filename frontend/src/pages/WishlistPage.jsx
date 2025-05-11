@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart, faShoppingCart, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faShoppingCart, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from '../context/CartContext';
 import '../styles/css/WishlistPage.css';
 
@@ -52,7 +52,6 @@ const WishlistPage = () => {
         }
       });
       
-      // Cập nhật danh sách yêu thích sau khi xóa
       setWishlistItems(wishlistItems.filter(item => item._id !== productId));
     } catch (err) {
       console.error('Lỗi khi xóa sản phẩm khỏi danh sách yêu thích:', err);
@@ -103,30 +102,34 @@ const WishlistPage = () => {
         <>
           <div className="wishlist-grid">
             {wishlistItems.map((product) => (
-              <div className="wishlist-item" key={product._id}>
-                <div className="item-image">
+              <div className="wishlist-card" key={product._id}>
+                <div className="wishlist-card-image-container">
                   <Link to={`/products/${product._id}`}>
-                    <img src={product.images[0]} alt={product.name} />
+                    <img 
+                      src={product.images[0]} 
+                      alt={product.name}
+                      className="wishlist-card-image" 
+                    />
                   </Link>
                   <button 
-                    className="remove-btn"
+                    className="wishlist-card-remove-btn"
                     onClick={() => handleRemoveFromWishlist(product._id)}
                     title="Xóa khỏi danh sách yêu thích"
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </div>
-                <div className="item-details">
-                  <h3 className="item-name">
+                <div className="wishlist-card-details">
+                  <h3 className="wishlist-card-name">
                     <Link to={`/products/${product._id}`}>{product.name}</Link>
                   </h3>
-                  <div className="item-price">
+                  <div className="wishlist-card-price">
                     {product.discount > 0 ? (
                       <>
-                        <span className="discounted-price">
+                        <span className="wishlist-card-discounted-price">
                           {(product.price - (product.price * product.discount / 100)).toLocaleString()}đ
                         </span>
-                        <span className="original-price">
+                        <span className="wishlist-card-original-price">
                           {product.price.toLocaleString()}đ
                         </span>
                       </>
@@ -135,7 +138,7 @@ const WishlistPage = () => {
                     )}
                   </div>
                   <button 
-                    className="add-to-cart-btn"
+                    className="wishlist-card-add-to-cart-btn"
                     onClick={() => handleAddToCart(product)}
                   >
                     <FontAwesomeIcon icon={faShoppingCart} /> Thêm vào giỏ hàng
@@ -155,4 +158,4 @@ const WishlistPage = () => {
   );
 };
 
-export default WishlistPage; 
+export default WishlistPage;
