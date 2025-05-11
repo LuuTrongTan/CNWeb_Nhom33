@@ -411,13 +411,11 @@ const CheckoutPage = () => {
                           <input
                             type="radio"
                             name="paymentMethod"
-                            value="momo"
-                            checked={orderInfo.paymentMethod === "momo"}
+                            value="zalopay"
+                            checked={orderInfo.paymentMethod === "zalopay"}
                             onChange={handleInputChange}
                           />
-                          <span className="payment-method-name">
-                            Ví điện tử MoMo
-                          </span>
+                          <span className="payment-method-name">Zalopay</span>
                         </label>
                       </div>
                       <div className="payment-method-item">

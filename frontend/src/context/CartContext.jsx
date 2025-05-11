@@ -43,11 +43,10 @@ export const CartProvider = ({ children }) => {
           // Lấy giỏ hàng từ API cho người dùng đã đăng nhập
           setLoading(true);
           const response = await apiClient.get("/cart");
-          console.log(response);
 
-          if (response && response.items) {
+          if (response.data && response.data.items) {
             // Chuyển đổi định dạng từ API để phù hợp với frontend
-            const formattedItems = response.items.map((item) => ({
+            const formattedItems = response.data.items.map((item) => ({
               id: item.product,
               cartItemId:
                 item.cartItemId ||
@@ -88,31 +87,36 @@ export const CartProvider = ({ children }) => {
                   localStorage.removeItem("cart");
 
                   // Hiển thị cảnh báo nếu có sản phẩm không thêm được
-                  if (syncResult.warnings && syncResult.warnings.length > 0) {
+                  if (
+                    syncResult.data.warnings &&
+                    syncResult.data.warnings.length > 0
+                  ) {
                     syncResult.warnings.forEach((warning) => {
                       showError(warning);
                     });
                   }
 
                   // Lấy lại giỏ hàng đã đồng bộ
-                  if (syncResult.cart) {
-                    const updatedItems = syncResult.cart.items.map((item) => ({
-                      id: item.product,
-                      cartItemId:
-                        item.cartItemId ||
-                        `${item.product}-${item.selectedSize || "no-size"}-${
-                          item.selectedColor || "no-color"
-                        }-${Date.now()}`,
-                      name: item.name,
-                      price: item.price,
-                      originalPrice: item.originalPrice,
-                      hasDiscount: item.hasDiscount,
-                      image: item.image,
-                      quantity: item.quantity,
-                      selectedSize: item.selectedSize,
-                      selectedColor: item.selectedColor,
-                      soldCount: item.soldCount,
-                    }));
+                  if (syncResult.data.cart) {
+                    const updatedItems = syncResult.data.cart.items.map(
+                      (item) => ({
+                        id: item.product,
+                        cartItemId:
+                          item.cartItemId ||
+                          `${item.product}-${item.selectedSize || "no-size"}-${
+                            item.selectedColor || "no-color"
+                          }-${Date.now()}`,
+                        name: item.name,
+                        price: item.price,
+                        originalPrice: item.originalPrice,
+                        hasDiscount: item.hasDiscount,
+                        image: item.image,
+                        quantity: item.quantity,
+                        selectedSize: item.selectedSize,
+                        selectedColor: item.selectedColor,
+                        soldCount: item.soldCount,
+                      })
+                    );
 
                     setCart(updatedItems);
                     setSelectedItems(
@@ -197,8 +201,8 @@ export const CartProvider = ({ children }) => {
         const response = await apiClient.get("/cart");
         let existingItem = null;
 
-        if (response && response.items) {
-          existingItem = response.items.find(
+        if (response.data && response.data.items) {
+          existingItem = response.data.items.find(
             (item) =>
               item.product === productToAdd.id &&
               item.selectedSize === productToAdd.selectedSize &&
@@ -228,8 +232,8 @@ export const CartProvider = ({ children }) => {
         // Lấy lại giỏ hàng từ server
         const updatedResponse = await apiClient.get("/cart");
 
-        if (updatedResponse && updatedResponse.items) {
-          const formattedItems = updatedResponse.items.map((item) => ({
+        if (updatedResponse.data && updatedResponse.data.items) {
+          const formattedItems = updatedResponse.data.items.map((item) => ({
             id: item.product,
             name: item.name,
             price: item.price,
@@ -307,8 +311,8 @@ export const CartProvider = ({ children }) => {
         // Lấy lại giỏ hàng từ server
         const response = await apiClient.get("/cart");
 
-        if (response && response.items) {
-          const formattedItems = response.items.map((item) => ({
+        if (response.data && response.data.items) {
+          const formattedItems = response.data.items.map((item) => ({
             id: item.product,
             cartItemId: item.cartItemId,
             name: item.name,
@@ -379,10 +383,9 @@ export const CartProvider = ({ children }) => {
 
         // Lấy lại giỏ hàng từ server
         const response = await apiClient.get("/cart");
-        console.log(response);
 
-        if (response && response.items) {
-          const formattedItems = response.items.map((item) => ({
+        if (response.data && response.data.items) {
+          const formattedItems = response.data.items.map((item) => ({
             id: item.product,
             cartItemId: item.cartItemId,
             name: item.name,
@@ -485,10 +488,9 @@ export const CartProvider = ({ children }) => {
 
         // Lấy lại giỏ hàng từ server
         const response = await apiClient.get("/cart");
-        console.log(response);
 
-        if (response && response.items) {
-          const formattedItems = response.items.map((item) => ({
+        if (response.data && response.data.items) {
+          const formattedItems = response.data.items.map((item) => ({
             id: item.product,
             cartItemId: item.cartItemId,
             name: item.name,
@@ -723,8 +725,8 @@ export const CartProvider = ({ children }) => {
 
         // Cập nhật giỏ hàng
         const updatedCart = await apiClient.get("/cart");
-        if (updatedCart && updatedCart.items) {
-          const formattedItems = updatedCart.items.map((item) => ({
+        if (updatedCart.data && updatedCart.data.items) {
+          const formattedItems = updatedCart.data.items.map((item) => ({
             id: item.product,
             name: item.name,
             price: item.price,
@@ -754,7 +756,7 @@ export const CartProvider = ({ children }) => {
       }
 
       showSuccess("Đơn hàng đã được tạo thành công");
-      return response;
+      return response.data;
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || err.message || "Lỗi khi tạo đơn hàng";
