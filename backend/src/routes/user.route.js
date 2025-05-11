@@ -21,9 +21,7 @@ router
   .patch(auth('manageUsers'), validate(userValidation.updateUser), userController.updateUser)
   .delete(auth('manageUsers'), validate(userValidation.deleteUser), userController.deleteUser);
 
-router
-  .route('/shipping-info')
-  .get(auth(), userController.getUserShippingInfo);
+router.route('/shipping-info').post(auth(), userController.getUserShippingInfo);
 
 module.exports = router;
 

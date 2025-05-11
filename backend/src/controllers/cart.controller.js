@@ -6,11 +6,11 @@ const { cartService } = require('../services');
 const getUserCart = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const cart = await cartService.getUserCart(userId);
-  
+
   // Định dạng lại giỏ hàng để trả về cho frontend
   const formattedCart = {
     ...cart.toJSON(),
-    items: cart.items.map(item => ({
+    items: cart.items.map((item) => ({
       product: item.product,
       id: item.product,
       cartItemId: item.cartItemId, // Thêm cartItemId vào response
@@ -21,10 +21,11 @@ const getUserCart = catchAsync(async (req, res) => {
       name: item.name,
       image: item.image,
       selectedSize: item.selectedSize,
-      selectedColor: item.selectedColor
-    }))
+      selectedColor: item.selectedColor,
+      soldCount: item.soldCount,
+    })),
   };
-  
+
   res.status(httpStatus.OK).send(formattedCart);
 });
 
@@ -35,12 +36,10 @@ const checkProductStock = async (product, quantity) => {
     return {
       hasStock: false,
       availableStock: product.stock || 0,
-      message: product.stock === 0 
-        ? 'Sản phẩm đã hết hàng' 
-        : `Chỉ còn ${product.stock} sản phẩm trong kho`
+      message: product.stock === 0 ? 'Sản phẩm đã hết hàng' : `Chỉ còn ${product.stock} sản phẩm trong kho`,
     };
   }
-  
+
   return { hasStock: true };
 };
 
@@ -48,13 +47,13 @@ const checkProductStock = async (product, quantity) => {
 const addToCart = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const { productId, quantity = 1, selectedSize, selectedColor } = req.body;
-  
+
   const cart = await cartService.addToCart(userId, { productId, quantity, selectedSize, selectedColor });
-  
+
   // Định dạng lại giỏ hàng để trả về cho frontend
   const formattedCart = {
     ...cart.toJSON(),
-    items: cart.items.map(item => ({
+    items: cart.items.map((item) => ({
       product: item.product,
       id: item.product,
       cartItemId: item.cartItemId,
@@ -65,10 +64,11 @@ const addToCart = catchAsync(async (req, res) => {
       name: item.name,
       image: item.image,
       selectedSize: item.selectedSize,
-      selectedColor: item.selectedColor
-    }))
+      selectedColor: item.selectedColor,
+      soldCount: item.soldCount,
+    })),
   };
-  
+
   res.status(httpStatus.OK).send(formattedCart);
 });
 
@@ -76,13 +76,13 @@ const addToCart = catchAsync(async (req, res) => {
 const updateCartItem = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const { productId, cartItemId, quantity, selectedSize, selectedColor } = req.body;
-  
+
   const cart = await cartService.updateCartItem(userId, { productId, cartItemId, quantity, selectedSize, selectedColor });
-  
+
   // Định dạng lại giỏ hàng để trả về cho frontend
   const formattedCart = {
     ...cart.toJSON(),
-    items: cart.items.map(item => ({
+    items: cart.items.map((item) => ({
       product: item.product,
       id: item.product,
       cartItemId: item.cartItemId,
@@ -93,10 +93,11 @@ const updateCartItem = catchAsync(async (req, res) => {
       name: item.name,
       image: item.image,
       selectedSize: item.selectedSize,
-      selectedColor: item.selectedColor
-    }))
+      selectedColor: item.selectedColor,
+      soldCount: item.soldCount,
+    })),
   };
-  
+
   res.status(httpStatus.OK).send(formattedCart);
 });
 
@@ -104,13 +105,13 @@ const updateCartItem = catchAsync(async (req, res) => {
 const removeCartItem = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const { productId } = req.params; // productId có thể là productId hoặc cartItemId
-  
+
   const cart = await cartService.removeCartItem(userId, productId);
-  
+
   // Định dạng lại giỏ hàng để trả về cho frontend
   const formattedCart = {
     ...cart.toJSON(),
-    items: cart.items.map(item => ({
+    items: cart.items.map((item) => ({
       product: item.product,
       id: item.product,
       cartItemId: item.cartItemId,
@@ -121,17 +122,18 @@ const removeCartItem = catchAsync(async (req, res) => {
       name: item.name,
       image: item.image,
       selectedSize: item.selectedSize,
-      selectedColor: item.selectedColor
-    }))
+      selectedColor: item.selectedColor,
+      soldCount: item.soldCount,
+    })),
   };
-  
+
   res.status(httpStatus.OK).send(formattedCart);
 });
 
 // Xóa toàn bộ giỏ hàng
 const clearCart = catchAsync(async (req, res) => {
   const userId = req.user.id;
-  
+
   const cart = await cartService.clearCart(userId);
   res.status(httpStatus.OK).send(cart);
 });
@@ -140,7 +142,7 @@ const clearCart = catchAsync(async (req, res) => {
 const syncCartFromLocal = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const { items } = req.body;
-  
+
   const result = await cartService.syncCartFromLocal(userId, items);
   res.status(httpStatus.OK).send(result);
 });
@@ -151,5 +153,5 @@ module.exports = {
   updateCartItem,
   removeCartItem,
   clearCart,
-  syncCartFromLocal
-}; 
+  syncCartFromLocal,
+};

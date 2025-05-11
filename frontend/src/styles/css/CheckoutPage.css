@@ -1,9 +1,9 @@
 .checkout-wrapper {
-  flex:1;
+  flex: 1;
   margin: 40px auto 0 auto;
   background: #fff;
   border-radius: 14px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   padding: 32px 24px 24px 24px;
 }
 
@@ -22,7 +22,7 @@
 .checkout-section h2 {
   font-size: 1.15rem;
   font-weight: 600;
-  color: #2196F3;
+  color: #2196f3;
   margin-bottom: 16px;
 }
 
@@ -42,7 +42,7 @@
 }
 
 .checkout-input:focus {
-  border: 1.5px solid #2196F3;
+  border: 1.5px solid #2196f3;
   outline: none;
   background: #fff;
 }
@@ -62,7 +62,7 @@
   align-items: center;
   background: #f8f9fa;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   padding: 12px 16px;
 }
 
@@ -73,7 +73,7 @@
   object-fit: cover;
   background: #fff;
   margin-right: 18px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .checkout-cart-info h3 {
@@ -113,7 +113,7 @@
   border: none;
   border-radius: 10px;
   padding: 18px 48px;
-  box-shadow: 0 2px 8px rgba(67,160,71,0.10);
+  box-shadow: 0 2px 8px rgba(67, 160, 71, 0.1);
   transition: background 0.2s, transform 0.2s;
   display: flex;
   align-items: center;
@@ -131,7 +131,7 @@
   margin: 60px auto 0 auto;
   background: #fff;
   border-radius: 14px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   padding: 48px 24px 32px 24px;
   text-align: center;
 }
@@ -144,7 +144,7 @@
 }
 
 .checkout-back-btn {
-  background: #2196F3;
+  background: #2196f3;
   color: #fff;
   font-size: 1.1rem;
   font-weight: 600;
@@ -718,4 +718,36 @@
   outline: none;
   border-color: #4a6cf7;
   box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.1);
-} 
+}
+
+.address-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.address-input-container input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.confirm-address-button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.confirm-address-button:hover {
+  background-color: #0056b3;
+}
+
+.address-confirmation-message {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #28a745; /* Màu xanh lá để hiển thị trạng thái thành công */
+}

@@ -67,6 +67,8 @@ const MainLayout = () => {
 
   // Kiểm tra xem có phải đang ở trang chủ không
   const isHomePage = location.pathname === "/";
+  const isCart = location.pathname === "/cart";
+  const isCheckout = location.pathname === "/checkout";
   const isProductsPage = location.pathname.includes("/products");
   const isProductDetailPage =
     pathParts[0] === "products" &&
@@ -91,7 +93,11 @@ const MainLayout = () => {
   return (
     <div
       className={`layout ${sidebarOpen ? "sidebar-open" : "sidebar-closed"} ${
-        isHomePage || isProductDetailPage || isProductDetailPage2
+        isHomePage ||
+        isProductDetailPage ||
+        isProductDetailPage2 ||
+        isCart ||
+        isCheckout
           ? "home-page"
           : ""
       }`}
