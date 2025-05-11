@@ -23,7 +23,7 @@ import { getDistance } from "../service/shippingAPI";
 
 // Tạo instance axios
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || ""}`,
+  baseURL: `${import.meta.env.VITE_API_URL || "http://localhost:4000"}`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -31,7 +31,7 @@ const api = axios.create({
 
 // Interceptor để thêm token xác thực
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

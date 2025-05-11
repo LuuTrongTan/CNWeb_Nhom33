@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faEnvelope, faLock, faEye, faEyeSlash, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/css/Auth/Auth.css';
 
 const RegisterPage = () => {
@@ -10,8 +10,7 @@ const RegisterPage = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    phone: ''
+    confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -61,15 +60,6 @@ const RegisterPage = () => {
       return false;
     }
 
-    // Kiểm tra số điện thoại nếu có
-    if (formData.phone) {
-      const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
-      if (!phoneRegex.test(formData.phone)) {
-        setError('Số điện thoại không hợp lệ.');
-        return false;
-      }
-    }
-
     return true;
   };
 
@@ -88,8 +78,7 @@ const RegisterPage = () => {
       await axios.post('/auth/register', {
         name: formData.name,
         email: formData.email,
-        password: formData.password,
-        phone: formData.phone || undefined
+        password: formData.password
       });
 
       // Chuyển hướng đến trang đăng nhập với thông báo thành công
@@ -140,20 +129,6 @@ const RegisterPage = () => {
               value={formData.email}
               onChange={handleChange}
               required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="phone">
-              <FontAwesomeIcon icon={faPhone} /> Số điện thoại (không bắt buộc)
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              placeholder="Nhập số điện thoại của bạn"
-              value={formData.phone}
-              onChange={handleChange}
             />
           </div>
 

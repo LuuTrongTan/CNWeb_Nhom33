@@ -166,6 +166,86 @@ const getUserShippingInfo = catchAsync(async (req, res) => {
   const shippingInfo = await userService.getUserShippingInfo(userId);
   res.status(httpStatus.OK).send(shippingInfo);
 });
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng.' });
+    }
+
+    if (user.authType !== 'local') {
+      return res.status(400).json({ message: 'Tài khoản này sử dụng đăng nhập qua bên thứ ba (Google/Facebook).' });
+    }
+
+    // Kiểm tra mật khẩu hiện tại
+    const isPasswordValid = await user.isPasswordMatch(currentPassword);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'Mật khẩu hiện tại không đúng.' });
+    }
+
+    // Cập nhật mật khẩu mới
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Đổi mật khẩu thành công!' });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error });
+  }
+};
+
+const requestEmailVerification = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('+verifyEmailCode +verifyEmailCodeExpires');
+
+    if (!user) {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng.' });
+    }
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'Email đã được xác thực.' });
+    }
+    if (user.authType !== 'local') {
+      return res.status(400).json({ message: 'Tài khoản này sử dụng đăng nhập qua bên thứ ba (Google/Facebook).' });
+    }
+
+    const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.verifyEmailCode = verifyCode;
+    user.verifyEmailCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // Hết hạn sau 10 phút
+    await user.save();
+
+    await emailService.sendVerificationEmail(user.email, verifyCode);
+    res.json({ message: 'Mã xác thực đã được gửi vào email của bạn.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error });
+  }
+};
+
+const verifyEmail = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const user = await User.findById(req.user.id).select('+verifyEmailCode +verifyEmailCodeExpires');
+
+    if (!user || !user.verifyEmailCode) {
+      return res.status(400).json({ message: 'Yêu cầu không hợp lệ.' });
+    }
+    if (user.verifyEmailCodeExpires < new Date()) {
+      return res.status(400).json({ message: 'Mã xác thực đã hết hạn.' });
+    }
+    if (user.verifyEmailCode !== code) {
+      return res.status(400).json({ message: 'Mã xác thực không đúng.' });
+    }
+
+    user.isEmailVerified = true;
+    user.verifyEmailCode = null;
+    user.verifyEmailCodeExpires = null;
+    await user.save();
+
+    res.json({ message: 'Xác thực email thành công!' });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error });
+  }
+};
 
 module.exports = {
   createUser,
@@ -179,5 +259,8 @@ module.exports = {
   requestPasswordReset,
   verifyResetCode,
   resetPassword,
+  changePassword,
+  requestEmailVerification,
+  verifyEmail,
   getUserShippingInfo,
 };

@@ -26,7 +26,9 @@ import WishlistPage from "./pages/WishlistPage";
 import OrderHistoryPage from "./pages/User/OrderHistoryPage";
 import OrderDetailPage from "./pages/User/OrderDetailPage";
 import OrderManagementPage from "./pages/Admin/OrderManagementPage";
-import OrderConfirmation from './pages/OrderConfirmation';
+import OrderConfirmation from "./pages/OrderConfirmation";
+import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
+import ChangePasswordPage from "./pages/Auth/ChangePasswordPage";
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -112,18 +114,30 @@ const App = () => {
                     {/* Giỏ hàng và Thanh toán */}
                     <Route path="cart" element={<CartPage />} />
                     <Route path="checkout" element={<CheckoutPage />} />
-                    <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+                    <Route
+                      path="/order-confirmation/:orderId"
+                      element={<OrderConfirmation />}
+                    />
 
                     {/* Tài khoản */}
                     <Route path="login" element={<LoginPage />} />
                     <Route path="register" element={<RegisterPage />} />
+                    <Route
+                      path="forgot-password"
+                      element={<ForgotPasswordPage />}
+                    />
                     <Route path="profile" element={<ProfilePage />} />
+                    <Route
+                      path="change-password"
+                      element={<ChangePasswordPage />}
+                    />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="wishlist" element={<WishlistPage />} />
                     <Route path="don-hang" element={<OrderHistoryPage />} />
+                    <Route path="orders" element={<OrderManagementPage />} />
                     <Route
-                      path="don-hang/:orderId"
-                      element={<OrderDetailPage />}
+                      path="products/edit/:id"
+                      element={<AddProductPage />}
                     />
                   </Route>
 

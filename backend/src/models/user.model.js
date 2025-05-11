@@ -62,6 +62,8 @@ const userSchema = mongoose.Schema(
     },
     resetPasswordCode: { type: String, select: false },
     resetPasswordCodeExpires: { type: Date, select: false },
+    verifyEmailCode: { type: String, select: false },
+    verifyEmailCodeExpires: { type: Date, select: false },
   },
   {
     timestamps: true,

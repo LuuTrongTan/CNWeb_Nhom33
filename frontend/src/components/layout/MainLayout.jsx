@@ -70,6 +70,8 @@ const MainLayout = () => {
   const isCart = location.pathname === "/cart";
   const isCheckout = location.pathname === "/checkout";
   const isProductsPage = location.pathname.includes("/products");
+  const isProfile = location.pathname.includes("/profile");
+  const isChangePassword = location.pathname.includes("/change-password");
   const isProductDetailPage =
     pathParts[0] === "products" &&
     pathParts[1] &&
@@ -97,7 +99,9 @@ const MainLayout = () => {
         isProductDetailPage ||
         isProductDetailPage2 ||
         isCart ||
-        isCheckout
+        isCheckout ||
+        isProfile ||
+        isChangePassword
           ? "home-page"
           : ""
       }`}

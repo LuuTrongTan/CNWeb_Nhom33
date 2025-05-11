@@ -57,6 +57,16 @@ const googleLoginSchema = {
   }),
 };
 
+const changePassword = {
+  body: Joi.object().keys({
+    currentPassword: Joi.string().required(),
+    newPassword: Joi.string().required().custom(password),
+    confirmPassword: Joi.string().required().valid(Joi.ref('newPassword')).messages({
+      'any.only': 'Mật khẩu xác nhận không khớp',
+    }),
+  }),
+};
+
 module.exports = {
   register,
   login,
@@ -66,4 +76,5 @@ module.exports = {
   resetPassword,
   verifyEmail,
   googleLoginSchema,
+  changePassword,
 };

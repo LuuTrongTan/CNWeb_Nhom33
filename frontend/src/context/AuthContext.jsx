@@ -51,7 +51,12 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(data.user);
       return data;
     } catch (err) {
-      setError(err.response?.data?.message || "Đăng nhập thất bại");
+      // Xử lý lỗi rate limit
+      if (err.response?.status === 429) {
+        setError('Quá nhiều yêu cầu đăng nhập. Vui lòng thử lại sau 5 phút.');
+      } else {
+        setError(err.response?.data?.message || "Đăng nhập thất bại");
+      }
       throw err;
     } finally {
       setLoading(false);
