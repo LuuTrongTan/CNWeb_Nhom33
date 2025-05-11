@@ -83,130 +83,45 @@ const OrderManagementPage = () => {
       // Gọi API để lấy thống kê tổng quan từ backend
       const response = await apiClient.get('/admin/orders/stats');
       
-      if (response && response.statusStats) {
-        // Backend trả về thống kê theo dạng nhóm theo trạng thái
-        const { statusStats, dailyStats } = response;
-        
-        // Tính tổng số đơn hàng
-        const totalOrders = statusStats.reduce((sum, stat) => sum + stat.count, 0);
-        
-        // Tính tổng doanh thu - Cần phải lấy tất cả đơn hàng để kiểm tra isPaid
-        // API thống kê không phân biệt đơn đã thanh toán và chưa thanh toán
-        const allOrdersResponse = await apiClient.get('/admin/orders', { params: { limit: 1000 } });
-        let totalRevenue = 0;
-        
-        if (allOrdersResponse && allOrdersResponse.results && Array.isArray(allOrdersResponse.results)) {
-          totalRevenue = allOrdersResponse.results
-            .filter(order => order.isPaid === true) // Chỉ tính đơn hàng đã thanh toán
-            .reduce((total, order) => total + (order.totalAmount || 0), 0);
-        }
-        
-        // Đếm số đơn hàng đang pending
-        const pendingOrders = statusStats.find(stat => stat._id === 'pending')?.count || 0;
-        
-        // Tính số đơn hàng trong ngày hôm nay
+      // Lấy tất cả đơn hàng để tính toán chính xác
+      const allOrdersResponse = await apiClient.get('/admin/orders', { params: { limit: 1000 } });
+      let totalRevenue = 0;
+      let todayOrdersCount = 0;
+      let totalOrders = 0;
+      let pendingOrders = 0;
+      if (allOrdersResponse && allOrdersResponse.results && Array.isArray(allOrdersResponse.results)) {
+        const allOrders = allOrdersResponse.results;
+        totalOrders = allOrders.length;
+        // Tính doanh thu
+        totalRevenue = allOrders.filter(order => order.isPaid === true).reduce((total, order) => total + (order.totalAmount || 0), 0);
+        // Đếm đơn chờ xử lý
+        pendingOrders = allOrders.filter(order => order.status === 'pending').length;
+        // Đếm đơn hàng hôm nay (theo thiết bị)
         const today = new Date();
-        // Đặt giờ về 00:00:00 theo múi giờ Việt Nam (GMT+7)
-        const vietnamOffset = 7 * 60; // Múi giờ GMT+7 tính bằng phút
-        const localOffset = today.getTimezoneOffset(); // Chênh lệch múi giờ local với UTC
-        const totalOffset = vietnamOffset + localOffset; // Tổng chênh lệch cần bù trừ
-        
-        // Tạo ngày mới với thời gian 00:00:00 theo múi giờ Việt Nam
-        const todayVN = new Date(today);
-        todayVN.setHours(0, 0, 0, 0);
-        todayVN.setMinutes(todayVN.getMinutes() + totalOffset);
-        
-        const todayString = todayVN.toISOString().split('T')[0];
-        const todayOrders = dailyStats.find(day => day._id === todayString)?.count || 0;
-        
-        // Cập nhật state
-        setStats({
-          total: totalOrders,
-          today: todayOrders,
-          revenue: totalRevenue,
-          pending: pendingOrders
-        });
-      } else {
-        // Nếu API không trả về đúng định dạng, lấy tất cả đơn hàng để tính toán
-        await fetchAllOrdersForStats();
+        today.setHours(0, 0, 0, 0);
+        todayOrdersCount = allOrders.filter(order => {
+          if (!order.createdAt) return false;
+          const orderDate = new Date(order.createdAt);
+          return orderDate >= today;
+        }).length;
       }
+      setStats({
+        total: totalOrders,
+        today: todayOrdersCount,
+        revenue: totalRevenue,
+        pending: pendingOrders
+      });
     } catch (err) {
       console.error("Lỗi khi lấy thống kê đơn hàng:", err);
-      // Thử phương án dự phòng
-      await fetchAllOrdersForStats();
-    } finally {
-      setStatsLoading(false);
-    }
-  };
-
-  // Phương án dự phòng: lấy tất cả đơn hàng để tính toán thống kê
-  const fetchAllOrdersForStats = async () => {
-    try {
-      // Lấy tất cả đơn hàng (không phân trang)
-      const response = await apiClient.get('/admin/orders', { params: { limit: 1000 } });
-      
-      if (response && response.results && Array.isArray(response.results)) {
-        calculateStats(response.results);
-      } else {
-        // Nếu không lấy được dữ liệu, hiển thị 0
-        setStats({
-          total: 0,
-          today: 0,
-          revenue: 0,
-          pending: 0
-        });
-      }
-    } catch (err) {
-      console.error("Lỗi khi lấy tất cả đơn hàng để tính thống kê:", err);
       setStats({
         total: 0,
         today: 0,
         revenue: 0,
         pending: 0
       });
+    } finally {
+      setStatsLoading(false);
     }
-  };
-
-  // Tính toán thống kê từ tất cả đơn hàng
-  const calculateStats = (orderData) => {
-    if (!Array.isArray(orderData)) {
-      console.error("Dữ liệu đơn hàng không hợp lệ:", orderData);
-      return;
-    }
-
-    // Tạo ngày mới với thời gian 00:00:00 theo múi giờ Việt Nam (GMT+7)
-    const today = new Date();
-    const vietnamOffset = 7 * 60; // Múi giờ GMT+7 tính bằng phút
-    const localOffset = today.getTimezoneOffset(); // Chênh lệch múi giờ local với UTC
-    const totalOffset = vietnamOffset + localOffset; // Tổng chênh lệch cần bù trừ
-    
-    // Tạo ngày mới với thời gian 00:00:00 theo múi giờ Việt Nam
-    const todayVN = new Date(today);
-    todayVN.setHours(0, 0, 0, 0);
-    todayVN.setMinutes(todayVN.getMinutes() + totalOffset);
-    
-    const todayOrders = orderData.filter(order => {
-      if (!order.createdAt) return false;
-      const orderDate = new Date(order.createdAt);
-      return orderDate >= todayVN;
-    });
-    
-    const totalRevenue = orderData.reduce((total, order) => {
-      // Chỉ tính doanh thu từ đơn hàng đã thanh toán
-      if (order.isPaid === true) {
-        return total + (order.totalAmount || 0);
-      }
-      return total;
-    }, 0);
-    
-    const pendingOrders = orderData.filter(order => order.status === 'pending').length;
-    
-    setStats({
-      total: orderData.length,
-      today: todayOrders.length,
-      revenue: totalRevenue,
-      pending: pendingOrders
-    });
   };
 
   const fetchAllOrders = async () => {
