@@ -379,7 +379,7 @@ const ProductPage = ({ tagCategory }) => {
         </div>
       </div>
 
-      {products.length === 0 ? (
+      {!loading && products.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">
             <FontAwesomeIcon icon={faSearch} />
