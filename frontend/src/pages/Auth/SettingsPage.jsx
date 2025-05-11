@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faEye, faEyeSlash, faBell, faSignOutAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/css/Auth/Settings.css';
+import { useAuth } from '../../context/AuthContext';
 
 const SettingsPage = () => {
   const [user, setUser] = useState(null);
@@ -26,6 +27,7 @@ const SettingsPage = () => {
   });
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
 
   useEffect(() => {
     // Kiểm tra đăng nhập

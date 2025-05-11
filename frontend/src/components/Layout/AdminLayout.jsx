@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  faTachometerAlt, 
-  faBox, 
-  faShoppingCart, 
-  faUsers, 
-  faTags, 
-  faChartBar, 
-  faCog, 
-  faBars, 
+import React, { useState, useEffect } from "react";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  faTachometerAlt,
+  faBox,
+  faShoppingCart,
+  faUsers,
+  faTags,
+  faChartBar,
+  faCog,
+  faBars,
   faSignOutAlt,
   faChevronDown,
   faChevronUp,
-  faImages
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import '../../styles/css/Admin/AdminLayout.css';
+  faImages,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import "../../styles/css/Admin/AdminLayout.css";
 
 const AdminLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -25,11 +25,11 @@ const AdminLayout = () => {
     products: false,
     orders: false,
     customers: false,
-    marketing: false
+    marketing: false,
   });
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -37,18 +37,18 @@ const AdminLayout = () => {
         setMobileSidebarOpen(false);
       }
     };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
-  
+
   useEffect(() => {
     // Đóng sidebar trên thiết bị di động khi thay đổi route
     if (isMobile) {
       setMobileSidebarOpen(false);
     }
   }, [location.pathname, isMobile]);
-  
+
   const toggleSidebar = () => {
     if (isMobile) {
       setMobileSidebarOpen(!mobileSidebarOpen);
@@ -56,59 +56,70 @@ const AdminLayout = () => {
       setCollapsed(!collapsed);
     }
   };
-  
+
   const toggleDropdown = (dropdown) => {
-    setDropdowns(prev => ({
+    setDropdowns((prev) => ({
       ...prev,
-      [dropdown]: !prev[dropdown]
+      [dropdown]: !prev[dropdown],
     }));
   };
-  
+
   const handleLogout = () => {
     // Logic đăng xuất
-    navigate('/login');
+    navigate("/");
   };
-  
-  const sidebarClass = collapsed ? 'admin-sidebar collapsed' : 'admin-sidebar';
-  const contentClass = collapsed ? 'admin-content expanded' : 'admin-content';
-  
+
+  const sidebarClass = collapsed ? "admin-sidebar collapsed" : "admin-sidebar";
+  const contentClass = collapsed ? "admin-content expanded" : "admin-content";
+
   // Kiểm tra active menu item
   const isActive = (path) => {
-    return location.pathname === `/admin${path}` ? 'active' : '';
+    return location.pathname === `/admin${path}` ? "active" : "";
   };
-  
+
   const renderSidebar = () => (
-    <aside className={sidebarClass + (mobileSidebarOpen && isMobile ? ' mobile-open' : '')}>
+    <aside
+      className={
+        sidebarClass + (mobileSidebarOpen && isMobile ? " mobile-open" : "")
+      }
+    >
       <div className="admin-sidebar-header">
-        <h2>{collapsed ? 'A' : 'Admin'}</h2>
+        <h2>{collapsed ? "A" : "Admin"}</h2>
         <button className="sidebar-toggle" onClick={toggleSidebar}>
           <FontAwesomeIcon icon={faBars} />
         </button>
       </div>
-      
+
       <nav className="admin-sidebar-menu">
         <ul>
-          <li className={isActive('')}>
+          <li className={isActive("")}>
             <Link to="/admin">
               <FontAwesomeIcon icon={faTachometerAlt} />
               {!collapsed && <span>Tổng quan</span>}
             </Link>
           </li>
-          
-          <li className={location.pathname.includes('/admin/products') ? 'active' : ''}>
-            <div className="sidebar-item" onClick={() => toggleDropdown('products')}>
+
+          <li
+            className={
+              location.pathname.includes("/admin/products") ? "active" : ""
+            }
+          >
+            <div
+              className="sidebar-item"
+              onClick={() => toggleDropdown("products")}
+            >
               <div className="sidebar-item-content">
                 <FontAwesomeIcon icon={faBox} />
                 {!collapsed && <span>Sản phẩm</span>}
               </div>
               {!collapsed && (
-                <FontAwesomeIcon 
-                  icon={dropdowns.products ? faChevronUp : faChevronDown} 
+                <FontAwesomeIcon
+                  icon={dropdowns.products ? faChevronUp : faChevronDown}
                   className="dropdown-icon"
                 />
               )}
             </div>
-            
+
             {dropdowns.products && !collapsed && (
               <ul className="sidebar-dropdown">
                 <li>
@@ -123,21 +134,28 @@ const AdminLayout = () => {
               </ul>
             )}
           </li>
-          
-          <li className={location.pathname.includes('/admin/orders') ? 'active' : ''}>
-            <div className="sidebar-item" onClick={() => toggleDropdown('orders')}>
+
+          <li
+            className={
+              location.pathname.includes("/admin/orders") ? "active" : ""
+            }
+          >
+            <div
+              className="sidebar-item"
+              onClick={() => toggleDropdown("orders")}
+            >
               <div className="sidebar-item-content">
                 <FontAwesomeIcon icon={faShoppingCart} />
                 {!collapsed && <span>Đơn hàng</span>}
               </div>
               {!collapsed && (
-                <FontAwesomeIcon 
-                  icon={dropdowns.orders ? faChevronUp : faChevronDown} 
+                <FontAwesomeIcon
+                  icon={dropdowns.orders ? faChevronUp : faChevronDown}
                   className="dropdown-icon"
                 />
               )}
             </div>
-            
+
             {dropdowns.orders && !collapsed && (
               <ul className="sidebar-dropdown">
                 <li>
@@ -161,21 +179,28 @@ const AdminLayout = () => {
               </ul>
             )}
           </li>
-          
-          <li className={location.pathname.includes('/admin/customers') ? 'active' : ''}>
-            <div className="sidebar-item" onClick={() => toggleDropdown('customers')}>
+
+          <li
+            className={
+              location.pathname.includes("/admin/customers") ? "active" : ""
+            }
+          >
+            <div
+              className="sidebar-item"
+              onClick={() => toggleDropdown("customers")}
+            >
               <div className="sidebar-item-content">
                 <FontAwesomeIcon icon={faUsers} />
                 {!collapsed && <span>Khách hàng</span>}
               </div>
               {!collapsed && (
-                <FontAwesomeIcon 
-                  icon={dropdowns.customers ? faChevronUp : faChevronDown} 
+                <FontAwesomeIcon
+                  icon={dropdowns.customers ? faChevronUp : faChevronDown}
                   className="dropdown-icon"
                 />
               )}
             </div>
-            
+
             {dropdowns.customers && !collapsed && (
               <ul className="sidebar-dropdown">
                 <li>
@@ -187,21 +212,28 @@ const AdminLayout = () => {
               </ul>
             )}
           </li>
-          
-          <li className={location.pathname.includes('/admin/marketing') ? 'active' : ''}>
-            <div className="sidebar-item" onClick={() => toggleDropdown('marketing')}>
+
+          <li
+            className={
+              location.pathname.includes("/admin/marketing") ? "active" : ""
+            }
+          >
+            <div
+              className="sidebar-item"
+              onClick={() => toggleDropdown("marketing")}
+            >
               <div className="sidebar-item-content">
                 <FontAwesomeIcon icon={faTags} />
                 {!collapsed && <span>Marketing</span>}
               </div>
               {!collapsed && (
-                <FontAwesomeIcon 
-                  icon={dropdowns.marketing ? faChevronUp : faChevronDown} 
+                <FontAwesomeIcon
+                  icon={dropdowns.marketing ? faChevronUp : faChevronDown}
                   className="dropdown-icon"
                 />
               )}
             </div>
-            
+
             {dropdowns.marketing && !collapsed && (
               <ul className="sidebar-dropdown">
                 <li>
@@ -216,36 +248,36 @@ const AdminLayout = () => {
               </ul>
             )}
           </li>
-          
-          <li className={isActive('/reports')}>
+
+          <li className={isActive("/reports")}>
             <Link to="/admin/reports">
               <FontAwesomeIcon icon={faChartBar} />
               {!collapsed && <span>Báo cáo</span>}
             </Link>
           </li>
-          
-          <li className={isActive('/settings')}>
+
+          <li className={isActive("/settings")}>
             <Link to="/admin/settings">
               <FontAwesomeIcon icon={faCog} />
               {!collapsed && <span>Cài đặt</span>}
             </Link>
           </li>
-          
+
           <li>
             <a href="#" onClick={handleLogout}>
               <FontAwesomeIcon icon={faSignOutAlt} />
-              {!collapsed && <span>Đăng xuất</span>}
+              {!collapsed && <span>Quay về</span>}
             </a>
           </li>
         </ul>
       </nav>
     </aside>
   );
-  
+
   return (
     <div className="admin-layout">
       {renderSidebar()}
-      
+
       <div className={contentClass}>
         <header className="admin-header">
           <div className="header-left">
@@ -256,24 +288,24 @@ const AdminLayout = () => {
             )}
             <h1>Admin Portal</h1>
           </div>
-          
+
           <div className="header-right">
             <div className="admin-user">
-              <img 
-                src="https://randomuser.me/api/portraits/men/85.jpg" 
-                alt="Admin User" 
+              <img
+                src="https://randomuser.me/api/portraits/men/85.jpg"
+                alt="Admin User"
                 className="admin-avatar"
               />
               <span className="admin-name">Admin</span>
             </div>
           </div>
         </header>
-        
+
         <main className="admin-main">
           <Outlet />
         </main>
       </div>
-      
+
       {/* Overlay cho mobile */}
       {mobileSidebarOpen && isMobile && (
         <div className="sidebar-overlay" onClick={toggleSidebar}></div>
@@ -282,4 +314,4 @@ const AdminLayout = () => {
   );
 };
 
-export default AdminLayout; 
+export default AdminLayout;
