@@ -5,12 +5,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from '../context/CartContext';
 import '../styles/css/WishlistPage.css';
+import AddToCartModal from '../components/Product/AddToCartModal';
 
 const WishlistPage = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchWishlist();
@@ -58,14 +61,18 @@ const WishlistPage = () => {
     }
   };
 
-  const handleAddToCart = (product) => {
-    addToCart({
-      id: product._id,
-      name: product.name,
-      price: product.price,
-      image: product.images[0],
-      quantity: 1
-    });
+  const handleOpenModal = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
+
+  const handleAddToCart = (productToAdd) => {
+    addToCart(productToAdd);
   };
 
   if (loading) {
@@ -139,7 +146,7 @@ const WishlistPage = () => {
                   </div>
                   <button 
                     className="wishlist-card-add-to-cart-btn"
-                    onClick={() => handleAddToCart(product)}
+                    onClick={() => handleOpenModal(product)}
                   >
                     <FontAwesomeIcon icon={faShoppingCart} /> Thêm vào giỏ hàng
                   </button>
@@ -152,6 +159,16 @@ const WishlistPage = () => {
               Tiếp tục mua sắm
             </Link>
           </div>
+
+          {/* Modal thêm vào giỏ hàng */}
+          {selectedProduct && (
+            <AddToCartModal
+              product={selectedProduct}
+              isOpen={isModalOpen}
+              onClose={handleCloseModal}
+              onAddToCart={handleAddToCart}
+            />
+          )}
         </>
       )}
     </div>
