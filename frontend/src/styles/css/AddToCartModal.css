@@ -158,7 +158,8 @@
   margin-top: 10px;
 }
 
-.cancel-button, .add-to-cart-button {
+.cancel-button,
+.add-to-cart-button {
   padding: 10px 15px;
   border-radius: 4px;
   font-weight: 500;
@@ -184,4 +185,4 @@
   border: none;
   color: white;
   flex: 2;
-} 
+}

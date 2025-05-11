@@ -154,7 +154,7 @@ const WishlistPage = () => {
                   </div>
                   <button
                     className="wishlist-card-add-to-cart-btn"
-                    onClick={() => handleAddToCart(product)}
+                    onClick={() => handleOpenModal(product)}
                   >
                     <FontAwesomeIcon icon={faShoppingCart} /> Thêm vào giỏ hàng
                   </button>
