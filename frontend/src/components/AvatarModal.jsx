@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faCamera } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
+import React, { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes, faCamera } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const AvatarModal = ({ isOpen, onClose, onSuccess }) => {
   const [avatar, setAvatar] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState('');
-  const [error, setError] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleAvatarChange = (e) => {
@@ -15,19 +17,19 @@ const AvatarModal = ({ isOpen, onClose, onSuccess }) => {
 
     // Kiểm tra kích thước file (tối đa 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      setError('Kích thước ảnh đại diện không được vượt quá 2MB.');
+      setError("Kích thước ảnh đại diện không được vượt quá 2MB.");
       return;
     }
 
     // Kiểm tra loại file
-    if (!file.type.startsWith('image/')) {
-      setError('Vui lòng chọn file hình ảnh.');
+    if (!file.type.startsWith("image/")) {
+      setError("Vui lòng chọn file hình ảnh.");
       return;
     }
 
     setAvatar(file);
-    setError('');
-    
+    setError("");
+
     // Hiển thị ảnh xem trước
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -39,52 +41,59 @@ const AvatarModal = ({ isOpen, onClose, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!avatar) {
-      setError('Vui lòng chọn ảnh đại diện');
+      setError("Vui lòng chọn ảnh đại diện");
       return;
     }
 
     try {
       setLoading(true);
-      setError('');
-      const token = localStorage.getItem('token');
-      
+      setError("");
+      const token = localStorage.getItem("token");
+
       // Tạo FormData object
       const formData = new FormData();
-      formData.append('avatar', avatar);
-      
+      formData.append("avatar", avatar);
+
       // Upload ảnh lên Cloudinary
-      const uploadResponse = await axios.post('http://localhost:4000/upload', formData, {
+      const uploadResponse = await axios.post(`${API_URL}/upload`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
         },
-        timeout: 30000 // Thêm timeout 30 giây
+        timeout: 30000, // Thêm timeout 30 giây
       });
 
-      console.log('Upload response:', uploadResponse.data);
+      console.log("Upload response:", uploadResponse.data);
 
       if (!uploadResponse.data.url) {
-        console.error('Upload response:', uploadResponse.data);
-        throw new Error('Không nhận được URL ảnh từ server');
+        console.error("Upload response:", uploadResponse.data);
+        throw new Error("Không nhận được URL ảnh từ server");
       }
 
       // Cập nhật avatar trong profile
-      const profileResponse = await axios.patch('http://localhost:4000/users/profile', {
-        avatar: uploadResponse.data.url
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const profileResponse = await axios.patch(
+        `${API_URL}/users/profile`,
+        {
+          avatar: uploadResponse.data.url,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
-      console.log('Profile update response:', profileResponse.data);
+      console.log("Profile update response:", profileResponse.data);
 
       onSuccess(uploadResponse.data.url);
       onClose();
     } catch (err) {
-      console.error('Lỗi khi cập nhật avatar:', err);
-      setError(err.response?.data?.message || 'Không thể cập nhật avatar. Vui lòng thử lại sau.');
+      console.error("Lỗi khi cập nhật avatar:", err);
+      setError(
+        err.response?.data?.message ||
+          "Không thể cập nhật avatar. Vui lòng thử lại sau."
+      );
     } finally {
       setLoading(false);
     }
@@ -104,7 +113,7 @@ const AvatarModal = ({ isOpen, onClose, onSuccess }) => {
 
         <div className="modal-content">
           {error && <div className="error-message">{error}</div>}
-          
+
           <div className="avatar-preview">
             {avatarPreview ? (
               <img src={avatarPreview} alt="Avatar preview" />
@@ -126,7 +135,7 @@ const AvatarModal = ({ isOpen, onClose, onSuccess }) => {
                 name="avatar"
                 accept="image/*"
                 onChange={handleAvatarChange}
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
               />
             </div>
 
@@ -135,7 +144,7 @@ const AvatarModal = ({ isOpen, onClose, onSuccess }) => {
                 Hủy
               </button>
               <button type="submit" disabled={loading || !avatar}>
-                {loading ? 'Đang cập nhật...' : 'Cập nhật'}
+                {loading ? "Đang cập nhật..." : "Cập nhật"}
               </button>
             </div>
           </form>
@@ -145,4 +154,4 @@ const AvatarModal = ({ isOpen, onClose, onSuccess }) => {
   );
 };
 
-export default AvatarModal; 
+export default AvatarModal;
