@@ -26,20 +26,10 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Lưu thông báo lỗi vào localStorage nếu là lỗi đăng nhập
-    if (error.config.url.includes('/auth/login')) {
-      const errorMsg = error.response?.status === 429
-        ? 'Quá nhiều yêu cầu đăng nhập. Vui lòng thử lại sau 5 phút.'
-        : error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
-      localStorage.setItem('loginError', errorMsg);
-    }
-
-    // Handle authentication errors
-    if (error.response?.status === 401) {
-      // Redirect to login page
+    // Chỉ xử lý lỗi 401 (unauthorized) để chuyển hướng về trang login
+    if (error.response?.status === 401 && !error.config.url.includes('/auth/login')) {
       window.location.href = '/login';
     }
-
     return Promise.reject(error);
   }
 );

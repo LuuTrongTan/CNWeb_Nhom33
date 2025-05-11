@@ -53,9 +53,13 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       // Xử lý lỗi rate limit
       if (err.response?.status === 429) {
-        setError('Quá nhiều yêu cầu đăng nhập. Vui lòng thử lại sau 5 phút.');
+        const errorMsg = 'Quá nhiều yêu cầu đăng nhập. Vui lòng thử lại sau 5 phút.';
+        setError(errorMsg);
+        localStorage.setItem('loginError', errorMsg);
       } else {
-        setError(err.response?.data?.message || "Đăng nhập thất bại");
+        const errorMsg = err.response?.data?.message || "Đăng nhập thất bại";
+        setError(errorMsg);
+        localStorage.setItem('loginError', errorMsg);
       }
       throw err;
     } finally {
