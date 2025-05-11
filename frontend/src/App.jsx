@@ -29,6 +29,8 @@ import OrderManagementPage from "./pages/Admin/OrderManagementPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
 import ChangePasswordPage from "./pages/Auth/ChangePasswordPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -60,6 +62,10 @@ const App = () => {
                   <Route path="/" element={<MainLayout />}>
                     {/* Trang chính */}
                     <Route index element={<Home />} />
+
+                    {/* Trang giới thiệu và liên hệ */}
+                    <Route path="about" element={<AboutPage />} />
+                    <Route path="contact" element={<ContactPage />} />
 
                     {/* Sản phẩm */}
                     <Route
@@ -133,11 +139,14 @@ const App = () => {
                     />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="wishlist" element={<WishlistPage />} />
-                    <Route path="don-hang" element={<OrderHistoryPage />} />
-                    <Route path="orders" element={<OrderManagementPage />} />
                     <Route
                       path="products/edit/:id"
                       element={<AddProductPage />}
+                    />
+                    <Route path="orders" element={<OrderHistoryPage />} />
+                    <Route
+                      path="orders/:orderId"
+                      element={<OrderDetailPage />}
                     />
                   </Route>
 

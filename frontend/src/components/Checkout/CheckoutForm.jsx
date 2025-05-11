@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useCart } from "../../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { createOrder } from "../../services/order.service";
 
 // Tạo instance của axios với cấu hình chung
 const axiosInstance = axios.create({
-    baseURL: `${import.meta.env.VITE_API_URL || ''}/api`, 
+    baseURL: `${import.meta.env.VITE_API_URL || ''}`, 
     headers: {
         'Content-Type': 'application/json',
     }
@@ -100,13 +101,13 @@ const CheckoutForm = ({ onCancel }) => {
                 discountPrice: 0  // Có thể thêm tính năng giảm giá
             };
 
-            // Gửi request tạo đơn hàng
-            const response = await axiosInstance.post("/orders", orderData);
+            // Gọi service để tạo đơn hàng
+            const response = await createOrder(orderData);
             
             // Xử lý khi đặt hàng thành công
-            alert("Đặt hàng thành công! Mã đơn hàng: " + response.data.id);
+            alert("Đặt hàng thành công! Mã đơn hàng: " + response.id);
             clearCart();
-            navigate("/orders/" + response.data.id);
+            navigate("/orders/" + response.id);
         } catch (error) {
             console.error("Lỗi khi đặt hàng:", error);
             alert("Có lỗi xảy ra khi đặt hàng: " + (error.response?.data?.message || error.message));

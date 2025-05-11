@@ -9,7 +9,9 @@ const ApiError = require('../utils/ApiError');
  */
 const createOrder = async (orderBody) => {
   const order = await Order.create(orderBody);
-  return order;
+  // Truy vấn lại để lấy đầy đủ dữ liệu sau khi đã tạo
+  const populatedOrder = await Order.findById(order._id);
+  return populatedOrder;
 };
 
 /**

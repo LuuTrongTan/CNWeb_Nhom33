@@ -20,10 +20,11 @@ import {
 import axios from "axios";
 import "../styles/css/CheckoutPage.css";
 import { getDistance } from "../service/shippingAPI";
+import { createOrder } from "../services/order.service";
 
 // Tạo instance axios
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || "http://localhost:4000"}`,
+  baseURL: `${import.meta.env.VITE_API_URL || ""}`,
   headers: {
     "Content-Type": "application/json",
   },
