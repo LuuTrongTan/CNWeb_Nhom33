@@ -1,26 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle, faSpinner, faHome, faShoppingBag, faMapMarkerAlt, faTruck, faMoneyBill } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
+import { faCheckCircle, faSpinner, faHome, faShoppingBag, faMapMarkerAlt, faTruck, faMoneyBill, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { getOrderDetails } from "../services/order.service";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 import "../styles/css/OrderConfirmation.css";
-
-// Tạo instance axios
-const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || ''}/api`,
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
-
-// Interceptor để thêm token xác thực
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 const OrderConfirmation = () => {
   const { orderId } = useParams();
@@ -28,16 +13,49 @@ const OrderConfirmation = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Hàm format ngày tháng, trả về ngày hiện tại nếu không có dữ liệu
+  const formatDate = (dateString) => {
+    if (!dateString) {
+      // Nếu không có ngày tháng, sử dụng ngày hiện tại
+      return format(new Date(), 'dd/MM/yyyy HH:mm', { locale: vi });
+    }
+    return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: vi });
+  };
+
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/orders/${orderId}`);
-        setOrder(response.data);
+        const orderData = await getOrderDetails(orderId);
+        console.log("Order details received:", orderData);
+        
+        // Kiểm tra dữ liệu phản hồi
+        if (!orderData) {
+          throw new Error("Không nhận được dữ liệu đơn hàng");
+        }
+        
+        // Kiểm tra và đảm bảo có tất cả thông tin cần thiết
+        if (!orderData.items || !orderData.shippingAddress) {
+          throw new Error("Dữ liệu đơn hàng không đầy đủ");
+        }
+        
+        // Đảm bảo tính tổng tiền nếu chưa có
+        if (orderData.totalItemsPrice === undefined || orderData.totalAmount === undefined) {
+          let totalItemsPrice = 0;
+          if (orderData.items && orderData.items.length > 0) {
+            totalItemsPrice = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            orderData.totalItemsPrice = totalItemsPrice;
+          }
+          if (orderData.shippingPrice !== undefined) {
+            orderData.totalAmount = totalItemsPrice + orderData.shippingPrice;
+          }
+        }
+        
+        setOrder(orderData);
         setError(null);
       } catch (err) {
         console.error("Error fetching order details:", err);
-        setError("Không thể tải thông tin đơn hàng. Vui lòng thử lại sau.");
+        setError(err.message || "Không thể tải thông tin đơn hàng. Vui lòng thử lại sau.");
       } finally {
         setLoading(false);
       }
@@ -80,6 +98,10 @@ const OrderConfirmation = () => {
         <div className="order-confirmation-number">
           <span>Mã đơn hàng:</span>
           <strong>{order.orderNumber}</strong>
+        </div>
+        <div className="order-confirmation-date">
+          <span>Ngày đặt hàng:</span>
+          <strong>{formatDate(order.createdAt)}</strong>
         </div>
       </div>
 
@@ -172,8 +194,8 @@ const OrderConfirmation = () => {
         <Link to="/" className="order-confirmation-button">
           <FontAwesomeIcon icon={faHome} /> Về trang chủ
         </Link>
-        <Link to="/orders" className="order-confirmation-button primary">
-          <FontAwesomeIcon icon={faShoppingBag} /> Xem đơn hàng của tôi
+        <Link to={`/orders/${orderId}`} className="order-confirmation-button primary">
+          <FontAwesomeIcon icon={faShoppingBag} /> Xem chi tiết đơn hàng
         </Link>
       </div>
     </div>

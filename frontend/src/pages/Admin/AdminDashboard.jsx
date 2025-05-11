@@ -17,6 +17,9 @@ import {
   getProductBestSeller,
   fetchProductsAPI,
 } from "../../service/productAPI";
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import apiClient from "../../services/api.service";
 
 const AdminDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -90,6 +93,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchRecentOrders();
   }, [period]);
 
   const fetchDashboardData = async () => {
@@ -124,8 +128,6 @@ const AdminDashboard = () => {
         (p) => p.stock <= 20
       ).length;
 
-      lowStock;
-
       setDashboardData(mockData);
 
       // setDashboardData(response.data);
@@ -138,6 +140,24 @@ const AdminDashboard = () => {
 
       setDashboardData(mockData);
       setLoading(false);
+    }
+  };
+
+  const fetchRecentOrders = async () => {
+    try {
+      const response = await apiClient.get('/admin/orders?page=1&limit=5');
+      if (response && response.results) {
+        // Cập nhật mockData với dữ liệu thực tế
+        mockData.recentOrders = response.results.map(order => ({
+          id: order._id.substring(0, 8),
+          customer: order.shippingAddress?.fullName || 'Khách hàng',
+          date: order.createdAt,
+          status: order.status,
+          total: order.totalAmount
+        }));
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách đơn hàng gần đây:", error);
     }
   };
 
@@ -182,8 +202,25 @@ const AdminDashboard = () => {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN");
+    if (!dateString) {
+      console.log("Không có dữ liệu ngày trong AdminDashboard:", dateString);
+      return 'N/A';
+    }
+    
+    try {
+      console.log("Dữ liệu ngày nhận được trong AdminDashboard:", dateString);
+      const date = new Date(dateString);
+      
+      if (isNaN(date.getTime())) {
+        console.error("Không thể chuyển đổi thành ngày hợp lệ trong AdminDashboard:", dateString);
+        return 'N/A';
+      }
+      
+      return format(new Date(dateString), 'dd/MM/yyyy', { locale: vi });
+    } catch (error) {
+      console.error("Lỗi khi format ngày trong AdminDashboard:", error, "với dateString:", dateString);
+      return 'N/A';
+    }
   };
 
   if (loading) {

@@ -1,0 +1,1077 @@
+/* OrderManagement.css - Thiết kế hiện đại cho trang quản lý đơn hàng */
+
+/* Container chính */
+.order-management-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  color: #334155;
+}
+
+/* Header */
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-header h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+}
+
+.header-icon {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 0.8rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  height: 46px;
+  min-width: 150px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.button-text {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.button-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.refresh-button {
+  background-color: #2563eb;
+  color: white;
+}
+
+.refresh-button:hover {
+  background-color: #1d4ed8;
+}
+
+.export-button {
+  background-color: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.export-button:hover {
+  background-color: #f1f5f9;
+}
+
+/* Animation quay cho icon làm mới */
+.button-icon.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Thống kê */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  margin-right: 1rem;
+  font-size: 1.2rem;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-title {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0 0 0.3rem 0;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Hiệu ứng loading cho giá trị thống kê */
+.stat-value.loading {
+  position: relative;
+  color: transparent;
+  min-width: 3rem;
+}
+
+.stat-value.loading::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 0.25rem;
+  background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  transform: translateY(-50%);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.currency {
+  font-size: 1rem;
+  margin-left: 0.2rem;
+  color: #64748b;
+}
+
+/* Màu sắc cho thống kê */
+.total-orders .stat-icon {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.today-orders .stat-icon {
+  background-color: rgba(147, 51, 234, 0.1);
+  color: #9333ea;
+}
+
+.total-revenue .stat-icon {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.pending-orders .stat-icon {
+  background-color: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+}
+
+/* Bộ lọc và tìm kiếm */
+.order-controls {
+  background-color: white;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.filters-bar {
+  padding: 1.2rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-container {
+  max-width: 500px;
+  min-width: 280px;
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+  width: auto;
+  min-width: 0;
+  margin-right: 1.5rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  width: 320px;
+  min-width: 220px;
+  max-width: 400px;
+}
+
+.search-input-wrapper:focus-within {
+  border-color: #4a6cf7;
+  box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.1);
+}
+
+.search-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  margin-left: 8px;
+  color: #64748b;
+}
+
+.search-icon {
+  font-size: 14px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.search-button {
+  height: 36px;
+  padding: 0 20px;
+  margin-left: 10px;
+  background-color: #4a6cf7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(74, 108, 247, 0.08);
+}
+
+.search-button:hover {
+  background-color: #3a5ce5;
+}
+
+.clear-search-button {
+  background-color: #f1f5f9;
+  border: 2px solid #fca5a5;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 0;
+  font-size: 18px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  width: 34px;
+  border-radius: 50%;
+  margin-right: 8px;
+  box-shadow: 0 2px 8px rgba(252, 165, 165, 0.08);
+}
+
+.clear-search-button:hover {
+  background-color: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+  transform: scale(1.08);
+}
+
+.clear-search-button:active {
+  transform: scale(0.95);
+  background-color: #f87171;
+  border-color: #f87171;
+}
+
+/* Animation cho nút xóa */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.clear-search-button {
+  animation: fadeIn 0.2s ease;
+}
+
+.active-search-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border-radius: 6px;
+  font-size: 13px;
+  gap: 6px;
+}
+
+.filter-badge-icon {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.filters-container {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.filter-select {
+  padding: 0.8rem 2.5rem 0.8rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 0.95rem;
+  min-width: 220px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 1.2em;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.filter-select:focus {
+  border-color: #3b82f6;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.2rem;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-toggle:hover {
+  background-color: #f8fafc;
+}
+
+/* Bộ lọc nâng cao */
+.advanced-filters {
+  padding: 1.2rem;
+  border-top: 1px dashed #e2e8f0;
+  background-color: #f8fafc;
+  animation: fadeIn 0.3s ease;
+}
+
+.date-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date-filter label {
+  font-size: 0.9rem;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.date-filter input {
+  padding: 0.7rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.date-filter input:focus {
+  border-color: #3b82f6;
+}
+
+.date-filter-actions {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.apply-filter-button {
+  padding: 0.7rem 1.2rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.apply-filter-button:hover {
+  background-color: #2563eb;
+}
+
+.clear-filter-button {
+  padding: 0.7rem 1.2rem;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filter-button:hover {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+.active-filter-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+/* Bảng đơn hàng */
+.orders-table-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.orders-table th {
+  background-color: #f8fafc;
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.orders-table td {
+  padding: 0.8rem 1.5rem;
+  border-top: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.orders-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.orders-table tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+.highlight-row {
+  background-color: #f1f5f9 !important;
+  box-shadow: 0 0 0 1px #e2e8f0;
+  position: relative;
+  z-index: 2;
+}
+
+.empty-row td {
+  padding: 3rem 1.5rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: #cbd5e1;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #334155;
+}
+
+.empty-state p {
+  color: #64748b;
+  margin: 0;
+  max-width: 300px;
+}
+
+/* Kiểu cell trong bảng */
+.order-id-cell {
+  width: 180px;
+}
+
+.order-code {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #3b82f6;
+  font-size: 0.9rem;
+}
+
+.order-code-icon {
+  color: #3b82f6;
+  font-size: 0.8rem;
+}
+
+/* Thông tin khách hàng */
+.customer-info {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.customer-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #475569;
+  font-size: 1rem;
+}
+
+.customer-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-name {
+  margin: 0 0 0.2rem 0;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.customer-phone {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Ngày tháng */
+.order-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.date-icon {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+/* Tổng tiền */
+.order-amount {
+  font-weight: 600;
+  color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  display: inline-block;
+}
+
+/* Trạng thái thanh toán */
+.payment-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.payment-icon {
+  font-size: 0.8rem;
+}
+
+.paid {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.unpaid {
+  background-color: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+}
+
+.paid:hover {
+  background-color: rgba(16, 185, 129, 0.18);
+}
+
+.unpaid:hover {
+  background-color: rgba(249, 115, 22, 0.18);
+}
+
+/* Thao tác */
+.actions-container {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.status-select {
+  padding: 0.5rem 2rem 0.5rem 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background-color: white;
+  color: #334155;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.status-select:focus {
+  border-color: #3b82f6;
+}
+
+.view-button {
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.view-button:hover {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #2563eb;
+}
+
+/* Phân trang */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.pagination-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  color: #3b82f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-button:hover:not(.disabled) {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.pagination-button.disabled {
+  color: #cbd5e1;
+  border-color: #f1f5f9;
+  cursor: not-allowed;
+  background-color: #f8fafc;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.current-page {
+  font-weight: 600;
+  color: #0f172a;
+  background-color: #f1f5f9;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+}
+
+/* Toast thông báo */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  max-width: 380px;
+  background-color: white;
+  z-index: 50;
+  animation: slideIn 0.3s ease;
+}
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 0.95rem;
+  margin-right: 1rem;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.toast-close:hover {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/* Toast types */
+.toast-container.success {
+  border-left: 4px solid #10b981;
+}
+
+.toast-container.error {
+  border-left: 4px solid #ef4444;
+}
+
+.toast-container.info {
+  border-left: 4px solid #3b82f6;
+}
+
+.toast-container.success .toast-icon {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.toast-container.error .toast-icon {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.toast-container.info .toast-icon {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+/* Loading và lỗi */
+.loading-overlay, 
+.error-container {
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.spinner-icon {
+  font-size: 2.5rem;
+  color: #3b82f6;
+  margin-bottom: 1rem;
+}
+
+.loading-spinner p {
+  font-weight: 500;
+  color: #334155;
+}
+
+.error-container {
+  background-color: white;
+  padding: 2.5rem 3rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 3rem;
+  color: #ef4444;
+  margin-bottom: 1rem;
+}
+
+.error-container h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: #0f172a;
+}
+
+.error-container p {
+  color: #64748b;
+  margin: 0 0 1.5rem 0;
+}
+
+.retry-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+  background-color: #2563eb;
+}
+
+.retry-icon {
+  font-size: 0.9rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Media queries */
+@media screen and (max-width: 1200px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .order-management-container {
+    padding: 1.5rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .action-button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-container {
+    width: 100%;
+  }
+
+  .filters-container {
+    width: 100%;
+  }
+
+  .filter-select, 
+  .filter-toggle {
+    flex: 1;
+  }
+
+  .orders-table-container {
+    overflow-x: auto;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 1.2rem;
+  }
+
+  .date-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .date-filter {
+    width: 100%;
+  }
+
+  .date-filter input {
+    width: 100%;
+  }
+
+  .apply-filter-button {
+    width: 100%;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+  }
+}
+
+.payment-filter-select {
+  margin-left: 1rem;
+  margin-right: 1rem;
+  padding: 0.8rem 2.5rem 0.8rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 0.95rem;
+  min-width: 160px;
+  max-width: 200px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 1.2em;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.payment-filter-select:focus {
+  border-color: #3b82f6;
+} 

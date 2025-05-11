@@ -19,6 +19,7 @@ import ReviewList from "../components/Review/ReviewList";
 import axios from "axios";
 import ProductCard from "../components/Product/ProductCard";
 import { getCategoryById } from "../service/categoryAPI";
+import AddToCartModal from "../components/Product/AddToCartModal";
 
 const ProductDetailPage = ({ tagCategory }) => {
   const { id } = useParams();
@@ -36,6 +37,7 @@ const ProductDetailPage = ({ tagCategory }) => {
   const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const linkNav = {
     Áo: "ao",
     Quần: "quan",
@@ -115,26 +117,10 @@ const ProductDetailPage = ({ tagCategory }) => {
   };
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
-      alert("Vui lòng chọn kích thước");
-      return;
-    }
+    setIsModalOpen(true);
+  };
 
-    if (!selectedColor) {
-      alert("Vui lòng chọn màu sắc");
-      return;
-    }
-
-    const productToAdd = {
-      id: product._id, // Đảm bảo có id
-      name: product.name,
-      price: product.discountPrice,
-      images: product.images,
-      selectedSize,
-      selectedColor,
-      quantity,
-    };
-
+  const handleModalAddToCart = (productToAdd) => {
     addToCart(productToAdd);
     setAddedToCart(true);
 
@@ -585,6 +571,16 @@ const ProductDetailPage = ({ tagCategory }) => {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Modal thêm vào giỏ hàng */}
+      {product && (
+        <AddToCartModal
+          product={product}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onAddToCart={handleModalAddToCart}
+        />
       )}
     </div>
   );

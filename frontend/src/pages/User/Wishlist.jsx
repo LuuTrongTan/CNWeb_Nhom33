@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart, faShoppingCart, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { getWishlist, removeFromWishlist, clearWishlist } from '../../services/wishlist.service';
+import '../../styles/css/WishlistPage.css'; // Import CSS từ WishlistPage
 
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // Fetch wishlist items on component mount
   useEffect(() => {
@@ -16,8 +20,8 @@ const Wishlist = () => {
         setWishlistItems(response.products);
       } catch (error) {
         console.error('Error fetching wishlist:', error);
-        setError('Failed to load wishlist. Please try again later.');
-        toast.error('Failed to load wishlist');
+        setError('Không thể tải danh sách yêu thích. Vui lòng thử lại sau.');
+        toast.error('Không thể tải danh sách yêu thích');
       } finally {
         setIsLoading(false);
       }
@@ -31,165 +35,123 @@ const Wishlist = () => {
     try {
       await removeFromWishlist(productId);
       setWishlistItems(wishlistItems.filter(item => item.product._id !== productId));
-      toast.success('Item removed from wishlist');
+      toast.success('Đã xóa sản phẩm khỏi danh sách yêu thích');
     } catch (error) {
       console.error('Error removing item from wishlist:', error);
-      toast.error(error.message || 'Failed to remove item from wishlist');
+      toast.error(error.message || 'Không thể xóa sản phẩm khỏi danh sách yêu thích');
     }
   };
 
   // Handle clear wishlist
   const handleClearWishlist = async () => {
-    if (window.confirm('Are you sure you want to clear your wishlist?')) {
+    if (window.confirm('Bạn có chắc muốn xóa tất cả sản phẩm khỏi danh sách yêu thích?')) {
       try {
         await clearWishlist();
         setWishlistItems([]);
-        toast.success('Wishlist cleared successfully');
+        toast.success('Đã xóa tất cả sản phẩm khỏi danh sách yêu thích');
       } catch (error) {
         console.error('Error clearing wishlist:', error);
-        toast.error(error.message || 'Failed to clear wishlist');
+        toast.error(error.message || 'Không thể xóa danh sách yêu thích');
       }
     }
   };
 
-  // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="loading"></div>
+      <div className="wishlist-loading">
+        <div className="spinner"></div>
+        <p>Đang tải danh sách yêu thích...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">My Wishlist</h1>
-        <div className="bg-red-50 border-l-4 border-red-500 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-red-500"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          </div>
-        </div>
+      <div className="wishlist-error">
+        <p>{error}</p>
+        <Link to="/login" className="login-link">Đăng nhập ngay</Link>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">My Wishlist</h1>
+    <div className="wishlist-container">
+      <div className="wishlist-header">
+        <h1>Danh sách yêu thích</h1>
+        <p>Các sản phẩm bạn đã đánh dấu yêu thích</p>
         {wishlistItems.length > 0 && (
           <button
             onClick={handleClearWishlist}
-            className="text-red-600 hover:text-red-800 text-sm font-medium"
+            className="clear-wishlist-btn"
           >
-            Clear Wishlist
+            Xóa tất cả
           </button>
         )}
       </div>
 
       {wishlistItems.length === 0 ? (
-        <div className="bg-white shadow rounded-lg p-8 text-center">
-          <h2 className="text-xl font-medium text-gray-900 mb-4">Your wishlist is empty</h2>
-          <p className="text-gray-600 mb-6">
-            Save items you're interested in to your wishlist for easy access later.
-          </p>
-          <Link to="/" className="btn btn-primary">
-            Browse Products
-          </Link>
+        <div className="empty-wishlist">
+          <p>Danh sách yêu thích của bạn đang trống</p>
+          <Link to="/products" className="shop-now-btn">Mua sắm ngay</Link>
         </div>
       ) : (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <ul className="divide-y divide-gray-200">
+        <>
+          <div className="wishlist-grid">
             {wishlistItems.map((item) => (
-              <li key={item._id} className="p-6">
-                <div className="flex flex-col md:flex-row">
-                  {/* Product image */}
-                  <div className="flex-shrink-0 h-24 w-24 rounded-md border border-gray-200 overflow-hidden">
+              <div className="wishlist-item" key={item._id}>
+                <div className="item-image">
+                  <Link to={`/products/${item.product._id}`}>
                     {item.product.images && item.product.images.length > 0 ? (
-                      <img
-                        src={item.product.images[0]}
-                        alt={item.product.name}
-                        className="h-full w-full object-cover object-center"
+                      <img 
+                        src={item.product.images[0]} 
+                        alt={item.product.name} 
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center bg-gray-100 text-gray-500">
-                        No image
-                      </div>
+                      <div className="no-image">Không có ảnh</div>
+                    )}
+                  </Link>
+                  <button 
+                    className="remove-btn"
+                    onClick={() => handleRemoveItem(item.product._id)}
+                    title="Xóa khỏi danh sách yêu thích"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
+                <div className="item-details">
+                  <h3 className="item-name">
+                    <Link to={`/products/${item.product._id}`}>{item.product.name}</Link>
+                  </h3>
+                  <div className="item-price">
+                    {item.product.discount > 0 ? (
+                      <>
+                        <span className="discounted-price">
+                          {(item.product.price - (item.product.price * item.product.discount / 100)).toLocaleString()}đ
+                        </span>
+                        <span className="original-price">
+                          {item.product.price.toLocaleString()}đ
+                        </span>
+                      </>
+                    ) : (
+                      <span className="current-price">{item.product.price.toLocaleString()}đ</span>
                     )}
                   </div>
-
-                  {/* Product details */}
-                  <div className="flex-1 md:ml-6 mt-4 md:mt-0">
-                    <div className="flex justify-between">
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {item.product.name}
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                          {item.product.category}
-                        </p>
-                      </div>
-                      <p className="text-lg font-medium text-gray-900">
-                        {formatCurrency(item.product.price)}
-                      </p>
-                    </div>
-
-                    <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                      {item.product.description}
-                    </p>
-
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="text-sm text-gray-500">
-                        Added on{' '}
-                        {new Date(item.addedAt).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </div>
-                      <div className="flex space-x-3">
-                        <button
-                          onClick={() => handleRemoveItem(item.product._id)}
-                          className="text-red-600 hover:text-red-800 text-sm font-medium"
-                        >
-                          Remove
-                        </button>
-                        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                          Add to Cart
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <button 
+                    className="add-to-cart-btn"
+                    onClick={() => navigate(`/products/${item.product._id}`)}
+                  >
+                    <FontAwesomeIcon icon={faShoppingCart} /> Thêm vào giỏ hàng
+                  </button>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
-        </div>
+          </div>
+          <div className="wishlist-actions">
+            <Link to="/products" className="continue-shopping-btn">
+              Tiếp tục mua sắm
+            </Link>
+          </div>
+        </>
       )}
     </div>
   );

@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import { useCart } from "../../context/CartContext";
 import "../../styles/css/ProductCard.css";
+import AddToCartModal from "./AddToCartModal";
 
 const ProductCard = ({ product }) => {
   const {
@@ -33,6 +34,7 @@ const ProductCard = ({ product }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -101,22 +103,13 @@ const ProductCard = ({ product }) => {
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    console.log({
-      id: _id,
-      name,
-      price: discountPrice,
-      image: images[0],
-      quantity: 1,
-    });
+    // Mở modal thay vì thêm trực tiếp vào giỏ hàng
+    setIsModalOpen(true);
+  };
 
-    addToCart({
-      id: _id,
-      name,
-      price: discountPrice,
-      images,
-      image: images[0],
-      quantity: 1,
-    });
+  const handleModalAddToCart = (productToAdd) => {
+    // Gọi hàm thêm vào giỏ từ context
+    addToCart(productToAdd);
   };
 
   const handleImageLoad = () => {
@@ -140,111 +133,121 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="product-card-link" onClick={navigateToProductDetail}>
-      <div className="product-card">
-        <div className="product-image-container">
-          {!imageLoaded && <div className="image-placeholder"></div>}
-          <img
-            src={mainImage ? mainImage : "/images/placeholder.png"}
-            alt={name}
-            className={`product-image ${imageLoaded ? "loaded" : ""}`}
-            onLoad={handleImageLoad}
-          />
+    <>
+      <div className="product-card-link" onClick={navigateToProductDetail}>
+        <div className="product-card">
+          <div className="product-image-container">
+            {!imageLoaded && <div className="image-placeholder"></div>}
+            <img
+              src={mainImage ? mainImage : "/images/placeholder.png"}
+              alt={name}
+              className={`product-image ${imageLoaded ? "loaded" : ""}`}
+              onLoad={handleImageLoad}
+            />
 
-          {product.isNewArrival && (
-            <div className="product-badge new-badge">Mới</div>
-          )}
-          {discountedPrice > 0 && (
-            <div className="product-badge discount-badge">
-              -{discountedPrice}%
-            </div>
-          )}
-
-          <div className="product-actions">
-            <button
-              className={`action-button wishlist-button ${
-                isInWishlist ? "active" : ""
-              }`}
-              onClick={handleToggleWishlist}
-              aria-label="Thêm vào yêu thích"
-              disabled={isLoadingWishlist}
-            >
-              <FontAwesomeIcon icon={faHeart} />
-            </button>
-            <button
-              className="action-button cart-button"
-              onClick={handleAddToCart}
-              aria-label="Thêm vào giỏ hàng"
-            >
-              <FontAwesomeIcon icon={faShoppingCart} />
-            </button>
-            <button
-              className="action-button quickview-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigateToProductDetail();
-              }}
-              aria-label="Xem chi tiết"
-            >
-              <FontAwesomeIcon icon={faEye} />
-            </button>
-          </div>
-        </div>
-
-        <div className="product-info">
-          <span className="product-category">{category?.name || category}</span>
-          <h3 className="product-name">{name}</h3>
-
-          <div className="product-rating">
-            <div className="stars">
-              {[...Array(5)].map((_, i) => {
-                const diff = rating - i;
-
-                let fillClass = "star-empty";
-                if (diff >= 1) fillClass = "star-100";
-                else if (diff >= 0.9) fillClass = "star-90";
-                else if (diff >= 0.8) fillClass = "star-80";
-                else if (diff >= 0.7) fillClass = "star-70";
-                else if (diff >= 0.6) fillClass = "star-60";
-                else if (diff >= 0.5) fillClass = "star-50";
-                else if (diff >= 0.4) fillClass = "star-40";
-                else if (diff >= 0.3) fillClass = "star-30";
-                else if (diff >= 0.2) fillClass = "star-20";
-                else if (diff >= 0.1) fillClass = "star-10";
-
-                return (
-                  <span key={i} className={`star ${fillClass}`}>
-                    <FontAwesomeIcon icon={faStar} />
-                  </span>
-                );
-              })}
-            </div>
-            <span className="rating-count">({numReviews})</span>
-          </div>
-
-          <div className="product-price">
+            {product.isNewArrival && (
+              <div className="product-badge new-badge">Mới</div>
+            )}
             {discountedPrice > 0 && (
-              <span className="original-price">
-                {price.toLocaleString("vi-VN")}đ
-              </span>
+              <div className="product-badge discount-badge">
+                -{discountedPrice}%
+              </div>
             )}
-            {discountedPrice > 0 ? (
-              <span className="current-price">
-                {discountPrice.toLocaleString("vi-VN")}đ
-              </span>
-            ) : (
-              <span className="current-price">
-                {price.toLocaleString("vi-VN")}đ
-              </span>
-            )}
-          </div>
-        </div>
 
-        <button className="quick-add" onClick={handleAddToCart}>
-          Thêm vào giỏ
-        </button>
+            <div className="product-actions">
+              <button
+                className={`action-button wishlist-button ${
+                  isInWishlist ? "active" : ""
+                }`}
+                onClick={handleToggleWishlist}
+                aria-label="Thêm vào yêu thích"
+                disabled={isLoadingWishlist}
+              >
+                <FontAwesomeIcon icon={faHeart} />
+              </button>
+              <button
+                className="action-button cart-button"
+                onClick={handleAddToCart}
+                aria-label="Thêm vào giỏ hàng"
+              >
+                <FontAwesomeIcon icon={faShoppingCart} />
+              </button>
+              <button
+                className="action-button quickview-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigateToProductDetail();
+                }}
+                aria-label="Xem chi tiết"
+              >
+                <FontAwesomeIcon icon={faEye} />
+              </button>
+            </div>
+          </div>
+
+          <div className="product-info">
+            <span className="product-category">{category?.name || category}</span>
+            <h3 className="product-name">{name}</h3>
+
+            <div className="product-rating">
+              <div className="stars">
+                {[...Array(5)].map((_, i) => {
+                  const diff = rating - i;
+
+                  let fillClass = "star-empty";
+                  if (diff >= 1) fillClass = "star-100";
+                  else if (diff >= 0.9) fillClass = "star-90";
+                  else if (diff >= 0.8) fillClass = "star-80";
+                  else if (diff >= 0.7) fillClass = "star-70";
+                  else if (diff >= 0.6) fillClass = "star-60";
+                  else if (diff >= 0.5) fillClass = "star-50";
+                  else if (diff >= 0.4) fillClass = "star-40";
+                  else if (diff >= 0.3) fillClass = "star-30";
+                  else if (diff >= 0.2) fillClass = "star-20";
+                  else if (diff >= 0.1) fillClass = "star-10";
+
+                  return (
+                    <span key={i} className={`star ${fillClass}`}>
+                      <FontAwesomeIcon icon={faStar} />
+                    </span>
+                  );
+                })}
+              </div>
+              <span className="rating-count">({numReviews})</span>
+            </div>
+
+            <div className="product-price">
+              {discountedPrice > 0 && (
+                <span className="original-price">
+                  {price.toLocaleString("vi-VN")}đ
+                </span>
+              )}
+              {discountedPrice > 0 ? (
+                <span className="current-price">
+                  {discountPrice.toLocaleString("vi-VN")}đ
+                </span>
+              ) : (
+                <span className="current-price">
+                  {price.toLocaleString("vi-VN")}đ
+                </span>
+              )}
+            </div>
+          </div>
+
+          <button className="quick-add" onClick={handleAddToCart}>
+            Thêm vào giỏ
+          </button>
+        </div>
       </div>
-    </div>
+
+      {/* Modal thêm vào giỏ hàng */}
+      <AddToCartModal
+        product={product}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAddToCart={handleModalAddToCart}
+      />
+    </>
   );
 };
 

@@ -6,10 +6,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faSpinner, faCheck, faShoppingBag, faMapMarkerAlt, faCreditCard, faNoteSticky, faChevronDown, faTruck } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import "../styles/css/CheckoutPage.css";
+import { createOrder } from "../services/order.service";
 
 // Tạo instance axios
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || ''}/api`,
+  baseURL: `${import.meta.env.VITE_API_URL || ''}`,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -369,14 +370,14 @@ const CheckoutPage = () => {
         shippingPrice: shippingFee
       };
 
-      // Gọi API tạo đơn hàng
-      const response = await api.post("/orders", orderData);
+      // Gọi service để tạo đơn hàng
+      const response = await createOrder(orderData);
       
       // Xử lý thành công
       clearCart(); // Xóa giỏ hàng
       
       // Chuyển hướng đến trang xác nhận đơn hàng
-      navigate(`/order-confirmation/${response.data.id}`);
+      navigate("/orders/" + response.id);
     } catch (error) {
       console.error("Lỗi khi đặt hàng:", error);
       alert("Có lỗi xảy ra khi đặt hàng: " + (error.response?.data?.message || error.message));

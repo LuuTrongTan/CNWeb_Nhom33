@@ -31,6 +31,8 @@ const createOrder = {
     totalItemsPrice: Joi.number().required().min(0),
     shippingPrice: Joi.number().required().min(0),
     notes: Joi.string().allow('', null),
+    orderNumber: Joi.string(),
+    createdAt: Joi.date().iso(),
   }),
 };
 
