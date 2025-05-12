@@ -12,22 +12,25 @@ import ResetFilterOnRouteChange from "./context/ResetFilterOnRouteChange";
 import MainLayout from "./components/Layout/MainLayout";
 
 // Pages
-
-import Home from './pages/HomePage';
-import ProductPage from './pages/ProductPage';
-import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import CategoryPage from './pages/CategoryPage';
-import LoginPage from './pages/Auth/LoginPage';
-import RegisterPage from './pages/Auth/RegisterPage';
-import ProfilePage from './pages/Auth/ProfilePage';
-import SettingsPage from './pages/Auth/SettingsPage';
-import WishlistPage from './pages/WishlistPage';
-import OrderHistoryPage from './pages/User/OrderHistoryPage';
-import OrderDetailPage from './pages/User/OrderDetailPage';
-import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
-import ChangePasswordPage from './pages/Auth/ChangePasswordPage';
+import Home from "./pages/HomePage";
+import ProductPage from "./pages/ProductPage";
+import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import CategoryPage from "./pages/CategoryPage";
+import LoginPage from "./pages/Auth/LoginPage";
+import RegisterPage from "./pages/Auth/RegisterPage";
+import ProfilePage from "./pages/Auth/ProfilePage";
+import SettingsPage from "./pages/Auth/SettingsPage";
+import WishlistPage from "./pages/WishlistPage";
+import OrderHistoryPage from "./pages/User/OrderHistoryPage";
+import OrderDetailPage from "./pages/User/OrderDetailPage";
+import OrderManagementPage from "./pages/Admin/OrderManagementPage";
+import OrderConfirmation from "./pages/OrderConfirmation";
+import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
+import ChangePasswordPage from "./pages/Auth/ChangePasswordPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 
 // Admin Pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -35,7 +38,6 @@ import ProductManagement from "./pages/Admin/ProductManagement";
 import AdminLayout from "./components/Layout/AdminLayout";
 import AddProductPage from "./pages/Admin/AddProductPage";
 import CategoryManagementPage from "./pages/Admin/CategoryManagementPage";
-import OrderManagementPage from "./pages/Admin/OrderManagementPage";
 
 // Styles
 import "./styles/css/App.css";
@@ -60,6 +62,10 @@ const App = () => {
                   <Route path="/" element={<MainLayout />}>
                     {/* Trang chính */}
                     <Route index element={<Home />} />
+
+                    {/* Trang giới thiệu và liên hệ */}
+                    <Route path="about" element={<AboutPage />} />
+                    <Route path="contact" element={<ContactPage />} />
 
                     {/* Sản phẩm */}
                     <Route
@@ -114,18 +120,32 @@ const App = () => {
                     {/* Giỏ hàng và Thanh toán */}
                     <Route path="cart" element={<CartPage />} />
                     <Route path="checkout" element={<CheckoutPage />} />
+                    <Route
+                      path="/order-confirmation/:orderId"
+                      element={<OrderConfirmation />}
+                    />
 
                     {/* Tài khoản */}
                     <Route path="login" element={<LoginPage />} />
                     <Route path="register" element={<RegisterPage />} />
-                    <Route path="forgot-password" element={<ForgotPasswordPage />} />
+                    <Route
+                      path="forgot-password"
+                      element={<ForgotPasswordPage />}
+                    />
                     <Route path="profile" element={<ProfilePage />} />
-                    <Route path="change-password" element={<ChangePasswordPage />} />
+                    <Route
+                      path="change-password"
+                      element={<ChangePasswordPage />}
+                    />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="wishlist" element={<WishlistPage />} />
-                    <Route path="don-hang" element={<OrderHistoryPage />} />
                     <Route
-                      path="don-hang/:orderId"
+                      path="products/edit/:id"
+                      element={<AddProductPage />}
+                    />
+                    <Route path="orders" element={<OrderHistoryPage />} />
+                    <Route
+                      path="orders/:orderId"
                       element={<OrderDetailPage />}
                     />
                   </Route>

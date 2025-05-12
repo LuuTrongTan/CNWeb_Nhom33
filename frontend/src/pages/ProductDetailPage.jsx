@@ -308,8 +308,7 @@ const ProductDetailPage = ({ tagCategory }) => {
               </span>
             </div>
             <div className="product-sku">
-              <span>Số lượng đã bán:</span>{" "}
-              {Math.floor(Math.random() * (1000 - 20 + 1)) + 20}
+              <span>Số lượng đã bán:</span> {product.soldCount}
             </div>
           </div>
 
@@ -322,7 +321,6 @@ const ProductDetailPage = ({ tagCategory }) => {
                 <span className="original-price">
                   {product.price.toLocaleString()}đ
                 </span>
-                {/* <span className="discount-badge">-{product.discount}%</span> */}
               </>
             ) : (
               <span className="regular-price">
@@ -340,6 +338,7 @@ const ProductDetailPage = ({ tagCategory }) => {
               <FontAwesomeIcon icon={faCheck} />
               {product.stockStatus}
             </span>
+            <div className="countStock">(Tồn kho: {product.stock})</div>
           </div>
 
           <div className="product-short-description">

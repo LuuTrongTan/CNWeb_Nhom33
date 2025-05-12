@@ -139,3 +139,17 @@ export const updateProduct = async (id, bodyData) => {
     throw error;
   }
 };
+
+export const getProductBestSeller = async () => {
+  try {
+    const response = await axios.post(`${API_URL}/product/searchProducts`, {
+      sortBy: "bestSelling",
+      limit: 6,
+      page: 1,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy sản phẩm có bộ lọc:", error);
+    throw error;
+  }
+};

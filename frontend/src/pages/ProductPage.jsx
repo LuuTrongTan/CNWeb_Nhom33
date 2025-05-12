@@ -379,33 +379,33 @@ const ProductPage = ({ tagCategory }) => {
         </div>
       </div>
 
-      {products.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">
-            <FontAwesomeIcon icon={faSearch} />
-          </div>
-          <h2 className="empty-state-title">Không tìm thấy sản phẩm</h2>
-          <p className="empty-state-message">
-            Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm của bạn. Vui
-            lòng thử lại với các bộ lọc khác.
-          </p>
-          <button
-            className="empty-state-button"
-            onClick={() => {
-              resetFilters();
-              setSearchTerm("");
-              setCurrentPage(1);
-            }}
-          >
-            Xóa bộ lọc
-          </button>
+      {loading ? (
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Đang tải sản phẩm...</p>{" "}
         </div>
       ) : (
         <div>
-          {loading ? (
-            <div className="loading-container">
-              <div className="spinner"></div>
-              <p>Đang tải sản phẩm...</p>{" "}
+          {products.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <FontAwesomeIcon icon={faSearch} />
+              </div>
+              <h2 className="empty-state-title">Không tìm thấy sản phẩm</h2>
+              <p className="empty-state-message">
+                Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm của bạn. Vui
+                lòng thử lại với các bộ lọc khác.
+              </p>
+              <button
+                className="empty-state-button"
+                onClick={() => {
+                  resetFilters();
+                  setSearchTerm("");
+                  setCurrentPage(1);
+                }}
+              >
+                Xóa bộ lọc
+              </button>
             </div>
           ) : (
             <div>

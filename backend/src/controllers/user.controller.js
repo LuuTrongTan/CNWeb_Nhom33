@@ -4,9 +4,8 @@ const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { userService } = require('../services');
 const { OAuth2Client } = require('google-auth-library');
-const User = require("../models/user.model");
+const User = require('../models/user.model');
 const emailService = require('../services/email.service');
-
 
 const createUser = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -38,14 +37,14 @@ const deleteUser = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
-const client = new OAuth2Client("GOOGLE_CLIENT_ID");
+const client = new OAuth2Client('GOOGLE_CLIENT_ID');
 
 const googleLogin = async (req, res) => {
   try {
     const { credential } = req.body;
     const ticket = await client.verifyIdToken({
       idToken: credential,
-      audience: "GOOGLE_CLIENT_ID",
+      audience: 'GOOGLE_CLIENT_ID',
     });
 
     const payload = ticket.getPayload();
@@ -75,7 +74,7 @@ const requestPasswordReset = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email }).select('+resetPasswordCode +resetPasswordCodeExpires');
- 
+
     if (!user) {
       return res.status(404).json({ message: 'Email chưa được đăng ký.' });
     }
@@ -159,6 +158,14 @@ const updateProfile = catchAsync(async (req, res) => {
   res.send(user);
 });
 
+/**
+ * Lấy thông tin giao hàng của người dùng đang đăng nhập
+ */
+const getUserShippingInfo = catchAsync(async (req, res) => {
+  const userId = req.body.userId;
+  const shippingInfo = await userService.getUserShippingInfo(userId);
+  res.status(httpStatus.OK).send(shippingInfo);
+});
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -191,7 +198,7 @@ const changePassword = async (req, res) => {
 const requestEmailVerification = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('+verifyEmailCode +verifyEmailCodeExpires');
- 
+
     if (!user) {
       return res.status(404).json({ message: 'Không tìm thấy người dùng.' });
     }
@@ -255,4 +262,5 @@ module.exports = {
   changePassword,
   requestEmailVerification,
   verifyEmail,
+  getUserShippingInfo,
 };

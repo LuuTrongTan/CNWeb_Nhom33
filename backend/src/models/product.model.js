@@ -111,6 +111,11 @@ productSchema.virtual('stockStatus').get(function () {
   return 'Còn hàng';
 });
 
+// Thêm virtual field để kiểm tra doanh thu sản phẩm
+productSchema.virtual('revenue').get(function () {
+  return this.discountPrice * this.soldCount;
+});
+
 // Đảm bảo virtuals được bao gồm khi chuyển đổi sang JSON
 productSchema.set('toJSON', { virtuals: true });
 productSchema.set('toObject', { virtuals: true });

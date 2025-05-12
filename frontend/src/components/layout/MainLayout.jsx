@@ -18,17 +18,22 @@ const MainLayout = () => {
     // Kiểm tra đường dẫn hiện tại
     const isProductsPage = location.pathname.includes("/products");
     const isHomePage = location.pathname === "/";
+    const isCartPage = location.pathname.includes("/cart");
+    const isOrderPage =
+      location.pathname.includes("/orders") ||
+      location.pathname.includes("/checkout") ||
+      location.pathname.includes("/order-confirmation");
 
-    // Ẩn sidebar ở trang chủ, hiện ở trang sản phẩm (trên desktop)
+    // Chỉ hiển thị sidebar trong trang products và không hiển thị trong cart, orders
     if (window.innerWidth >= 1100) {
-      if (isProductsPage) {
+      if (isProductsPage && !isCartPage && !isOrderPage) {
         setSidebarOpen(true);
-      } else if (isHomePage) {
+      } else if (isHomePage || isCartPage || isOrderPage) {
         setSidebarOpen(false);
       }
     } else {
       // Luôn đóng sidebar trên mobile khi thay đổi trang
-      false;
+      setSidebarOpen(false);
     }
   }, [location.pathname]);
 
@@ -37,11 +42,16 @@ const MainLayout = () => {
       // Duy trì trạng thái hiển thị sidebar dựa vào đường dẫn khi resize
       const isProductsPage = location.pathname.includes("/products");
       const isHomePage = location.pathname === "/";
+      const isCartPage = location.pathname.includes("/cart");
+      const isOrderPage =
+        location.pathname.includes("/orders") ||
+        location.pathname.includes("/checkout") ||
+        location.pathname.includes("/order-confirmation");
 
       if (window.innerWidth >= 1100) {
-        if (isProductsPage) {
+        if (isProductsPage && !isCartPage && !isOrderPage) {
           setSidebarOpen(true);
-        } else if (isHomePage) {
+        } else if (isHomePage || isCartPage || isOrderPage) {
           setSidebarOpen(false);
         }
       } else {
@@ -67,7 +77,17 @@ const MainLayout = () => {
 
   // Kiểm tra xem có phải đang ở trang chủ không
   const isHomePage = location.pathname === "/";
+  const isCart = location.pathname === "/cart";
+  const isCheckout = location.pathname === "/checkout";
   const isProductsPage = location.pathname.includes("/products");
+  const isProfile = location.pathname.includes("/profile");
+  const isWishlist = location.pathname.includes("/wishlist");
+  const isChangePassword = location.pathname.includes("/change-password");
+  const isCartPage = location.pathname.includes("/cart");
+  const isOrderPage =
+    location.pathname.includes("/orders") ||
+    location.pathname.includes("/checkout") ||
+    location.pathname.includes("/order-confirmation");
   const isProductDetailPage =
     pathParts[0] === "products" &&
     pathParts[1] &&
@@ -88,10 +108,20 @@ const MainLayout = () => {
     phukien: "Phụ Kiện",
   };
 
+  // Chỉ hiển thị sidebar khi đang ở trang products và không ở trang cart hoặc orders
+  const shouldShowSidebar = isProductsPage && !isCartPage && !isOrderPage;
+
   return (
     <div
       className={`layout ${sidebarOpen ? "sidebar-open" : "sidebar-closed"} ${
-        isHomePage || isProductDetailPage || isProductDetailPage2
+        isHomePage ||
+        isProductDetailPage ||
+        isProductDetailPage2 ||
+        isCart ||
+        isCheckout ||
+        isProfile ||
+        isChangePassword ||
+        isWishlist
           ? "home-page"
           : ""
       }`}
@@ -99,14 +129,15 @@ const MainLayout = () => {
       <Navbar />
 
       <div className="main-container" ref={mainContainerRef}>
-        {((!isHomePage && !isProductDetailPage) || sidebarOpen) && (
-          <div className={`sidebar-container`}>
-            <Sidebar
-              toggleSidebar={toggleSidebar}
-              tagCategory={categoryMap[isCategoryPage] ?? ""}
-            />
-          </div>
-        )}
+        {shouldShowSidebar &&
+          ((!isHomePage && !isProductDetailPage) || sidebarOpen) && (
+            <div className={`sidebar-container`}>
+              <Sidebar
+                toggleSidebar={toggleSidebar}
+                tagCategory={categoryMap[isCategoryPage] ?? ""}
+              />
+            </div>
+          )}
 
         <div className="content">
           <Outlet />
@@ -119,7 +150,7 @@ const MainLayout = () => {
       {!isHomePage &&
         !isProductDetailPage &&
         !sidebarOpen &&
-        isProductsPage && (
+        shouldShowSidebar && (
           <button
             className="sidebar-show-btn"
             onClick={toggleSidebar}

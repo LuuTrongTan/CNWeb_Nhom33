@@ -1,24 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faArrowLeft, 
   faSpinner, 
-  faTimes, 
-  faCheck, 
-  faTruck, 
-  faInfoCircle,
-  faMapMarkerAlt,
-  faPhone,
-  faUser,
-  faCreditCard,
-  faBoxOpen,
-  faShoppingBag,
-  faPrint,
-  faShare
+  faCheck,
+  faShoppingBag, 
+  faMapMarkerAlt, 
+  faTruck,
+  faMoneyBill
 } from '@fortawesome/free-solid-svg-icons';
-import { getOrderById, cancelOrder } from '../../service/orderAPI';
-import '../../styles/css/OrderDetail.css';
+import { getOrderDetails, cancelOrder } from '../../services/order.service';
+import { useAuth } from '../../context/AuthContext';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import '../../styles/css/Order/OrderDetail.css';
 
 const OrderDetailPage = () => {
   const { orderId } = useParams();
@@ -26,403 +22,317 @@ const OrderDetailPage = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [cancelLoading, setCancelLoading] = useState(false);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const printRef = useRef();
+  const { isAuthenticated, currentUser } = useAuth();
 
   useEffect(() => {
-    fetchOrderDetails();
+    const fetchOrderDetails = async () => {
+      try {
+        setLoading(true);
+        const orderData = await getOrderDetails(orderId);
+        console.log("Order details received:", orderData);
+        
+        if (!orderData) {
+          throw new Error("Không nhận được dữ liệu đơn hàng");
+        }
+        
+        setOrder(orderData);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching order details:", err);
+        setError(err.message || "Không thể tải thông tin đơn hàng. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (orderId) {
+      fetchOrderDetails();
+    }
   }, [orderId]);
 
-  const fetchOrderDetails = async () => {
-    try {
-      setLoading(true);
-      const data = await getOrderById(orderId);
-      setOrder(data);
-      setLoading(false);
-    } catch (err) {
-      setError('Không thể tải thông tin đơn hàng. Vui lòng thử lại sau.');
-      setLoading(false);
-    }
-  };
-
   const handleCancelOrder = async () => {
+    if (window.confirm('Bạn có chắc muốn hủy đơn hàng này không?')) {
+      const cancelReason = prompt('Vui lòng nhập lý do hủy đơn hàng (không bắt buộc):');
+      
+      try {
+        console.log('Bắt đầu gửi yêu cầu hủy đơn hàng với ID:', orderId);
+        setLoading(true);
+        
+        let response;
+        
+        if (isAuthenticated) {
+          response = await cancelOrder(orderId, cancelReason);
+        } else {
+          const phone = prompt('Vui lòng nhập số điện thoại đặt hàng để xác nhận:');
+          if (!phone) {
+            setLoading(false);
+            return;
+          }
+          
+          response = await cancelOrder(
+            orderId, 
+            cancelReason, 
+            order.orderNumber, 
+            phone
+          );
+        }
+        
+        console.log('Kết quả hủy đơn hàng:', response);
+        
+        const updatedOrder = await getOrderDetails(orderId);
+        setOrder(updatedOrder);
+        setLoading(false);
+        alert('Đơn hàng đã được hủy thành công');
+      } catch (error) {
+        setLoading(false);
+        console.error('Lỗi khi hủy đơn hàng:', error);
+        
+        if (error.response) {
+          console.error('Thông tin phản hồi từ server:', error.response);
+          
+          if (error.response.status === 401) {
+            alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại hoặc hủy bằng mã đơn hàng.');
+            return;
+          } else if (error.response.status === 403) {
+            alert('Thông tin xác thực không chính xác. Vui lòng kiểm tra lại số điện thoại.');
+            return;
+          }
+          
+          alert(`Không thể hủy đơn hàng. Lỗi: ${error.response.data?.message || error.message}`);
+        } else {
+          alert(`Không thể hủy đơn hàng. Lỗi: ${error.message}`);
+        }
+      }
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) {
+      console.log("Không có dữ liệu ngày:", dateString);
+      return 'N/A';
+    }
+    
     try {
-      setCancelLoading(true);
-      await cancelOrder(orderId);
-      // Cập nhật trạng thái đơn hàng sau khi hủy thành công
-      fetchOrderDetails();
-      setShowCancelModal(false);
-    } catch (err) {
-      setError('Không thể hủy đơn hàng. Vui lòng thử lại sau.');
-    } finally {
-      setCancelLoading(false);
+      console.log("Dữ liệu ngày nhận được:", dateString);
+      const date = new Date(dateString);
+      
+      if (isNaN(date.getTime())) {
+        console.error("Không thể chuyển đổi thành ngày hợp lệ:", dateString);
+        return 'N/A';
+      }
+      
+      return format(date, 'dd/MM/yyyy HH:mm', { locale: vi });
+    } catch (error) {
+      console.error("Lỗi khi format ngày:", error, "với dateString:", dateString);
+      return 'N/A';
     }
   };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: `Đơn hàng #${order._id.slice(-6)}`,
-        text: `Xem chi tiết đơn hàng #${order._id.slice(-6)}`,
-        url: window.location.href,
-      })
-      .catch((error) => console.log('Lỗi khi chia sẻ:', error));
-    } else {
-      // Sao chép URL vào clipboard nếu Web Share API không được hỗ trợ
-      navigator.clipboard.writeText(window.location.href);
-      alert('Đã sao chép liên kết đơn hàng vào clipboard');
-    }
-  };
-
-  // Hàm chuyển đổi trạng thái đơn hàng sang tiếng Việt
+  
   const getStatusText = (status) => {
     switch (status) {
-      case 'pending':
-        return 'Chờ xác nhận';
-      case 'processing':
-        return 'Đang xử lý';
-      case 'shipped':
-        return 'Đang giao hàng';
-      case 'delivered':
-        return 'Đã giao hàng';
-      case 'cancelled':
-        return 'Đã hủy';
-      default:
-        return status;
+      case 'pending': return 'Chờ xác nhận';
+      case 'processing': return 'Đang xử lý';
+      case 'shipped': return 'Đang giao hàng';
+      case 'delivered': return 'Đã giao hàng';
+      case 'cancelled': return 'Đã hủy';
+      default: return status;
     }
   };
-
-  // Hàm lấy icon cho trạng thái đơn hàng
-  const getStatusIcon = (status) => {
+  
+  const getStatusClass = (status) => {
     switch (status) {
-      case 'pending':
-        return faInfoCircle;
-      case 'processing':
-        return faBoxOpen;
-      case 'shipped':
-        return faTruck;
-      case 'delivered':
-        return faCheck;
-      case 'cancelled':
-        return faTimes;
-      default:
-        return faInfoCircle;
+      case 'pending': return 'status-pending';
+      case 'processing': return 'status-processing';
+      case 'shipped': return 'status-shipped';
+      case 'delivered': return 'status-delivered';
+      case 'cancelled': return 'status-cancelled';
+      default: return '';
     }
   };
 
-  // Hàm lấy màu cho trạng thái đơn hàng
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending':
-        return 'status-pending';
-      case 'processing':
-        return 'status-processing';
-      case 'shipped':
-        return 'status-shipped';
-      case 'delivered':
-        return 'status-delivered';
-      case 'cancelled':
-        return 'status-cancelled';
-      default:
-        return '';
-    }
-  };
+  const renderOrderProgress = () => {
+    if (!order) return null;
 
-  // Hàm định dạng ngày tháng
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+    const statusSteps = [
+      { key: 'pending', label: 'Chờ xác nhận' },
+      { key: 'processing', label: 'Đang xử lý' },
+      { key: 'shipped', label: 'Đang giao hàng' },
+      { key: 'delivered', label: 'Đã giao hàng' }
+    ];
 
-  // Hàm định dạng số tiền
-  const formatPrice = (price) => {
-    return price.toLocaleString('vi-VN') + 'đ';
-  };
+    const currentIndex = statusSteps.findIndex(step => step.key === order.status);
+    const isCancelled = order.status === 'cancelled';
 
-  // Hàm lấy text cho phương thức thanh toán
-  const getPaymentMethodText = (method) => {
-    switch (method) {
-      case 'cod':
-        return 'Thanh toán khi nhận hàng (COD)';
-      case 'card':
-        return 'Thẻ tín dụng/Ghi nợ';
-      case 'banking':
-        return 'Chuyển khoản ngân hàng';
-      case 'momo':
-        return 'Ví điện tử MoMo';
-      default:
-        return method;
-    }
+    return (
+      <div className="order-progress">
+        {isCancelled ? (
+          <div className="order-cancelled-notice">
+            <p>Đơn hàng đã bị hủy {order.cancelledAt && `vào ngày ${formatDate(order.cancelledAt)}`}</p>
+            {order.cancelReason && <p>Lý do: {order.cancelReason}</p>}
+          </div>
+        ) : (
+          <div className="progress-steps">
+            {statusSteps.map((step, index) => (
+              <div key={step.key} className={`progress-step ${index <= currentIndex ? 'active' : ''}`}>
+                <div className="step-indicator">
+                  {index <= currentIndex ? <FontAwesomeIcon icon={faCheck} /> : index + 1}
+                </div>
+                <div className="step-label">{step.label}</div>
+                {index < statusSteps.length - 1 && (
+                  <div className={`step-connector ${index < currentIndex ? 'active' : ''}`}></div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
     return (
       <div className="order-detail-loading">
-        <FontAwesomeIcon icon={faSpinner} spin />
+        <FontAwesomeIcon icon={faSpinner} spin size="3x" />
         <p>Đang tải thông tin đơn hàng...</p>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !order) {
     return (
       <div className="order-detail-error">
-        <p>{error}</p>
-        <button className="retry-button" onClick={fetchOrderDetails}>Thử lại</button>
-        <Link to="/don-hang" className="back-button">
+        <h2>Có lỗi xảy ra</h2>
+        <p>{error || "Không tìm thấy đơn hàng"}</p>
+        <button 
+          className="back-button"
+          onClick={() => navigate('/orders')}
+        >
           <FontAwesomeIcon icon={faArrowLeft} /> Quay lại danh sách đơn hàng
-        </Link>
-      </div>
-    );
-  }
-
-  if (!order) {
-    return (
-      <div className="order-not-found">
-        <p>Không tìm thấy thông tin đơn hàng</p>
-        <Link to="/don-hang" className="back-button">
-          <FontAwesomeIcon icon={faArrowLeft} /> Quay lại danh sách đơn hàng
-        </Link>
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="order-detail-container" ref={printRef}>
+    <div className="order-detail-container">
       <div className="order-detail-header">
         <div className="header-left">
-          <Link to="/don-hang" className="back-link no-print">
-            <FontAwesomeIcon icon={faArrowLeft} /> Quay lại danh sách
-          </Link>
-          <h1>Chi tiết đơn hàng #{order._id.slice(-6)}</h1>
+          <button 
+            className="back-button"
+            onClick={() => navigate('/orders')}
+          >
+            <FontAwesomeIcon icon={faArrowLeft} /> Quay lại danh sách đơn hàng
+          </button>
+          <h1>Chi tiết đơn hàng #{order.orderNumber}</h1>
           <p className="order-date">Đặt hàng ngày: {formatDate(order.createdAt)}</p>
         </div>
         <div className="header-right">
-          <div className={`order-status ${getStatusColor(order.status)}`}>
-            <FontAwesomeIcon icon={getStatusIcon(order.status)} />
+          <div className={`order-status ${getStatusClass(order.status)}`}>
             {getStatusText(order.status)}
           </div>
-          <div className="order-actions-buttons no-print">
-            <button className="action-btn print-btn" onClick={handlePrint}>
-              <FontAwesomeIcon icon={faPrint} /> In đơn hàng
+          {(order.status === 'pending' || order.status === 'processing') && (
+            <button 
+              className="cancel-order-button"
+              onClick={handleCancelOrder}
+            >
+              Hủy đơn hàng
             </button>
-            <button className="action-btn share-btn" onClick={handleShare}>
-              <FontAwesomeIcon icon={faShare} /> Chia sẻ
-            </button>
-            {(order.status === 'pending' || order.status === 'processing') && (
-              <button 
-                className="cancel-order-btn" 
-                onClick={() => setShowCancelModal(true)}
-              >
-                <FontAwesomeIcon icon={faTimes} /> Hủy đơn hàng
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
+      {renderOrderProgress()}
+
       <div className="order-detail-content">
-        <div className="order-info-section">
-          <div className="timeline-section">
-            <h2>Trạng thái đơn hàng</h2>
-            <div className="order-timeline">
-              <div className={`timeline-step ${order.status !== 'cancelled' ? 'active' : ''}`}>
-                <div className="step-icon">
-                  <FontAwesomeIcon icon={faInfoCircle} />
-                </div>
-                <div className="step-content">
-                  <h4>Đặt hàng</h4>
-                  <p>{formatDate(order.createdAt)}</p>
-                </div>
-              </div>
-              
-              <div className={`timeline-step ${order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered' ? 'active' : ''}`}>
-                <div className="step-icon">
-                  <FontAwesomeIcon icon={faBoxOpen} />
-                </div>
-                <div className="step-content">
-                  <h4>Xử lý</h4>
-                  <p>{order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered' ? formatDate(order.updatedAt) : '—'}</p>
-                </div>
-              </div>
-              
-              <div className={`timeline-step ${order.status === 'shipped' || order.status === 'delivered' ? 'active' : ''}`}>
-                <div className="step-icon">
-                  <FontAwesomeIcon icon={faTruck} />
-                </div>
-                <div className="step-content">
-                  <h4>Giao hàng</h4>
-                  <p>{order.status === 'shipped' || order.status === 'delivered' ? formatDate(order.updatedAt) : '—'}</p>
-                </div>
-              </div>
-              
-              <div className={`timeline-step ${order.status === 'delivered' ? 'active' : ''}`}>
-                <div className="step-icon">
-                  <FontAwesomeIcon icon={faCheck} />
-                </div>
-                <div className="step-content">
-                  <h4>Hoàn thành</h4>
-                  <p>{order.deliveredAt ? formatDate(order.deliveredAt) : '—'}</p>
-                </div>
-              </div>
-              
-              {order.status === 'cancelled' && (
-                <div className="timeline-step cancelled active">
-                  <div className="step-icon">
-                    <FontAwesomeIcon icon={faTimes} />
-                  </div>
-                  <div className="step-content">
-                    <h4>Đã hủy</h4>
-                    <p>{order.cancelledAt ? formatDate(order.cancelledAt) : formatDate(order.updatedAt)}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="order-details-grid">
-            <div className="details-card shipping-info">
-              <h3><FontAwesomeIcon icon={faMapMarkerAlt} /> Thông tin giao hàng</h3>
-              <div className="card-content">
-                <p><strong><FontAwesomeIcon icon={faUser} /> Người nhận:</strong> {order.shippingAddress.fullName}</p>
-                <p><strong><FontAwesomeIcon icon={faPhone} /> Số điện thoại:</strong> {order.shippingAddress.phone}</p>
-                <p><strong><FontAwesomeIcon icon={faMapMarkerAlt} /> Địa chỉ:</strong> {order.shippingAddress.address}, {order.shippingAddress.ward}, {order.shippingAddress.district}, {order.shippingAddress.city}</p>
-                {order.trackingNumber && (
-                  <p><strong>Mã vận đơn:</strong> {order.trackingNumber}</p>
-                )}
-                {order.shippingProvider && (
-                  <p><strong>Đơn vị vận chuyển:</strong> {order.shippingProvider}</p>
-                )}
-              </div>
-            </div>
-            
-            <div className="details-card payment-info">
-              <h3><FontAwesomeIcon icon={faCreditCard} /> Thông tin thanh toán</h3>
-              <div className="card-content">
-                <p><strong>Phương thức:</strong> {getPaymentMethodText(order.paymentMethod)}</p>
-                <p><strong>Trạng thái:</strong> {order.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}</p>
-                {order.isPaid && order.paidAt && (
-                  <p><strong>Thời gian thanh toán:</strong> {formatDate(order.paidAt)}</p>
-                )}
-                {order.paymentResult && order.paymentResult.id && (
-                  <p><strong>Mã giao dịch:</strong> {order.paymentResult.id}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="details-card order-summary">
-              <h3><FontAwesomeIcon icon={faShoppingBag} /> Tóm tắt đơn hàng</h3>
-              <div className="card-content">
-                <div className="summary-row">
-                  <span>Tổng tiền sản phẩm:</span>
-                  <span>{formatPrice(order.totalItemsPrice)}</span>
-                </div>
-                <div className="summary-row">
-                  <span>Phí vận chuyển:</span>
-                  <span>{formatPrice(order.shippingPrice)}</span>
-                </div>
-                {order.taxPrice > 0 && (
-                  <div className="summary-row">
-                    <span>Thuế:</span>
-                    <span>{formatPrice(order.taxPrice)}</span>
-                  </div>
-                )}
-                {order.discountPrice > 0 && (
-                  <div className="summary-row discount">
-                    <span>Giảm giá:</span>
-                    <span>-{formatPrice(order.discountPrice)}</span>
-                  </div>
-                )}
-                <div className="summary-row total">
-                  <span>Tổng thanh toán:</span>
-                  <span>{formatPrice(order.totalPrice)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="order-items-section">
-          <h2>Sản phẩm đã đặt</h2>
-          <div className="order-items-list">
+          <h2>
+            <FontAwesomeIcon icon={faShoppingBag} className="section-icon" />
+            Sản phẩm đã đặt
+          </h2>
+          <div className="order-items">
             {order.items.map((item, index) => (
-              <div className="order-item" key={index}>
-                <div className="item-image">
+              <div key={index} className="order-item">
+                <div className="order-item-image">
                   <img src={item.image} alt={item.name} />
                 </div>
-                <div className="item-details">
-                  <Link to={`/products/${item.product}`} className="item-name">{item.name}</Link>
-                  {item.size && <p className="item-variant">Size: {item.size}</p>}
-                  {item.color && <p className="item-variant">Màu: {item.color}</p>}
-                  <div className="item-price">
-                    <span>{formatPrice(item.price)}</span>
-                    <span className="item-quantity">x{item.quantity}</span>
-                  </div>
+                <div className="order-item-details">
+                  <h3>{item.name}</h3>
+                  <p className="item-options">
+                    {item.color && <span>Màu: {item.color}</span>}
+                    {item.size && <span>Size: {item.size}</span>}
+                  </p>
+                  <p className="item-quantity">Số lượng: {item.quantity}</p>
                 </div>
-                <div className="item-total">
-                  {formatPrice(item.price * item.quantity)}
+                <div className="order-item-price">
+                  <p className="item-unit-price">{item.price.toLocaleString()}đ</p>
+                  <p className="item-total-price">{(item.price * item.quantity).toLocaleString()}đ</p>
                 </div>
               </div>
             ))}
           </div>
-          <div className="order-actions no-print">
-            <Link to="/products" className="continue-shopping-btn">
-              Tiếp tục mua sắm
-            </Link>
-            {order.status === 'delivered' && (
-              <Link to={`/danh-gia?order=${order._id}`} className="review-order-btn">
-                Đánh giá sản phẩm
-              </Link>
-            )}
-          </div>
         </div>
-      </div>
 
-      {showCancelModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Xác nhận hủy đơn hàng</h3>
-            <p>Bạn có chắc chắn muốn hủy đơn hàng #{order._id.slice(-6)}?</p>
-            <p className="modal-note">Lưu ý: Hành động này không thể hoàn tác.</p>
-            <div className="modal-actions">
-              <button 
-                className="modal-btn cancel-btn" 
-                onClick={() => setShowCancelModal(false)}
-                disabled={cancelLoading}
-              >
-                Không, giữ đơn hàng
-              </button>
-              <button 
-                className="modal-btn confirm-btn" 
-                onClick={handleCancelOrder}
-                disabled={cancelLoading}
-              >
-                {cancelLoading ? (
-                  <>
-                    <FontAwesomeIcon icon={faSpinner} spin /> Đang xử lý...
-                  </>
-                ) : (
-                  <>
-                    <FontAwesomeIcon icon={faTimes} /> Hủy đơn hàng
-                  </>
-                )}
-              </button>
+        <div className="order-info-grid">
+          <div className="shipping-info">
+            <h2>
+              <FontAwesomeIcon icon={faMapMarkerAlt} className="section-icon" />
+              Thông tin giao hàng
+            </h2>
+            <div className="info-content">
+              <p><strong>Người nhận:</strong> {order.shippingAddress.fullName}</p>
+              <p><strong>Số điện thoại:</strong> {order.shippingAddress.phone}</p>
+              <p><strong>Địa chỉ:</strong> {order.shippingAddress.address}, {order.shippingAddress.ward}, {order.shippingAddress.district}, {order.shippingAddress.city}</p>
+            </div>
+          </div>
+
+          <div className="shipping-method">
+            <h2>
+              <FontAwesomeIcon icon={faTruck} className="section-icon" />
+              Phương thức vận chuyển
+            </h2>
+            <div className="info-content">
+              {order.shippingMethod === 'standard' && <p>Giao hàng tiêu chuẩn (3-5 ngày)</p>}
+              {order.shippingMethod === 'fast' && <p>Giao hàng nhanh (1-2 ngày)</p>}
+              {order.shippingMethod === 'express' && <p>Giao hàng hỏa tốc (Trong ngày)</p>}
+            </div>
+          </div>
+
+          <div className="payment-info">
+            <h2>
+              <FontAwesomeIcon icon={faMoneyBill} className="section-icon" />
+              Phương thức thanh toán
+            </h2>
+            <div className="info-content">
+              {order.paymentMethod === 'cod' && <p>Thanh toán khi nhận hàng (COD)</p>}
+              {order.paymentMethod === 'banking' && <p>Chuyển khoản ngân hàng</p>}
+              {order.paymentMethod === 'momo' && <p>Ví điện tử MoMo</p>}
+              {order.paymentMethod === 'card' && <p>Thẻ tín dụng/Ghi nợ</p>}
+              <p><strong>Trạng thái thanh toán:</strong> {order.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}</p>
+              {order.isPaid && order.paidAt && (
+                <p><strong>Thanh toán vào:</strong> {formatDate(order.paidAt)}</p>
+              )}
             </div>
           </div>
         </div>
-      )}
+
+        <div className="order-summary">
+          <h2>Tổng quan đơn hàng</h2>
+          <div className="order-summary-rows">
+            <div className="summary-row">
+              <span>Tạm tính:</span>
+              <span>{order.totalItemsPrice.toLocaleString()}đ</span>
+            </div>
+            <div className="summary-row">
+              <span>Phí vận chuyển:</span>
+              <span>{order.shippingPrice.toLocaleString()}đ</span>
+            </div>
+            <div className="summary-row total">
+              <span>Tổng cộng:</span>
+              <span>{order.totalAmount.toLocaleString()}đ</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

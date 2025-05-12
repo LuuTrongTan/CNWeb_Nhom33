@@ -792,6 +792,8 @@ textarea {
 
 /* Hiển thị trạng thái sản phẩm */
 .product-status {
+  display: flex !important;
+  gap: 10px;
   margin: 5px 0 15px;
   display: flex;
   align-items: center;

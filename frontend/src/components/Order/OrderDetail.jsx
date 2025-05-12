@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { format } from "date-fns";
 import useOrderWebSocket from "../../hooks/useOrderWebSocket";
 import OrderStatus from './OrderStatus';
 import { vi } from 'date-fns/locale';
+import apiClient from "../../services/api.service";
 
 const OrderDetail = () => {
   const { orderId } = useParams();
@@ -18,8 +18,17 @@ const OrderDetail = () => {
 
   const fetchOrderDetails = async () => {
     try {
-      const response = await axios.get(`/api/orders/${orderId}`);
-      setOrder(response.data.data);
+      // Kiểm tra vai trò của người dùng từ localStorage hoặc context
+      const userRole = localStorage.getItem('userRole');
+      const isAdmin = userRole === 'admin';
+      
+      // Sử dụng API endpoint khác nhau tùy vào vai trò
+      const apiUrl = isAdmin 
+        ? `/admin/orders/${orderId}` 
+        : `/orders/${orderId}`;
+        
+      const response = await apiClient.get(apiUrl);
+      setOrder(response);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching order details:", error);
@@ -39,7 +48,7 @@ const OrderDetail = () => {
 
   const handleReturnRequest = async (reason) => {
     try {
-      await axios.post(`/api/orders/${orderId}/return`, { reason });
+      await apiClient.post(`/orders/${orderId}/return`, { reason });
       fetchOrderDetails(); // Refresh order details
     } catch (error) {
       console.error("Error requesting return:", error);
@@ -59,8 +68,25 @@ const OrderDetail = () => {
   }
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: vi });
+    if (!dateString) {
+      console.log("Không có dữ liệu ngày:", dateString);
+      return 'N/A';
+    }
+    
+    try {
+      console.log("Dữ liệu ngày nhận được trong component OrderDetail:", dateString);
+      const date = new Date(dateString);
+      
+      if (isNaN(date.getTime())) {
+        console.error("Không thể chuyển đổi thành ngày hợp lệ trong component OrderDetail:", dateString);
+        return 'N/A';
+      }
+      
+      return format(date, 'dd/MM/yyyy HH:mm', { locale: vi });
+    } catch (error) {
+      console.error("Lỗi khi format ngày trong component OrderDetail:", error, "với dateString:", dateString);
+      return 'N/A';
+    }
   };
 
   // Hiển thị tiến trình đơn hàng
@@ -136,7 +162,7 @@ const OrderDetail = () => {
               Đơn hàng #{order._id.slice(-6)}
             </h1>
             <p className="text-gray-500">
-              Đặt ngày {format(new Date(order.createdAt), "dd/MM/yyyy")}
+              Đặt ngày {formatDate(order.createdAt)}
             </p>
           </div>
           <OrderStatus status={order.orderStatus} />

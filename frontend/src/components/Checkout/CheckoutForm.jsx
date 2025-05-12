@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useCart } from "../../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { createOrder } from "../../services/order.service";
 
 // Tạo instance của axios với cấu hình chung
 const axiosInstance = axios.create({
-    baseURL: `${import.meta.env.VITE_API_URL || ''}/api`, 
+    baseURL: `${import.meta.env.VITE_API_URL || ''}`, 
     headers: {
         'Content-Type': 'application/json',
     }
@@ -21,7 +22,7 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 const CheckoutForm = ({ onCancel }) => {
-    const { cart, calculateTotal, clearCart } = useCart();
+    const { cart, calculateTotal, clearCart, getSelectedItems } = useCart();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [orderInfo, setOrderInfo] = useState({
@@ -65,9 +66,17 @@ const CheckoutForm = ({ onCancel }) => {
         try {
             setLoading(true);
             
-            // Chuẩn bị dữ liệu đơn hàng
+            // Lấy danh sách sản phẩm đã chọn
+            const selectedCartItems = getSelectedItems();
+            
+            if (selectedCartItems.length === 0) {
+                alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
+                return;
+            }
+            
+            // Chuẩn bị dữ liệu đơn hàng chỉ với các sản phẩm đã chọn
             const orderData = {
-                items: cart.map(item => ({
+                items: selectedCartItems.map(item => ({
                     product: item.id,
                     name: item.name,
                     price: item.price,
@@ -92,13 +101,13 @@ const CheckoutForm = ({ onCancel }) => {
                 discountPrice: 0  // Có thể thêm tính năng giảm giá
             };
 
-            // Gửi request tạo đơn hàng
-            const response = await axiosInstance.post("/orders", orderData);
+            // Gọi service để tạo đơn hàng
+            const response = await createOrder(orderData);
             
             // Xử lý khi đặt hàng thành công
-            alert("Đặt hàng thành công! Mã đơn hàng: " + response.data.id);
+            alert("Đặt hàng thành công! Mã đơn hàng: " + response.id);
             clearCart();
-            navigate("/orders/" + response.data.id);
+            navigate("/orders/" + response.id);
         } catch (error) {
             console.error("Lỗi khi đặt hàng:", error);
             alert("Có lỗi xảy ra khi đặt hàng: " + (error.response?.data?.message || error.message));
@@ -257,7 +266,7 @@ const CheckoutForm = ({ onCancel }) => {
                 <div className="order-summary mb-6">
                     <h3 className="text-lg font-semibold mb-2">Tóm tắt đơn hàng</h3>
                     <div className="bg-gray-50 p-4 rounded">
-                        {cart.map(item => (
+                        {getSelectedItems().map(item => (
                             <div key={item.id} className="flex justify-between py-2 border-b">
                                 <div>
                                     <span className="font-medium">{item.name}</span>

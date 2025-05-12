@@ -7,54 +7,38 @@ const ApiError = require('../utils/ApiError');
  * Tạo đơn hàng mới
  */
 const createOrder = catchAsync(async (req, res) => {
-  // Kiểm tra dữ liệu đầu vào
-  const { items, shippingAddress, paymentMethod, totalItemsPrice, shippingPrice, taxPrice, discountPrice, notes } = req.body;
+  // Lấy thông tin người dùng nếu đã đăng nhập
+  const userId = req.user ? req.user.id : null;
   
-  if (!items || items.length === 0) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Giỏ hàng không được trống');
+  // Tạo dữ liệu đơn hàng
+  const orderData = {
+    ...req.body,
+    user: userId,
+  };
+  
+  // Đảm bảo createdAt là giá trị cố định và không thay đổi
+  if (!orderData.createdAt) {
+    orderData.createdAt = new Date().toISOString();
   }
   
-  if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.address || 
-      !shippingAddress.city || !shippingAddress.district || !shippingAddress.ward || !shippingAddress.phone) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Thông tin giao hàng không đầy đủ');
-  }
+  // Tính tổng tiền đơn hàng
+  orderData.totalAmount = orderData.totalItemsPrice + orderData.shippingPrice;
   
-  if (!paymentMethod) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Vui lòng chọn phương thức thanh toán');
-  }
+  // Gọi service để tạo đơn hàng
+  const order = await orderService.createOrder(orderData);
   
-  // Tạo đơn hàng
-  const order = await orderService.createOrder({
-    user: req.user.id,
-    items,
-    shippingAddress,
-    paymentMethod,
-    totalItemsPrice: totalItemsPrice || 0,
-    shippingPrice: shippingPrice || 0,
-    taxPrice: taxPrice || 0,
-    discountPrice: discountPrice || 0,
-    notes: notes || '',
-    // Tính tổng tiền đơn hàng
-    totalPrice: (totalItemsPrice || 0) + (shippingPrice || 0) + (taxPrice || 0) - (discountPrice || 0),
-  });
-  
+  // Trả về toàn bộ thông tin đơn hàng đã tạo
   res.status(httpStatus.CREATED).send(order);
 });
 
 /**
  * Lấy danh sách đơn hàng của người dùng đăng nhập
  */
-const getUserOrders = catchAsync(async (req, res) => {
-  const filter = { user: req.user.id };
-  const options = {
-    sortBy: req.query.sortBy || 'createdAt:desc',
-    limit: parseInt(req.query.limit, 10) || 10,
-    page: parseInt(req.query.page, 10) || 1,
-    populate: 'items.product',
-  };
-  
-  const result = await orderService.queryOrders(filter, options);
-  res.send(result);
+const getOrders = catchAsync(async (req, res) => {
+  // Lấy danh sách đơn hàng của người dùng hiện tại
+  const userId = req.user.id;
+  const orders = await orderService.getOrdersByUser(userId);
+  res.send(orders);
 });
 
 /**
@@ -62,14 +46,12 @@ const getUserOrders = catchAsync(async (req, res) => {
  */
 const getOrderById = catchAsync(async (req, res) => {
   const order = await orderService.getOrderById(req.params.orderId);
-  
   if (!order) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }
   
-  // Kiểm tra quyền truy cập, chỉ cho phép xem đơn hàng của chính mình
-  // hoặc admin/staff có quyền xem tất cả
-  if (order.user.toString() !== req.user.id && req.user.role !== 'admin') {
+  // Kiểm tra quyền truy cập
+  if (req.user && order.user && order.user.toString() !== req.user.id && req.user.role !== 'admin') {
     throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền xem đơn hàng này');
   }
   
@@ -80,74 +62,66 @@ const getOrderById = catchAsync(async (req, res) => {
  * Hủy đơn hàng
  */
 const cancelOrder = catchAsync(async (req, res) => {
+  try {
+    console.log('Nhận yêu cầu hủy đơn hàng:', req.params.orderId);
+    console.log('User ID:', req.user ? req.user.id : 'Không có user');
+    console.log('Request body:', req.body);
+    
   const order = await orderService.getOrderById(req.params.orderId);
-  
   if (!order) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }
   
-  // Chỉ cho phép người dùng hủy đơn hàng của chính mình
-  if (order.user.toString() !== req.user.id) {
+  // Kiểm tra quyền hủy đơn hàng
+    // Cho phép hủy đơn khi:
+    // 1. Người dùng đã đăng nhập và là chủ đơn hàng
+    // 2. Người dùng là admin
+    // 3. Người dùng biết mã đơn hàng và số điện thoại đặt hàng
+    const isAuthorized = 
+      (req.user && req.user.id === order.user?.toString()) || 
+      (req.user && req.user.role === 'admin') ||
+      (req.body.orderNumber === order.orderNumber && 
+       req.body.phone === order.shippingAddress.phone);
+    
+    if (!isAuthorized) {
     throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền hủy đơn hàng này');
   }
   
-  // Chỉ cho phép hủy đơn hàng khi trạng thái là "pending" hoặc "processing"
+  // Kiểm tra trạng thái đơn hàng
   if (order.status !== 'pending' && order.status !== 'processing') {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST, 
-      'Không thể hủy đơn hàng khi đã được vận chuyển hoặc giao hàng'
-    );
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Không thể hủy đơn hàng ở trạng thái này');
   }
   
-  const updatedOrder = await orderService.updateOrderById(
-    req.params.orderId, 
-    { status: 'cancelled', cancelledAt: new Date() }
-  );
-  
+    // Lấy lý do hủy đơn hàng từ request body (nếu có)
+    const updateData = { 
+      status: 'cancelled',
+      cancelReason: req.body.cancelReason || 'Hủy bởi khách hàng',
+      cancelledAt: new Date()
+    };
+    
+    console.log('Cập nhật đơn hàng với dữ liệu:', updateData);
+    
+    const updatedOrder = await orderService.updateOrderById(req.params.orderId, updateData);
+    console.log('Đơn hàng đã được cập nhật thành công');
+    
   res.send(updatedOrder);
+  } catch (error) {
+    console.error('Lỗi khi hủy đơn hàng:', error);
+    throw error;
+  }
 });
 
 /**
  * Cập nhật trạng thái đơn hàng
  */
 const updateOrderStatus = catchAsync(async (req, res) => {
-  const { status } = req.body;
-  
-  if (!status) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Trạng thái đơn hàng không được để trống');
-  }
-  
-  const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-  if (!validStatuses.includes(status)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Trạng thái đơn hàng không hợp lệ');
-  }
-  
-  const order = await orderService.getOrderById(req.params.orderId);
-  
-  if (!order) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đơn hàng');
-  }
-  
-  // Chỉ admin mới có quyền cập nhật trạng thái
+  // Chỉ admin mới có quyền cập nhật trạng thái đơn hàng
   if (req.user.role !== 'admin') {
-    throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền cập nhật trạng thái đơn hàng');
+    throw new ApiError(httpStatus.FORBIDDEN, 'Bạn không có quyền cập nhật đơn hàng');
   }
   
-  // Xử lý các trường hợp cập nhật đặc biệt
-  let updateData = { status };
-  
-  if (status === 'delivered' && !order.isDelivered) {
-    updateData.isDelivered = true;
-    updateData.deliveredAt = new Date();
-  }
-  
-  if (status === 'cancelled' && !order.cancelledAt) {
-    updateData.cancelledAt = new Date();
-  }
-  
-  const updatedOrder = await orderService.updateOrderById(req.params.orderId, updateData);
-  
-  res.send(updatedOrder);
+  const order = await orderService.updateOrderById(req.params.orderId, req.body);
+  res.send(order);
 });
 
 /**
@@ -160,7 +134,7 @@ const getOrderStats = catchAsync(async (req, res) => {
 
 module.exports = {
   createOrder,
-  getUserOrders,
+  getOrders,
   getOrderById,
   cancelOrder,
   getOrderStats,

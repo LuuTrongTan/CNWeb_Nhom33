@@ -70,4 +70,7 @@ module.exports = {
     },
     from: envVars.EMAIL_FROM,
   },
+  goong: {
+    apiKey: envVars.GOONG_API_KEY,
+  },
 };

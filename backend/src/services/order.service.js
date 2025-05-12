@@ -8,26 +8,10 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Order>}
  */
 const createOrder = async (orderBody) => {
-  // Tính tổng tiền sản phẩm
-  const totalItemsPrice = orderBody.items.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
-  
-  // Tính tổng tiền đơn hàng
-  const totalPrice = totalItemsPrice + 
-    orderBody.shippingPrice + 
-    orderBody.taxPrice - 
-    (orderBody.discountPrice || 0);
-  
-  // Tạo đơn hàng với tổng tiền đã tính
-  const orderData = {
-    ...orderBody,
-    totalItemsPrice,
-    totalPrice,
-  };
-  
-  return Order.create(orderData);
+  const order = await Order.create(orderBody);
+  // Truy vấn lại để lấy đầy đủ dữ liệu sau khi đã tạo
+  const populatedOrder = await Order.findById(order._id);
+  return populatedOrder;
 };
 
 /**
@@ -47,7 +31,16 @@ const queryOrders = async (filter, options) => {
  * @returns {Promise<Order>}
  */
 const getOrderById = async (id) => {
-  return Order.findById(id).populate('items.product');
+  return Order.findById(id);
+};
+
+/**
+ * Lấy danh sách đơn hàng của người dùng
+ * @param {ObjectId} userId
+ * @returns {Promise<Order[]>}
+ */
+const getOrdersByUser = async (userId) => {
+  return Order.find({ user: userId }).sort({ createdAt: -1 });
 };
 
 /**
@@ -63,7 +56,32 @@ const updateOrderById = async (orderId, updateBody) => {
   }
   
   Object.assign(order, updateBody);
+  
+  // Xử lý các trường hợp đặc biệt
+  if (updateBody.status === 'delivered' && !order.isDelivered) {
+    order.isDelivered = true;
+    order.deliveredAt = new Date();
+  }
+  
+  if (updateBody.status === 'cancelled' && !order.cancelledAt) {
+    order.cancelledAt = new Date();
+  }
+  
   await order.save();
+  return order;
+};
+
+/**
+ * Xóa đơn hàng theo ID
+ * @param {ObjectId} orderId
+ * @returns {Promise<Order>}
+ */
+const deleteOrderById = async (orderId) => {
+  const order = await getOrderById(orderId);
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không tìm thấy đơn hàng');
+  }
+  await order.remove();
   return order;
 };
 
@@ -129,6 +147,8 @@ module.exports = {
   createOrder,
   queryOrders,
   getOrderById,
+  getOrdersByUser,
   updateOrderById,
+  deleteOrderById,
   getUserOrderStats,
 }; 
