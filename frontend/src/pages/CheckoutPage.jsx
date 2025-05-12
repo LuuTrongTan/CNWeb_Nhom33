@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import apiClient from "../services/api.service";
 import { updateProduct } from "../service/productAPI";
 import {
   faArrowLeft,
@@ -208,6 +209,9 @@ const CheckoutPage = () => {
           fullName: orderInfo.fullName,
           address: orderInfo.address,
           phone: orderInfo.phone,
+          district: "1 Đại Cồ Việt",
+          ward: "Hai Bà Trưng",
+          city: "Hà Nội",
         },
         paymentMethod: orderInfo.paymentMethod,
         shippingMethod: orderInfo.shippingMethod,
@@ -215,45 +219,57 @@ const CheckoutPage = () => {
         shippingPrice: shippingFee,
         amount: calculateTotal() + shippingFee,
       };
+      const response2 = await createOrder(orderData);
+      console.log(response2);
 
-      const response = await api.post("zalopay/payment", orderData);
-      console.log("response", response.data);
-      const order_url = response.data.result.order_url;
-      const app_trans_id = response.data.app_trans_id;
+      if (orderInfo.paymentMethod === "cod") {
+        navigate("/orders/" + response2.data.id);
+        toast.success("Đặt hàng thành công");
+        // navigate("/products");
+        clearCart();
+      } else if (orderInfo.paymentMethod === "momo") {
+        const response = await api.post("zalopay/payment", orderData);
+        console.log("response", response.data);
+        const order_url = response.data.result.order_url;
+        const app_trans_id = response.data.app_trans_id;
 
-      window.open(order_url, "_blank");
+        window.open(order_url, "_blank");
 
-      const intervalId = setInterval(async () => {
-        try {
-          const checkRes = await api.post("/zalopay/check-status-order", {
-            app_trans_id,
-          });
+        const intervalId = setInterval(async () => {
+          try {
+            const checkRes = await api.post("/zalopay/check-status-order", {
+              app_trans_id,
+            });
 
-          console.log(checkRes.data);
-          if (checkRes.data.return_code === 1) {
+            console.log(checkRes.data);
+            if (checkRes.data.return_code === 1) {
+              toast.success("Đặt hàng thành công");
+              clearInterval(intervalId);
+              toast.success(checkRes.data.return_message);
+              clearCart();
+
+              setTimeout(async () => {
+                await Promise.all(
+                  selectedItems.map((element) =>
+                    updateProduct(element.id, {
+                      soldCount: element.soldCount + 1,
+                    })
+                  )
+                );
+                navigate("/orders/" + response2.data.id);
+              }, 1500);
+            } else if (checkRes.data.return_code === 2) {
+              clearInterval(intervalId);
+              alert(checkRes.data.return_message);
+            }
+          } catch (err) {
             clearInterval(intervalId);
-            toast.success(checkRes.data.return_message);
-            clearCart();
-
-            setTimeout(async () => {
-              await Promise.all(
-                selectedItems.map((element) =>
-                  updateProduct(element.id, {
-                    soldCount: element.soldCount + 1,
-                  })
-                )
-              );
-              navigate("/products");
-            }, 1500);
-          } else if (checkRes.data.return_code === 2) {
-            clearInterval(intervalId);
-            alert(checkRes.data.return_message);
+            toast.warning(checkRes.data.return_message);
           }
-        } catch (err) {
-          clearInterval(intervalId);
-          toast.warning(checkRes.data.return_message);
-        }
-      }, 3000);
+        }, 3000);
+      } else {
+        toast.warning("Hiện chưa hỗ trợ phương thức này");
+      }
     } catch (error) {
       console.error("Lỗi khi đặt hàng:", error);
       alert("Lỗi: " + (error.response?.data?.message || error.message));
@@ -412,8 +428,8 @@ const CheckoutPage = () => {
                           <input
                             type="radio"
                             name="paymentMethod"
-                            value="zalopay"
-                            checked={orderInfo.paymentMethod === "zalopay"}
+                            value="momo"
+                            checked={orderInfo.paymentMethod === "momo"}
                             onChange={handleInputChange}
                           />
                           <span className="payment-method-name">Zalopay</span>
