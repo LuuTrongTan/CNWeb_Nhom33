@@ -14,6 +14,7 @@ import "../../styles/css/ProductCard.css";
 import AddToCartModal from "./AddToCartModal";
 
 const ProductCard = ({ product }) => {
+  const userStr = localStorage.getItem("user");
   const {
     _id,
     name,
@@ -102,6 +103,10 @@ const ProductCard = ({ product }) => {
   };
 
   const handleAddToCart = (e) => {
+    if (!userStr) {
+      alert("Vui lòng đăng nhập");
+      return;
+    }
     e.stopPropagation();
     // Mở modal thay vì thêm trực tiếp vào giỏ hàng
     setIsModalOpen(true);
@@ -186,7 +191,9 @@ const ProductCard = ({ product }) => {
           </div>
 
           <div className="product-info">
-            <span className="product-category">{category?.name || category}</span>
+            <span className="product-category">
+              {category?.name || category}
+            </span>
             <h3 className="product-name">{name}</h3>
 
             <div className="product-rating">
