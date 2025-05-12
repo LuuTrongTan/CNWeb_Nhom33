@@ -21,7 +21,6 @@ import ProductCard from "../components/Product/ProductCard";
 import { getCategoryById } from "../service/categoryAPI";
 
 const ProductDetailPage = ({ tagCategory }) => {
-  const userStr = localStorage.getItem("user");
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [category, setCategory] = useState(null);
@@ -125,11 +124,6 @@ const ProductDetailPage = ({ tagCategory }) => {
       alert("Vui lòng chọn màu sắc");
       return;
     }
-
-    // if (!userStr) {
-    //   alert("Vui lòng đăng nhập");
-    //   return;
-    // }
 
     const productToAdd = {
       id: product._id, // Đảm bảo có id

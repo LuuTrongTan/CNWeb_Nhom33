@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import apiClient from "../services/api.service";
 import { updateProduct } from "../service/productAPI";
 import {
   faArrowLeft,
@@ -208,9 +209,9 @@ const CheckoutPage = () => {
           fullName: orderInfo.fullName,
           address: orderInfo.address,
           phone: orderInfo.phone,
-          district: "a",
-          ward: "a",
-          city: "a",
+          district: "1 Đại Cồ Việt",
+          ward: "Hai Bà Trưng",
+          city: "Hà Nội",
         },
         paymentMethod: orderInfo.paymentMethod,
         shippingMethod: orderInfo.shippingMethod,
@@ -226,7 +227,7 @@ const CheckoutPage = () => {
         toast.success("Đặt hàng thành công");
         // navigate("/products");
         clearCart();
-      } else if (orderInfo.paymentMethod === "zalopay") {
+      } else if (orderInfo.paymentMethod === "momo") {
         const response = await api.post("zalopay/payment", orderData);
         console.log("response", response.data);
         const order_url = response.data.result.order_url;
@@ -255,7 +256,7 @@ const CheckoutPage = () => {
                     })
                   )
                 );
-                navigate("/products");
+                navigate("/orders/" + response2.data.id);
               }, 1500);
             } else if (checkRes.data.return_code === 2) {
               clearInterval(intervalId);
@@ -427,8 +428,8 @@ const CheckoutPage = () => {
                           <input
                             type="radio"
                             name="paymentMethod"
-                            value="zalopay"
-                            checked={orderInfo.paymentMethod === "zalopay"}
+                            value="momo"
+                            checked={orderInfo.paymentMethod === "momo"}
                             onChange={handleInputChange}
                           />
                           <span className="payment-method-name">Zalopay</span>

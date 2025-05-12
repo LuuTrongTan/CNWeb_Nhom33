@@ -333,9 +333,7 @@ const OrderDetailPage = () => {
                 <strong>Số điện thoại:</strong> {order.shippingAddress.phone}
               </p>
               <p>
-                <strong>Địa chỉ:</strong> {order.shippingAddress.address},{" "}
-                {order.shippingAddress.ward}, {order.shippingAddress.district},{" "}
-                {order.shippingAddress.city}
+                <strong>Địa chỉ:</strong> {order.shippingAddress.address}
               </p>
             </div>
           </div>
@@ -370,12 +368,17 @@ const OrderDetailPage = () => {
               {order.paymentMethod === "banking" && (
                 <p>Chuyển khoản ngân hàng</p>
               )}
-              {order.paymentMethod === "momo" && <p>Ví điện tử MoMo</p>}
+              {order.paymentMethod === "momo" && <p>Ví điện tử Zalo</p>}
               {order.paymentMethod === "card" && <p>Thẻ tín dụng/Ghi nợ</p>}
               <p>
                 <strong>Trạng thái thanh toán:</strong>{" "}
-                {order.isPaid ? "Đã thanh toán" : "Chưa thanh toán"}
+                {order.paymentMethod === "momo"
+                  ? "Đã thanh toán"
+                  : order.isPaid
+                  ? "Đã thanh toán"
+                  : "Chưa thanh toán"}
               </p>
+
               {order.isPaid && order.paidAt && (
                 <p>
                   <strong>Thanh toán vào:</strong> {formatDate(order.paidAt)}
