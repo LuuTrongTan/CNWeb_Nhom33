@@ -10,6 +10,9 @@ const router = express.Router();
 router.get('/profile', auth(), userController.getProfile);
 router.patch('/profile', auth(), validate(userValidation.updateProfile), userController.updateProfile);
 
+// Lấy thông tin địa chỉ giao hàng của người dùng
+router.get('/shipping-info', auth(), userController.getUserShippingInfo);
+
 router
   .route('/')
   .post(auth('manageUsers'), validate(userValidation.createUser), userController.createUser)
@@ -20,8 +23,6 @@ router
   .get(auth('getUsers'), validate(userValidation.getUser), userController.getUser)
   .patch(auth('manageUsers'), validate(userValidation.updateUser), userController.updateUser)
   .delete(auth('manageUsers'), validate(userValidation.deleteUser), userController.deleteUser);
-
-router.route('/shipping-info').post(auth(), userController.getUserShippingInfo);
 
 module.exports = router;
 
