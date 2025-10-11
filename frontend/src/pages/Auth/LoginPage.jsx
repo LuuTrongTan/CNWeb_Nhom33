@@ -1,25 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../../context/AuthContext';
-import '../../styles/css/Auth/Auth.css';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEnvelope,
+  faLock,
+  faEye,
+  faEyeSlash,
+} from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "../../context/AuthContext";
+import "../../styles/css/Auth/Auth.css";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login, loginWithGoogle } = useAuth();
 
   // Lấy thông báo lỗi từ localStorage khi component mount
   useEffect(() => {
-    const savedError = localStorage.getItem('loginError');
+    const savedError = localStorage.getItem("loginError");
     if (savedError) {
       setError(savedError);
-      localStorage.removeItem('loginError'); // Xóa sau khi đã lấy
+      localStorage.removeItem("loginError"); // Xóa sau khi đã lấy
     }
   }, []);
 
@@ -29,28 +34,31 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    
+    setError("");
+
     if (!email || !password) {
-      setError('Vui lòng nhập đầy đủ thông tin đăng nhập.');
+      setError("Vui lòng nhập đầy đủ thông tin đăng nhập.");
       return;
     }
 
     try {
       setLoading(true);
       await login(email, password);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      console.error('Lỗi đăng nhập:', err);
+      console.error("Lỗi đăng nhập:", err);
       // Xử lý lỗi rate limit
       if (err.response?.status === 429) {
-        const errorMsg = 'Quá nhiều yêu cầu đăng nhập. Vui lòng thử lại sau 5 phút.';
+        const errorMsg =
+          "Quá nhiều yêu cầu đăng nhập. Vui lòng thử lại sau 5 phút.";
         setError(errorMsg);
-        localStorage.setItem('loginError', errorMsg);
+        localStorage.setItem("loginError", errorMsg);
       } else {
-        const errorMsg = err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+        const errorMsg =
+          err.response?.data?.message ||
+          "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
         setError(errorMsg);
-        localStorage.setItem('loginError', errorMsg);
+        localStorage.setItem("loginError", errorMsg);
       }
     } finally {
       setLoading(false);
@@ -60,32 +68,35 @@ const LoginPage = () => {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
-      setError('');
-      
+      setError("");
+
       // Khởi tạo Google OAuth2 client
       const client = window.google.accounts.oauth2.initTokenClient({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+        scope:
+          "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
         callback: async (response) => {
           if (response.access_token) {
             try {
               // Gửi token trực tiếp từ Google
               await loginWithGoogle(response.access_token);
-              navigate('/');
+              navigate("/");
             } catch (err) {
-              console.error('Lỗi đăng nhập Google:', err);
-              setError(err.response?.data?.message || 'Đăng nhập Google thất bại');
+              console.error("Lỗi đăng nhập Google:", err);
+              setError(
+                err.response?.data?.message || "Đăng nhập Google thất bại"
+              );
             }
           } else {
-            setError('Không thể lấy token từ Google');
+            setError("Không thể lấy token từ Google");
           }
         },
       });
-      
+
       client.requestAccessToken();
     } catch (err) {
-      console.error('Lỗi khởi tạo Google OAuth:', err);
-      setError('Không thể kết nối với Google');
+      console.error("Lỗi khởi tạo Google OAuth:", err);
+      setError("Không thể kết nối với Google");
     } finally {
       setLoading(false);
     }
@@ -150,22 +161,22 @@ const LoginPage = () => {
           </div>
 
           <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? 'Đang xử lý...' : 'Đăng nhập'}
+            {loading ? "Đang xử lý..." : "Đăng nhập"}
           </button>
 
           <div className="auth-divider">
             <span>Hoặc đăng nhập với</span>
           </div>
 
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="google-login-button"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
-            <img 
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
-              alt="Google logo" 
+            <img
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              alt="Google logo"
               className="google-logo"
             />
             Đăng nhập với Google
@@ -174,7 +185,7 @@ const LoginPage = () => {
 
         <div className="auth-footer">
           <p>
-            Bạn chưa có tài khoản?{' '}
+            Bạn chưa có tài khoản?{" "}
             <Link to="/register" className="auth-link">
               Đăng ký ngay
             </Link>
@@ -185,4 +196,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage; 
+export default LoginPage;
